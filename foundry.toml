@@ -6,7 +6,6 @@ remappings = [
     'forge-std/=lib/forge-std/src',
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
-    'shipyard-core/=lib/shipyard-core/src/',
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
