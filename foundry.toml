@@ -6,6 +6,9 @@ remappings = [
     'forge-std/=lib/forge-std/src',
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
+    'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
+    'shipyard-core/=lib/shipyard-core/src/',
 ]
+bytecode_hash = 'none'
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
