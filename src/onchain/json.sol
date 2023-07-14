@@ -3,6 +3,11 @@ pragma solidity ^0.8.4;
 
 import {LibString} from "solady/utils/LibString.sol";
 
+/**
+ * @title JSON
+ * @author emo.eth
+ * @notice TODO: overrides for common types that automatically stringify
+ */
 library json {
     using LibString for string;
 
