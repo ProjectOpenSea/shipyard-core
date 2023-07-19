@@ -8,8 +8,20 @@ import {LibString} from "solady/utils/LibString.sol";
  * @author w1nt3r.eth
  * @notice Modified from w1nt3r.eth's hot-chain-svg library: https://github.com/w1nt3r-eth/hot-chain-svg
  */
-library svg {
+library SVG {
     using LibString for uint256;
+
+    function svg(bool includeXmlns, string memory _props, string memory _children)
+        internal
+        pure
+        returns (string memory)
+    {
+        if (includeXmlns) {
+            return el("svg", string.concat('xmlns="http://www.w3.org/2000/svg" ', _props), _children);
+        } else {
+            return el("svg", _props, _children);
+        }
+    }
 
     function g(string memory _props, string memory _children) internal pure returns (string memory) {
         return el("g", _props, _children);
