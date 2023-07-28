@@ -7,8 +7,10 @@ remappings = [
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
-    'shipyard-core/=lib/shipyard-core/src/',
+    'shipyard-core/=src/',
+    'seaport-types/=lib/seaport-types/src/'
 ]
-bytecode_hash = 'none'
+# bytecode_hash = 'none'
+ignored_error_codes = ['license', 'code-size', 'init-code-size']
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
