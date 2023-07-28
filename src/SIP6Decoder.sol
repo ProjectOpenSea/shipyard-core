@@ -49,7 +49,7 @@ library SIP6Decoder {
         _validateVersionByte(extraData, bytes1(0x02));
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
-        ///@solidity memory-safe-assembly
+
         assembly {
             pointerToFixedDataOffset := add(extraData.offset, 1)
             pointerToVariableDataoffset := add(pointerToFixedDataOffset, 0x20)
@@ -115,7 +115,7 @@ library SIP6Decoder {
         _validateVersionByte(extraData, bytes1(0x05));
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
-        ///@solidity memory-safe-assembly
+
         assembly {
             pointerToFixedDataOffset := add(extraData.offset, 1)
             pointerToVariableDataoffset := add(pointerToFixedDataOffset, 0x20)
@@ -149,7 +149,6 @@ library SIP6Decoder {
         pure
         returns (bytes calldata decodedData)
     {
-        ///@solidity memory-safe-assembly
         assembly {
             // the abi-encoded offset of the variable length array starts 1 byte into the calldata. add 1 to account for this.
             let decodedLengthPointer :=
@@ -188,7 +187,7 @@ library SIP6Decoder {
     {
         function(uint256,uint256) internal pure returns (bytes calldata) decodeBytesArray = _decodeBytesArray;
         function(uint256,uint256) internal pure returns (bytes[] calldata) decodeBytesArrays;
-        ///@solidity memory-safe-assembly
+
         assembly {
             decodeBytesArrays := decodeBytesArray
         }
@@ -207,7 +206,7 @@ library SIP6Decoder {
     {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
-        ///@solidity memory-safe-assembly
+
         assembly {
             pointerToOffset := add(data.offset, 1)
         }
@@ -227,7 +226,7 @@ library SIP6Decoder {
     ) internal pure returns (bytes memory decodedData) {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
-        ///@solidity memory-safe-assembly
+
         assembly {
             pointerToOffset := add(data.offset, 1)
         }
@@ -248,7 +247,7 @@ library SIP6Decoder {
     {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
-        ///@solidity memory-safe-assembly
+
         assembly {
             pointerToOffset := add(data.offset, 1)
         }
