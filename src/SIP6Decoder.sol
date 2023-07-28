@@ -28,7 +28,7 @@ library SIP6Decoder {
         pure
         returns (bytes memory decodedExtraData)
     {
-        return _decodeBytesFromExtraDataAndValidateExpectedhash(extraData, bytes1(0x01), expectedFixedDataHash);
+        return _decodeBytesFromExtraDataAndValidateExpectedHash(extraData, bytes1(0x01), expectedFixedDataHash);
     }
 
     /**
@@ -169,10 +169,10 @@ library SIP6Decoder {
     function _decodeBytesArrayAndValidateExpectedHash(
         uint256 pointerToOffset,
         uint256 relativeStart,
-        bytes32 expectedHash
+        bytes32 ExpectedHash
     ) internal pure returns (bytes memory decodedData) {
         decodedData = _decodeBytesArray(pointerToOffset, relativeStart);
-        if (keccak256(decodedData) != expectedHash) {
+        if (keccak256(decodedData) != ExpectedHash) {
             revert InvalidExtraData();
         }
     }
@@ -218,12 +218,12 @@ library SIP6Decoder {
      * @dev Validate the version byte of extraData and return the contained bytes array.
      * @param data bytes calldata
      * @param substandard Expected SIP6 substandard version byte
-     * @param expectedhash Expected hash of the bytes array
+     * @param ExpectedHash Expected hash of the bytes array
      */
-    function _decodeBytesFromExtraDataAndValidateExpectedhash(
+    function _decodeBytesFromExtraDataAndValidateExpectedHash(
         bytes calldata data,
         bytes1 substandard,
-        bytes32 expectedhash
+        bytes32 ExpectedHash
     ) internal pure returns (bytes memory decodedData) {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
@@ -232,7 +232,7 @@ library SIP6Decoder {
             pointerToOffset := add(data.offset, 1)
         }
         // copy bytes to memory since they must be hashed
-        decodedData = _decodeBytesArrayAndValidateExpectedHash(pointerToOffset, pointerToOffset, expectedhash);
+        decodedData = _decodeBytesArrayAndValidateExpectedHash(pointerToOffset, pointerToOffset, ExpectedHash);
         return decodedData;
     }
 
