@@ -12,5 +12,6 @@ remappings = [
 ]
 # bytecode_hash = 'none'
 ignored_error_codes = ['license', 'code-size', 'init-code-size']
+optimizer_runs = 99_999_999
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
