@@ -104,7 +104,11 @@ contract SIP6DecoderTest is Test {
         return SIP6Decoder.decodeSubstandard1(extraData, expectedHash);
     }
 
-    function decode2(bytes calldata extraData, bytes32 expectedHash) external returns (bytes memory, bytes memory) {
+    function decode2(bytes calldata extraData, bytes32 expectedHash)
+        external
+        pure
+        returns (bytes memory, bytes memory)
+    {
         return SIP6Decoder.decodeSubstandard2(extraData, expectedHash);
     }
 
@@ -112,7 +116,7 @@ contract SIP6DecoderTest is Test {
         return SIP6Decoder.decodeSubstandard3(extraData);
     }
 
-    function decode4(bytes calldata extraData, bytes32 expectedHash) external returns (bytes[] memory) {
+    function decode4(bytes calldata extraData, bytes32 expectedHash) external pure returns (bytes[] memory) {
         return SIP6Decoder.decodeSubstandard4(extraData, expectedHash);
     }
 
@@ -121,7 +125,6 @@ contract SIP6DecoderTest is Test {
         pure
         returns (bytes[] memory, bytes[] memory)
     {
-        (bytes[] memory a, bytes[] memory b) = abi.decode(extraData[1:], (bytes[], bytes[]));
         return SIP6Decoder.decodeSubstandard5(extraData, expectedHash);
     }
 }

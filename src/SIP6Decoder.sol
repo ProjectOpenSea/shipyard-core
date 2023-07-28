@@ -2,7 +2,6 @@
 pragma solidity ^0.8.17;
 
 import {ISIP6} from "./interfaces/sips/ISIP6.sol";
-import {Vm} from "forge-std/Test.sol";
 
 library SIP6Decoder {
     error InvalidExtraData();
@@ -11,19 +10,19 @@ library SIP6Decoder {
         return _decodeBytesFromExtraData(extraData, bytes1(0));
     }
 
-    function decodeSubstandard1(bytes calldata extraData, bytes32 expectedHash)
+    function decodeSubstandard1(bytes calldata extraData, bytes32 expectedFixedDatahash)
         internal
         pure
         returns (bytes memory decodedExtraData)
     {
         // decode extra data to memory since we need to hash it
         decodedExtraData = _decodeBytesFromExtraData(extraData, bytes1(0x01));
-        if (expectedHash != keccak256(decodedExtraData)) {
+        if (expectedFixedDatahash != keccak256(decodedExtraData)) {
             revert InvalidExtraData();
         }
     }
 
-    function decodeSubstandard2(bytes calldata extraData, bytes32 expectedHash)
+    function decodeSubstandard2(bytes calldata extraData, bytes32 expectedFixedDatahash)
         internal
         pure
         returns (bytes memory decodedFixedData, bytes calldata decodedVariableData)
@@ -31,13 +30,14 @@ library SIP6Decoder {
         _validateVersionByte(extraData, bytes1(0x02));
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
+        ///@solidity memory-safe-assembly
         assembly {
             pointerToFixedDataOffset := add(extraData.offset, 1)
             pointerToVariableDataoffset := add(pointerToFixedDataOffset, 0x20)
         }
 
         decodedFixedData = _decodeBytesArray(pointerToFixedDataOffset, pointerToFixedDataOffset);
-        if (keccak256(decodedFixedData) != expectedHash) {
+        if (keccak256(decodedFixedData) != expectedFixedDatahash) {
             revert InvalidExtraData();
         }
         decodedVariableData = _decodeBytesArray(pointerToVariableDataoffset, pointerToFixedDataOffset);
@@ -52,35 +52,34 @@ library SIP6Decoder {
         return _decodeBytesArraysFromExtraData(extraData, bytes1(0x03));
     }
 
-    function decodeSubstandard4(bytes calldata extraData, bytes32 expectedHash)
+    function decodeSubstandard4(bytes calldata extraData, bytes32 expectedFixedDatahash)
         internal
         pure
         returns (bytes[] memory decodedFixedData)
     {
         decodedFixedData = _decodeBytesArraysFromExtraData(extraData, bytes1(0x04));
-        _validateFixedArrays(decodedFixedData, expectedHash);
+        _validateFixedArrays(decodedFixedData, expectedFixedDatahash);
 
         return decodedFixedData;
     }
 
-    function decodeSubstandard5(bytes calldata extraData, bytes32 expectedHash)
+    function decodeSubstandard5(bytes calldata extraData, bytes32 expectedFixedDatahash)
         internal
         pure
         returns (bytes[] memory decodedFixedData, bytes[] calldata decodedVariableData)
     {
         _validateVersionByte(extraData, bytes1(0x05));
-        uint256 tupleOffset;
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
+        ///@solidity memory-safe-assembly
         assembly {
-            tupleOffset := add(extraData.offset, 1)
-            pointerToFixedDataOffset := calldataload(tupleOffset)
-            pointerToVariableDataoffset := calldataload(add(tupleOffset, 0x20))
+            pointerToFixedDataOffset := add(extraData.offset, 1)
+            pointerToVariableDataoffset := add(pointerToFixedDataOffset, 0x20)
         }
-        decodedFixedData = _decodeBytesArrays(pointerToFixedDataOffset, tupleOffset);
-        _validateFixedArrays(decodedFixedData, expectedHash);
+        decodedFixedData = _decodeBytesArrays(pointerToFixedDataOffset, pointerToFixedDataOffset);
+        _validateFixedArrays(decodedFixedData, expectedFixedDatahash);
 
-        decodedVariableData = _decodeBytesArrays(pointerToVariableDataoffset, tupleOffset);
+        decodedVariableData = _decodeBytesArrays(pointerToVariableDataoffset, pointerToFixedDataOffset);
 
         return (decodedFixedData, decodedVariableData);
     }
@@ -97,6 +96,7 @@ library SIP6Decoder {
         pure
         returns (bytes calldata decodedData)
     {
+        ///@solidity memory-safe-assembly
         assembly {
             // the abi-encoded offset of the variable length array starts 1 byte into the calldata. add 1 to account for this.
             let decodedLengthPointer :=
@@ -117,12 +117,18 @@ library SIP6Decoder {
     {
         function(uint256,uint256) internal pure returns (bytes calldata) decodeBytesArray = _decodeBytesArray;
         function(uint256,uint256) internal pure returns (bytes[] calldata) decodeBytesArrays;
+        ///@solidity memory-safe-assembly
         assembly {
             decodeBytesArrays := decodeBytesArray
         }
         return decodeBytesArrays(pointerToOffset, relativeStart);
     }
 
+    /**
+     * @dev Validate the version byte of extraData and return the contained bytes array.
+     * @param data bytes calldata
+     * @param substandard version byte of the expected SIP6 substandard
+     */
     function _decodeBytesFromExtraData(bytes calldata data, bytes1 substandard)
         internal
         pure
@@ -130,12 +136,18 @@ library SIP6Decoder {
     {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
+        ///@solidity memory-safe-assembly
         assembly {
             pointerToOffset := add(data.offset, 1)
         }
         return _decodeBytesArray(pointerToOffset, pointerToOffset);
     }
 
+    /**
+     * @dev Validate the version byte of extraData and return the contained bytes arrays.
+     * @param data bytes calldata
+     * @param substandard version byte of the expected SIP6 substandard
+     */
     function _decodeBytesArraysFromExtraData(bytes calldata data, bytes1 substandard)
         internal
         pure
@@ -143,21 +155,34 @@ library SIP6Decoder {
     {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
+        ///@solidity memory-safe-assembly
         assembly {
             pointerToOffset := add(data.offset, 1)
         }
         return _decodeBytesArrays(pointerToOffset, pointerToOffset);
     }
 
-    function _validateFixedArrays(bytes[] memory fixedArrays, bytes32 expectedHash) internal pure {
+    function _validateFixedArrays(bytes[] memory fixedArrays, bytes32 expectedFixedDatahash) internal pure {
         bytes32[] memory hashes = new bytes32[](fixedArrays.length);
-        for (uint256 i = 0; i < fixedArrays.length;) {
-            hashes[i] = keccak256(fixedArrays[i]);
+        uint256 fixedArraysLength = fixedArrays.length;
+        for (uint256 i = 0; i < fixedArraysLength;) {
+            bytes memory fixedArray = fixedArrays[i];
+            bytes32 hash;
+            ///@solidity memory-safe-assembly
+            assembly {
+                hash := keccak256(add(fixedArray, 0x20), mload(fixedArray))
+            }
+            hashes[i] = hash;
             unchecked {
                 ++i;
             }
         }
-        if (keccak256(abi.encodePacked(hashes)) != expectedHash) {
+        bytes32 compositeHash;
+        ///@solidity memory-safe-assembly
+        assembly {
+            compositeHash := keccak256(add(hashes, 0x20), shl(5, mload(hashes)))
+        }
+        if (compositeHash != expectedFixedDatahash) {
             revert InvalidExtraData();
         }
     }
