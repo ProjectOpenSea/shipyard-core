@@ -6,21 +6,36 @@ import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
 import {SIP6Decoder} from "shipyard-core/SIP6Decoder.sol";
 
 contract SIP6DecoderTest is Test {
-    function testDecode0() public {
+    ///@dev hack to get around forge test reporting a huge number if vm.pauseGasMetering is in effect at end of a test run
+    modifier unmetered() {
+        vm.pauseGasMetering();
+        _;
+        vm.resumeGasMetering();
+    }
+
+    modifier metered() {
+        vm.resumeGasMetering();
+        _;
+        vm.pauseGasMetering();
+    }
+
+    function test_GasBaseline() public unmetered {}
+
+    function testDecode0() public unmetered {
         bytes memory variable = "hello world";
         bytes memory extraData = abi.encodePacked(uint8(0), abi.encode(variable));
         bytes memory decoded = this.decode0(extraData);
         assertEq(decoded, variable);
     }
 
-    function testDecode0_weirdOffset() public {
+    function testDecode0_weirdOffset() public unmetered {
         bytes memory extraData =
             abi.encodePacked(uint8(0), uint256(0x40), uint256(0), uint256(0x20), bytes32("hello world"));
         bytes memory decoded = this.decode0(extraData);
         assertEq(decoded, abi.encode(bytes32("hello world")));
     }
 
-    function testDecode1() public {
+    function testDecode1() public unmetered {
         bytes memory fixedData = "hello world";
         bytes32 expectedHash = keccak256(fixedData);
         bytes memory extraData = abi.encodePacked(uint8(1), abi.encode(fixedData), expectedHash);
@@ -28,7 +43,7 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded, fixedData);
     }
 
-    function testDecode2() public {
+    function testDecode2() public unmetered {
         bytes memory fixedData = "hello";
         bytes memory variableData = "world";
         bytes32 expectedHash = keccak256(fixedData);
@@ -38,7 +53,7 @@ contract SIP6DecoderTest is Test {
         assertEq(decodedVariableData, variableData);
     }
 
-    function testDecode3() public {
+    function testDecode3() public unmetered {
         bytes memory variableData1 = "hello";
         bytes memory variableData2 = "world";
         bytes[] memory variableDataArrays = new bytes[](2);
@@ -51,7 +66,7 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], variableData2);
     }
 
-    function testDecode4() public {
+    function testDecode4() public unmetered {
         bytes memory fixedData1 = "hello";
         bytes memory fixedData2 = "world";
         bytes[] memory fixedDataArrays = new bytes[](2);
@@ -69,7 +84,7 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], fixedData2);
     }
 
-    function testDecode5() public {
+    function testDecode5() public unmetered {
         bytes memory fixedData1 = "hello";
         bytes memory fixedData2 = "world";
         bytes[] memory fixedDataArrays = new bytes[](2);
@@ -96,33 +111,33 @@ contract SIP6DecoderTest is Test {
         assertEq(decodedVariable[1], variableData2);
     }
 
-    function decode0(bytes calldata extraData) external pure returns (bytes memory) {
+    function decode0(bytes calldata extraData) external metered returns (bytes memory) {
         return SIP6Decoder.decodeSubstandard0(extraData);
     }
 
-    function decode1(bytes calldata extraData, bytes32 expectedHash) external pure returns (bytes memory) {
+    function decode1(bytes calldata extraData, bytes32 expectedHash) external metered returns (bytes memory) {
         return SIP6Decoder.decodeSubstandard1(extraData, expectedHash);
     }
 
     function decode2(bytes calldata extraData, bytes32 expectedHash)
         external
-        pure
+        metered
         returns (bytes memory, bytes memory)
     {
         return SIP6Decoder.decodeSubstandard2(extraData, expectedHash);
     }
 
-    function decode3(bytes calldata extraData) external pure returns (bytes[] calldata) {
+    function decode3(bytes calldata extraData) external metered returns (bytes[] memory) {
         return SIP6Decoder.decodeSubstandard3(extraData);
     }
 
-    function decode4(bytes calldata extraData, bytes32 expectedHash) external pure returns (bytes[] memory) {
+    function decode4(bytes calldata extraData, bytes32 expectedHash) external metered returns (bytes[] memory) {
         return SIP6Decoder.decodeSubstandard4(extraData, expectedHash);
     }
 
     function decode5(bytes calldata extraData, bytes32 expectedHash)
         external
-        pure
+        metered
         returns (bytes[] memory, bytes[] memory)
     {
         return SIP6Decoder.decodeSubstandard5(extraData, expectedHash);
