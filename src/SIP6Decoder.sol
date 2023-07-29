@@ -7,19 +7,28 @@ library SIP6Decoder {
     error InvalidExtraData();
 
     /**
+     * @notice Read the SIP6 substandard version byte from the extraData field of a SIP6 bytes array.
+     * @param extraData bytes calldata
+     */
+    function getSubstandardVersion(bytes calldata extraData) internal pure returns (bytes1 substandard) {
+        return extraData[0];
+    }
+
+    /**
      * @notice Decode an SIP6-Substandard-0 extraData field. It should consist of a single byte 0x00 followed by a "variable" bytes array.
      *         No validation is performed on the variable bytes array.
-     *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x00), abi.encode(variableData))`.
+     *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x00), variableData)`.
      * @param extraData bytes calldata
      */
     function decodeSubstandard0(bytes calldata extraData) internal pure returns (bytes calldata decodedExtraData) {
-        return _decodeBytesFromExtraData(extraData, bytes1(0));
+        return _decodePackedBytesArrayFromExtraData(extraData, bytes1(0));
     }
 
     /**
      * @notice Decode an SIP6-Substandard-1 extraData field. It should consist of a single byte 0x01 followed by a "fixed" bytes array,
-     *         the keccak256 hash of which should match the expectedFixedDataHash parameter.
-     *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x01), abi.encode(fixedData))`.
+     *         the keccak256 hash of the packed bytes array (eg, `keccak256(abi.encodePacked(extraData))`) should match the
+     *         expectedFixedDataHash parameter.
+     *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x01), fixedData)`.
      * @param extraData bytes calldata
      * @param expectedFixedDataHash Expected hash of the fixed bytes array
      */
@@ -28,7 +37,7 @@ library SIP6Decoder {
         pure
         returns (bytes memory decodedExtraData)
     {
-        return _decodeBytesFromExtraDataAndValidateExpectedHash(extraData, bytes1(0x01), expectedFixedDataHash);
+        return _decodeBytesPackedFromExtraDataAndValidateExpectedHash(extraData, bytes1(0x01), expectedFixedDataHash);
     }
 
     /**
@@ -140,6 +149,18 @@ library SIP6Decoder {
         }
     }
 
+    function _decodePackedBytesArray(bytes calldata data, uint256 relativeStart)
+        internal
+        pure
+        returns (bytes calldata decoded)
+    {
+        assembly {
+            decoded.length := sub(data.length, 1)
+            decoded.offset := relativeStart
+        }
+        return decoded;
+    }
+
     /**
      * @dev Derive a bytes calldata array from SIP6 encoded extraData. Calculates the offset of the array in calldata, loads its length, and places
      *      both values onto the stack as a `bytes calldata` type.
@@ -162,16 +183,29 @@ library SIP6Decoder {
         }
     }
 
+    function _decodePackedBytesArrayFromExtraData(bytes calldata data, bytes1 expectedVersion)
+        internal
+        pure
+        returns (bytes calldata decoded)
+    {
+        _validateVersionByte(data, expectedVersion);
+        uint256 pointerToOffset;
+        assembly {
+            pointerToOffset := add(data.offset, 1)
+        }
+        return _decodePackedBytesArray(data, pointerToOffset);
+    }
+
     /**
      * @dev Derive a bytes calldata array from SIP6 encoded extraData and validate that its keccak256 hash matches the expected hash.
      */
     function _decodeBytesArrayAndValidateExpectedHash(
         uint256 pointerToOffset,
         uint256 relativeStart,
-        bytes32 ExpectedHash
+        bytes32 expectedHash
     ) internal pure returns (bytes memory decodedData) {
         decodedData = _decodeBytesArray(pointerToOffset, relativeStart);
-        if (keccak256(decodedData) != ExpectedHash) {
+        if (keccak256(decodedData) != expectedHash) {
             revert InvalidExtraData();
         }
     }
@@ -213,16 +247,28 @@ library SIP6Decoder {
         return _decodeBytesArray(pointerToOffset, pointerToOffset);
     }
 
+    function _decodeBytesPackedFromExtraDataAndValidateExpectedHash(
+        bytes calldata data,
+        bytes1 substandard,
+        bytes32 expectedHash
+    ) internal pure returns (bytes memory decodedData) {
+        decodedData = _decodePackedBytesArrayFromExtraData(data, substandard);
+        if (keccak256(decodedData) != expectedHash) {
+            revert InvalidExtraData();
+        }
+        return decodedData;
+    }
+
     /**
      * @dev Validate the version byte of extraData and return the contained bytes array.
      * @param data bytes calldata
      * @param substandard Expected SIP6 substandard version byte
-     * @param ExpectedHash Expected hash of the bytes array
+     * @param expectedHash Expected hash of the bytes array
      */
     function _decodeBytesFromExtraDataAndValidateExpectedHash(
         bytes calldata data,
         bytes1 substandard,
-        bytes32 ExpectedHash
+        bytes32 expectedHash
     ) internal pure returns (bytes memory decodedData) {
         _validateVersionByte(data, substandard);
         uint256 pointerToOffset;
@@ -231,7 +277,7 @@ library SIP6Decoder {
             pointerToOffset := add(data.offset, 1)
         }
         // copy bytes to memory since they must be hashed
-        decodedData = _decodeBytesArrayAndValidateExpectedHash(pointerToOffset, pointerToOffset, ExpectedHash);
+        decodedData = _decodeBytesArrayAndValidateExpectedHash(pointerToOffset, pointerToOffset, expectedHash);
         return decodedData;
     }
 

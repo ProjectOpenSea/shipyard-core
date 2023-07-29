@@ -23,22 +23,15 @@ contract SIP6DecoderTest is Test {
 
     function testDecode0() public unmetered {
         bytes memory variable = "hello world";
-        bytes memory extraData = abi.encodePacked(uint8(0), abi.encode(variable));
+        bytes memory extraData = abi.encodePacked(uint8(0), variable);
         bytes memory decoded = this.decode0(extraData);
         assertEq(decoded, variable);
     }
 
-    function testDecode0_weirdOffset() public unmetered {
-        bytes memory extraData =
-            abi.encodePacked(uint8(0), uint256(0x40), uint256(0), uint256(0x20), bytes32("hello world"));
-        bytes memory decoded = this.decode0(extraData);
-        assertEq(decoded, abi.encode(bytes32("hello world")));
-    }
-
     function testDecode1() public unmetered {
         bytes memory fixedData = "hello world";
-        bytes32 expectedHash = keccak256(fixedData);
-        bytes memory extraData = abi.encodePacked(uint8(1), abi.encode(fixedData), expectedHash);
+        bytes32 expectedHash = keccak256(abi.encodePacked(fixedData));
+        bytes memory extraData = abi.encodePacked(uint8(1), fixedData);
         bytes memory decoded = this.decode1(extraData, expectedHash);
         assertEq(decoded, fixedData);
     }
