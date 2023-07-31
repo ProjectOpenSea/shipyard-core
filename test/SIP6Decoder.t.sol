@@ -59,6 +59,19 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], variableData2);
     }
 
+    function testDecode3_emptyArray() public unmetered {
+        bytes memory variableData1 = "";
+        bytes memory variableData2 = "";
+        bytes[] memory variableDataArrays = new bytes[](2);
+        variableDataArrays[0] = variableData1;
+        variableDataArrays[1] = variableData2;
+        bytes memory extraData = abi.encodePacked(uint8(3), abi.encode(variableDataArrays));
+        bytes[] memory decoded = this.decode3(extraData);
+        assertEq(decoded.length, 2);
+        assertEq(decoded[0], variableData1);
+        assertEq(decoded[1], variableData2);
+    }
+
     function testDecode4() public unmetered {
         bytes memory fixedData1 = "hello";
         bytes memory fixedData2 = "world";
@@ -72,6 +85,7 @@ contract SIP6DecoderTest is Test {
 
         bytes memory extraData = abi.encodePacked(uint8(4), abi.encode(fixedDataArrays));
         bytes[] memory decoded = this.decode4(extraData, expectedHash);
+        vm.breakpoint("a");
         assertEq(decoded.length, 2);
         assertEq(decoded[0], fixedData1);
         assertEq(decoded[1], fixedData2);

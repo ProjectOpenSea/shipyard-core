@@ -4,6 +4,11 @@ pragma solidity ^0.8.17;
 import {ISIP6} from "./interfaces/sips/ISIP6.sol";
 
 library SIP6Decoder {
+    // bytes4(keccak256("InvalidExtraDataEncoding(uint8)")
+    uint256 constant INVALID_EXTRA_DATA_ENCODING_SELECTOR = 0xdefb1057;
+    uint256 constant SELECTOR_MEMORY_OFFSET = 0x1c;
+    uint256 constant _32_BIT_MASK = 0xffffffff;
+
     error InvalidExtraData();
 
     /**
@@ -149,14 +154,14 @@ library SIP6Decoder {
         }
     }
 
-    function _decodePackedBytesArray(bytes calldata data, uint256 relativeStart)
+    function _decodePackedBytesArray(bytes calldata data, uint256 absoluteStart)
         internal
         pure
         returns (bytes calldata decoded)
     {
         assembly {
             decoded.length := sub(data.length, 1)
-            decoded.offset := relativeStart
+            decoded.offset := absoluteStart
         }
         return decoded;
     }
@@ -165,7 +170,7 @@ library SIP6Decoder {
      * @dev Derive a bytes calldata array from SIP6 encoded extraData. Calculates the offset of the array in calldata, loads its length, and places
      *      both values onto the stack as a `bytes calldata` type.
      */
-    function _decodeBytesArray(uint256 pointerToOffset, uint256 relativeStart)
+    function _decodeBytesArray(uint256 pointerToRelativeOffset, uint256 absoluteStart)
         internal
         pure
         returns (bytes calldata decodedData)
@@ -173,12 +178,15 @@ library SIP6Decoder {
         assembly {
             // the abi-encoded offset of the variable length array starts 1 byte into the calldata. add 1 to account for this.
             let decodedLengthPointer :=
-                add(
-                    // the offset stored here is relative, not absolute, so add the offset of the offset itself
-                    calldataload(pointerToOffset),
-                    relativeStart
+                and(
+                    add(
+                        // the offset stored here is relative, not absolute, so add the offset of the offset itself
+                        calldataload(pointerToRelativeOffset),
+                        absoluteStart
+                    ),
+                    _32_BIT_MASK
                 )
-            decodedData.length := calldataload(decodedLengthPointer)
+            decodedData.length := and(calldataload(decodedLengthPointer), _32_BIT_MASK)
             decodedData.offset := add(decodedLengthPointer, 0x20)
         }
     }
@@ -189,22 +197,22 @@ library SIP6Decoder {
         returns (bytes calldata decoded)
     {
         _validateVersionByte(data, expectedVersion);
-        uint256 pointerToOffset;
+        uint256 pointerToRelativeOffset;
         assembly {
-            pointerToOffset := add(data.offset, 1)
+            pointerToRelativeOffset := add(data.offset, 1)
         }
-        return _decodePackedBytesArray(data, pointerToOffset);
+        return _decodePackedBytesArray(data, pointerToRelativeOffset);
     }
 
     /**
      * @dev Derive a bytes calldata array from SIP6 encoded extraData and validate that its keccak256 hash matches the expected hash.
      */
     function _decodeBytesArrayAndValidateExpectedHash(
-        uint256 pointerToOffset,
-        uint256 relativeStart,
+        uint256 pointerToRelativeOffset,
+        uint256 absoluteStart,
         bytes32 expectedHash
     ) internal pure returns (bytes memory decodedData) {
-        decodedData = _decodeBytesArray(pointerToOffset, relativeStart);
+        decodedData = _decodeBytesArray(pointerToRelativeOffset, absoluteStart);
         if (keccak256(decodedData) != expectedHash) {
             revert InvalidExtraData();
         }
@@ -214,7 +222,7 @@ library SIP6Decoder {
      * @dev Derive an calldata array of  bytes arrays from SIP6 encoded extraData. Calculates the offset of the array in calldata, loads its length, and places
      *      both values onto the stack as a `bytes[] calldata` type. Re-uses `_decodeBytesArray` by casting the return value to `bytes[] calldata`.
      */
-    function _decodeBytesArrays(uint256 pointerToOffset, uint256 relativeStart)
+    function _decodeBytesArrays(uint256 pointerToRelativeOffset, uint256 absoluteStart)
         internal
         pure
         returns (bytes[] calldata decodedData)
@@ -225,7 +233,7 @@ library SIP6Decoder {
         assembly {
             decodeBytesArrays := decodeBytesArray
         }
-        return decodeBytesArrays(pointerToOffset, relativeStart);
+        return decodeBytesArrays(pointerToRelativeOffset, absoluteStart);
     }
 
     /**
@@ -239,12 +247,14 @@ library SIP6Decoder {
         returns (bytes calldata decodedData)
     {
         _validateVersionByte(data, substandard);
-        uint256 pointerToOffset;
+        uint256 pointerToRelativeOffset;
 
         assembly {
-            pointerToOffset := add(data.offset, 1)
+            pointerToRelativeOffset := add(data.offset, 1)
         }
-        return _decodeBytesArray(pointerToOffset, pointerToOffset);
+        decodedData = _decodeBytesArray(pointerToRelativeOffset, pointerToRelativeOffset);
+        validateBytes(data, decodedData, substandard);
+        return decodedData;
     }
 
     function _decodeBytesPackedFromExtraDataAndValidateExpectedHash(
@@ -271,13 +281,14 @@ library SIP6Decoder {
         bytes32 expectedHash
     ) internal pure returns (bytes memory decodedData) {
         _validateVersionByte(data, substandard);
-        uint256 pointerToOffset;
+        uint256 pointerToRelativeOffset;
 
         assembly {
-            pointerToOffset := add(data.offset, 1)
+            pointerToRelativeOffset := add(data.offset, 1)
         }
         // copy bytes to memory since they must be hashed
-        decodedData = _decodeBytesArrayAndValidateExpectedHash(pointerToOffset, pointerToOffset, expectedHash);
+        decodedData =
+            _decodeBytesArrayAndValidateExpectedHash(pointerToRelativeOffset, pointerToRelativeOffset, expectedHash);
         return decodedData;
     }
 
@@ -292,12 +303,14 @@ library SIP6Decoder {
         returns (bytes[] calldata decodedData)
     {
         _validateVersionByte(data, substandard);
-        uint256 pointerToOffset;
+        uint256 pointerToRelativeOffset;
 
         assembly {
-            pointerToOffset := add(data.offset, 1)
+            pointerToRelativeOffset := add(data.offset, 1)
         }
-        return _decodeBytesArrays(pointerToOffset, pointerToOffset);
+        decodedData = _decodeBytesArrays(pointerToRelativeOffset, pointerToRelativeOffset);
+        validateArrays(data, decodedData, substandard);
+        return decodedData;
     }
 
     /**
@@ -320,6 +333,102 @@ library SIP6Decoder {
         }
         if (compositeHash != expectedFixedDataHash) {
             revert InvalidExtraData();
+        }
+    }
+
+    function validateBytes(bytes calldata extraData, bytes calldata decoded, bytes1 substandard) internal pure {
+        uint256 extraDataStartOffset;
+        uint256 arrayAbsoluteOffset;
+        assembly {
+            extraDataStartOffset := extraData.offset
+            arrayAbsoluteOffset := decoded.offset
+        }
+        validateCalldataArray(extraDataStartOffset, extraData.length, arrayAbsoluteOffset, decoded.length, substandard);
+    }
+
+    function validateArrays(bytes calldata extraData, bytes[] calldata decoded, bytes1 substandard) internal pure {
+        uint256 extraDataStartOffset;
+        uint256 arrayAbsoluteOffset;
+        assembly {
+            extraDataStartOffset := extraData.offset
+            arrayAbsoluteOffset := decoded.offset
+        }
+        validateCalldataArray({
+            extraDataOffset: extraDataStartOffset,
+            extraDataLength: extraData.length,
+            arrayAbsoluteOffset: arrayAbsoluteOffset,
+            arrayLengthInBytes: decoded.length << 5,
+            substandard: substandard
+        });
+        for (uint256 i = 0; i < decoded.length;) {
+            uint256 subArrayOffset;
+            uint256 subArrayLength;
+            assembly {
+                let subArrayOffsetPointer
+                // add decoded.offset absolute offset to the relative offset of the array
+                :=
+                    add(
+                        // mask offset to avoid bad data
+                        and(
+                            // load relative offset from its position in the array
+                            calldataload(
+                                // add 32i to the start of the array
+                                add(
+                                    decoded.offset,
+                                    // shl(5,x) == mul(0x20,x)
+                                    shl(5, i)
+                                )
+                            ),
+                            _32_BIT_MASK
+                        ),
+                        decoded.offset
+                    )
+                subArrayLength
+                // mask to avoid bad data
+                :=
+                    and(
+                        // load length from absolute offset of array
+                        calldataload(subArrayOffsetPointer),
+                        _32_BIT_MASK
+                    )
+                // add 20 to get the start of data offset
+                subArrayOffset := add(subArrayOffsetPointer, 0x20)
+            }
+
+            validateCalldataArray({
+                extraDataOffset: extraDataStartOffset,
+                extraDataLength: extraData.length,
+                arrayAbsoluteOffset: subArrayOffset,
+                arrayLengthInBytes: subArrayLength,
+                substandard: substandard
+            });
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function validateCalldataArray(
+        uint256 extraDataOffset,
+        uint256 extraDataLength,
+        uint256 arrayAbsoluteOffset,
+        uint256 arrayLengthInBytes,
+        bytes1 substandard
+    ) internal pure {
+        assembly {
+            // TODO: how does this work with pointers to 0-length arrays?
+            // check that the length of the array plus its offset is less than the length of the extraData plus its offset,
+            // i.e., that no part of the array extends past the end of the extraData
+            let errBuff := gt(add(arrayLengthInBytes, arrayAbsoluteOffset), add(extraDataLength, extraDataOffset))
+            // check that the array offset is greater than the extraData offset, i.e., that no part of the array is before the start of the extraData
+            errBuff := or(errBuff, iszero(gt(arrayAbsoluteOffset, extraDataOffset)))
+            //
+            if errBuff {
+                mstore(0, INVALID_EXTRA_DATA_ENCODING_SELECTOR)
+                // since bytes1 are left-aligned, add 0x1f to where we actually want to write it so that the topmost bit is right-aligned
+                mstore(0x3f, substandard)
+                revert(SELECTOR_MEMORY_OFFSET, 0x24)
+            }
         }
     }
 }
