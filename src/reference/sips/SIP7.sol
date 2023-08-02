@@ -1,37 +1,56 @@
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.17;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-// import {ISIP5, Schema} from "shipyard-core/interfaces/sips/ISIP5.sol";
-// import {ISIP7} from "shipyard-core/interfaces/sips/ISIP7.sol";
+import {SIP5, Schema, ISIP5} from "shipyard-core/reference/sips/SIP5.sol";
+import {ISIP7} from "shipyard-core/interfaces/sips/ISIP7.sol";
 
-// abstract contract SIP7 is ISIP7 {
-//     bytes32 immutable domainSeparator;
-//     string apiEndpoint;
-//     uint256[] substandards;
-//     string constant documentationURI = "hi";
+abstract contract SIP7 is SIP5, ISIP7 {
+    bytes32 immutable domainSeparator;
 
-//     function sip7Information()
-//         public
-//         view
-//         returns (
-//             bytes32 _domainSeparator,
-//             string memory _apiEndpoint,
-//             uint256[] memory _substandards,
-//             string memory _documentationURI
-//         )
-//     {
-//         return (domainSeparator, apiEndpoint, substandards, documentationURI);
-//     }
+    constructor() {
+        emit SeaportCompatibleContractDeployed();
+        domainSeparator = _deriveDomainSeparator();
+    }
 
-//     function getSeaportMetadata() external view returns (string memory _name, Schema[] memory schemas) {
-//         bytes memory empty;
-//         schemas = new Schema[](2);
-//         schemas[0] = Schema(5, empty);
-//         schemas[1] = Schema(7, abi.encode(domainSeparator, apiEndpoint, substandards, documentationURI));
-//         return (name(), schemas);
-//     }
+    /**
+     * @inheritdoc ISIP7
+     */
+    function sip7Information()
+        public
+        view
+        returns (
+            bytes32 domainSeparator_,
+            string memory apiEndpoint,
+            uint256[] memory substandards,
+            string memory documentationURI
+        )
+    {
+        return (_domainSeparator(), _apiEndpoint(), _substandards(), _documentationURI());
+    }
 
-//     function name() public pure returns (string memory) {
-//         return "SIP-7";
-//     }
-// }
+    function getSeaportMetadata()
+        external
+        view
+        virtual
+        override(SIP5, ISIP5)
+        returns (string memory _name, Schema[] memory schemas)
+    {
+        schemas = new Schema[](2);
+        schemas[0] = _sip5Schema();
+        schemas[1] = _sip7Schema();
+        return (name(), schemas);
+    }
+
+    function _sip7Schema() internal view returns (Schema memory) {
+        return Schema(7, abi.encode(_domainSeparator(), _apiEndpoint(), _substandards(), _documentationURI()));
+    }
+
+    function _deriveDomainSeparator() internal view virtual returns (bytes32);
+
+    function _domainSeparator() internal view virtual returns (bytes32);
+
+    function _documentationURI() internal view virtual returns (string memory);
+
+    function _apiEndpoint() internal view virtual returns (string memory);
+    function _substandards() internal view virtual returns (uint256[] memory);
+}

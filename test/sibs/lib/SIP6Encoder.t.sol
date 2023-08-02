@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
-import {SIP6Encoder} from "shipyard-core/SIP6Encoder.sol";
+import {SIP6Encoder} from "shipyard-core/sips/lib/SIP6Encoder.sol";
 
 contract SIP6EncoderTest is Test {
     ///@dev hack to get around forge test reporting a huge number if vm.pauseGasMetering is in effect at end of a test run

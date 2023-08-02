@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ISIP6} from "./interfaces/sips/ISIP6.sol";
+import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
 
 library SIP6Decoder {
     // bytes4(keccak256("InvalidExtraDataEncoding(uint8)")
