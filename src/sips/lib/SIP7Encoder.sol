@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ConsiderationItem} from "seaport-types/lib/ConsiderationStructs.sol";
+import {ReceivedItem} from "seaport-types/lib/ConsiderationStructs.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
 
 library SIP7Encoder {
@@ -19,18 +19,16 @@ library SIP7Encoder {
      *         is present on an order
      * @param itemType The Seaport ItemType of the required tip
      * @param token The address of the token to be tipped
-     * @param startAmount The start amount of the tip
-     * @param endAmount The end amount of the tip
+     * @param identifier The identifier of the tip
+     * @param amount The amount of the tip
      * @param recipient The address of the recipient of the tip
      */
-    function encodeSubstandard1(
-        ItemType itemType,
-        address token,
-        uint256 startAmount,
-        uint256 endAmount,
-        address recipient
-    ) internal pure returns (bytes memory) {
-        return abi.encodePacked(uint8(1), itemType, token, startAmount, endAmount, recipient);
+    function encodeSubstandard1(ItemType itemType, address token, uint256 identifier, uint256 amount, address recipient)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return abi.encodePacked(uint8(1), abi.encode(itemType, token, identifier, amount, recipient));
     }
 
     /**
@@ -38,8 +36,8 @@ library SIP7Encoder {
      *         considerationItem is present on an order
      * @param item The considerationItem to encode
      */
-    function encodeSubstandard1(ConsiderationItem memory item) internal pure returns (bytes memory) {
-        return encodeSubstandard1(item.itemType, item.token, item.startAmount, item.endAmount, item.recipient);
+    function encodeSubstandard1(ReceivedItem memory item) internal pure returns (bytes memory) {
+        return encodeSubstandard1(item.itemType, item.token, item.identifier, item.amount, item.recipient);
     }
 
     /**
