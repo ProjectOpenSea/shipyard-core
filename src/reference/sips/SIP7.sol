@@ -8,7 +8,6 @@ abstract contract SIP7 is SIP5, ISIP7 {
     bytes32 immutable domainSeparator;
 
     constructor() {
-        emit SeaportCompatibleContractDeployed();
         domainSeparator = _deriveDomainSeparator();
     }
 
@@ -16,8 +15,9 @@ abstract contract SIP7 is SIP5, ISIP7 {
      * @inheritdoc ISIP7
      */
     function sip7Information()
-        public
+        external
         view
+        virtual
         returns (
             bytes32 domainSeparator_,
             string memory apiEndpoint,

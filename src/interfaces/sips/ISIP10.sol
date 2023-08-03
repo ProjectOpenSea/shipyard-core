@@ -2,7 +2,8 @@
 pragma solidity ^0.8.17;
 
 import {ContractOffererInterface} from "seaport-types/interfaces/ContractOffererInterface.sol";
-import {ISIP5, IERC165, Schema} from "./ISIP5.sol";
+import {ISIP5, Schema} from "./ISIP5.sol";
+import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
 interface ISIP10 is ISIP5, ContractOffererInterface {
     function documentationURI() external view returns (string memory);
