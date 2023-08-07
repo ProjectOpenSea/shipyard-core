@@ -2,6 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
+import {BaseSIPDecoder} from "./BaseSIPDecoder.sol";
 
 library SIP6Decoder {
     // bytes4(keccak256("InvalidExtraDataEncoding(uint8)")
@@ -15,8 +16,8 @@ library SIP6Decoder {
      * @notice Read the SIP6 substandard version byte from the extraData field of a SIP6 bytes array.
      * @param extraData bytes calldata
      */
-    function getSubstandardVersion(bytes calldata extraData) internal pure returns (bytes1 substandard) {
-        return extraData[0];
+    function decodeSubstandardVersion(bytes calldata extraData) internal pure returns (bytes1 substandard) {
+        return BaseSIPDecoder.decodeSubstandardVersion(extraData);
     }
 
     /**

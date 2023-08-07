@@ -2,11 +2,11 @@
 pragma solidity ^0.8.17;
 
 library BaseSIPDecoder {
-    function getSubstandardVersion(bytes calldata extraData) internal pure returns (bytes1 versionByte) {
-        return getSubstandardVersion(extraData, 0);
+    function decodeSubstandardVersion(bytes calldata extraData) internal pure returns (bytes1 versionByte) {
+        return decodeSubstandardVersion(extraData, 0);
     }
 
-    function getSubstandardVersion(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
+    function decodeSubstandardVersion(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
         internal
         pure
         returns (bytes1 versionByte)
@@ -18,25 +18,39 @@ library BaseSIPDecoder {
         }
     }
 
-    function decodeUint(bytes calldata extraData) internal pure returns (uint256 tokenId) {
+    function decodeUint(bytes calldata extraData) internal pure returns (uint256 val) {
         return decodeUint(extraData, 1);
     }
 
     function decodeUint(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
         internal
         pure
-        returns (uint256 tokenId)
+        returns (uint256 val)
     {
         assembly {
-            tokenId := calldataload(add(extradata.offset, sipDataStartRelativeOffset))
+            val := calldataload(add(extraData.offset, sipDataStartRelativeOffset))
         }
     }
 
-    function decodeUintArray(bytes calldata extraData) internal pure returns (uint256[] memory) {
+    function decodeBytes32(bytes calldata extraData) internal pure returns (bytes32 val) {
+        return decodeBytes32(extraData, 1);
+    }
+
+    function decodeBytes32(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
+        internal
+        pure
+        returns (bytes32 val)
+    {
+        assembly {
+            val := calldataload(add(extraData.offset, sipDataStartRelativeOffset))
+        }
+    }
+
+    function decodeUintArray(bytes calldata extraData) internal pure returns (uint256[] calldata) {
         return decodeUintArray(extraData, 1);
     }
 
-    function decodeSubstandard2(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
+    function decodeUintArray(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
         internal
         pure
         returns (uint256[] calldata tokenIds)
@@ -49,7 +63,24 @@ library BaseSIPDecoder {
         }
     }
 
-    function decodeBytes(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
+    function decodeBytes32Array(bytes calldata extraData) internal pure returns (bytes32[] calldata) {
+        return decodeBytes32Array(extraData, 1);
+    }
+
+    function decodeBytes32Array(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
+        internal
+        pure
+        returns (bytes32[] calldata tokenIds)
+    {
+        assembly {
+            let idsRelativeOffsetPointer := add(extraData.offset, sipDataStartRelativeOffset)
+            let idsAbsolutePointer := add(calldataload(idsRelativeOffsetPointer), idsRelativeOffsetPointer)
+            tokenIds.length := calldataload(idsAbsolutePointer)
+            tokenIds.offset := add(idsAbsolutePointer, 0x20)
+        }
+    }
+
+    function decodePackedBytes(bytes calldata extraData, uint256 sipDataStartRelativeOffset)
         internal
         pure
         returns (bytes calldata data)
@@ -61,8 +92,8 @@ library BaseSIPDecoder {
         return data;
     }
 
-    function decodeBytes(bytes calldata extraData) internal pure returns (bytes calldata data) {
-        return decodeBytes(extraData, 1);
+    function decodePackedBytes(bytes calldata extraData) internal pure returns (bytes calldata data) {
+        return decodePackedBytes(extraData, 1);
     }
 
     function decodeUintAndBytes(bytes calldata extraData)
@@ -106,6 +137,6 @@ library BaseSIPDecoder {
         pure
         returns (uint256[] calldata tokenIds, bytes calldata data)
     {
-        return decodeSubstandard8(extraData, 1);
+        return decodeUintArrayAndBytes(extraData, 1);
     }
 }
