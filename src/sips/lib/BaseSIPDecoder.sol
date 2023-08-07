@@ -124,11 +124,14 @@ library BaseSIPDecoder {
     {
         assembly {
             let tokenIdsOffsetPointer := add(extraData.offset, sipDataStartRelativeOffset)
+            // load relative location and add the absolute offset pointer
             let tokenIdsLengthAbsoluteOffset := add(calldataload(tokenIdsOffsetPointer), tokenIdsOffsetPointer)
             tokenIds.length := calldataload(tokenIdsLengthAbsoluteOffset)
             tokenIds.offset := add(tokenIdsLengthAbsoluteOffset, 0x20)
-            data.offset := add(tokenIdsLengthAbsoluteOffset, add(tokenIds.offset, shl(5, tokenIds.length)))
-            data.length := sub(extraData.length, data.offset)
+            // data starts after the end of tokenIds, which is 32*length bytes from start of tokenIds offset
+            data.offset := add(tokenIds.offset, shl(5, tokenIds.length))
+            // calculate the end of extraData and subtract data offset to get start
+            data.length := sub(add(extraData.offset, extraData.length), data.offset)
         }
     }
 

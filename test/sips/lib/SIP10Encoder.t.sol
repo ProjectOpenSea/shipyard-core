@@ -3,11 +3,8 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {SIP10Encoder} from "shipyard-core/sips/lib/SIP10Encoder.sol";
-import {LibPRNG} from "solady/utils/LibPRNG.sol";
 
 contract SIP10EncoderTest is Test {
-    using LibPRNG for LibPRNG.PRNG;
-
     function testEncodeSubstandard1() public {
         bytes memory encoded = SIP10Encoder.encodeSubstandard1();
         assertEq(encoded.length, 1, "incorrect length");
@@ -67,17 +64,6 @@ contract SIP10EncoderTest is Test {
         assertUintPackedBytes(encoded, 0x08, num, data);
     }
 
-    function assertUintPackedBytes(bytes memory encoded, bytes1 version, uint256 num, bytes memory data) internal {
-        bytes memory sliced = this.slice(encoded, 0, 0x21);
-        assertUint(sliced, version, num);
-        if (data.length == 0) {
-            sliced = "";
-        } else {
-            sliced = this.slice(encoded, 0x21);
-        }
-        assertEq(data, sliced, "incorrect data");
-    }
-
     function testEncodeSubstandard9(uint256[] memory numbers, bytes memory data) public {
         bytes memory encoded = SIP10Encoder.encodeSubstandard9(numbers, data);
         uint256 end = numbers.length * 32 + 0x41;
@@ -127,6 +113,17 @@ contract SIP10EncoderTest is Test {
         assertEq(encoded[0], version);
         bytes memory sliced = this.slice(encoded, 1, encoded.length);
         assertEq(sliced, abi.encodePacked(data));
+    }
+
+    function assertUintPackedBytes(bytes memory encoded, bytes1 version, uint256 num, bytes memory data) internal {
+        bytes memory sliced = this.slice(encoded, 0, 0x21);
+        assertUint(sliced, version, num);
+        if (data.length == 0) {
+            sliced = "";
+        } else {
+            sliced = this.slice(encoded, 0x21);
+        }
+        assertEq(data, sliced, "incorrect data");
     }
 
     function slice(bytes calldata data, uint256 start) external pure returns (bytes memory) {
