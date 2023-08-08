@@ -56,15 +56,6 @@ contract SIP10DecoderTest is Test {
         assertEq(data, decodedData, "error decoding packed bytes");
     }
 
-    function testDecode9Empty() public {
-        bytes memory data;
-        uint256[] memory nums;
-        bytes memory encoded = SIP10Encoder.encodeSubstandard9(nums, data);
-        (uint256[] memory decodedNums, bytes memory decodedData) = this.decode9(encoded);
-        assertEq(keccak256(abi.encode(nums)), keccak256(abi.encode(decodedNums)), "error decoding uint[]");
-        assertEq(data, decodedData, "error decoding packed bytes");
-    }
-
     function testDecode10(bytes memory data) public {
         bytes memory encoded = SIP10Encoder.encodeSubstandard10(data);
         bytes memory decoded = this.decode10(encoded);
@@ -81,6 +72,87 @@ contract SIP10DecoderTest is Test {
     function testDecode12(bytes memory data) public {
         bytes memory encoded = SIP10Encoder.encodeSubstandard12(data);
         bytes memory decoded = this.decode12(encoded);
+        assertEq(data, decoded, "error decoding bytes");
+    }
+
+    function testDecodeSubstandardVersion(bytes memory pad, uint8 version, bytes memory data) public {
+        bytes memory encoded = abi.encodePacked(pad, version, data);
+        bytes1 expected = version == 0 ? bytes1(0x01) : bytes1(version);
+        assertEq(expected, this.decodeVersion(encoded, pad.length), "wrong version decoded");
+    }
+
+    function testDecode2_(bytes memory pad, uint256 num) public {
+        bytes memory data = abi.encodePacked(pad, SIP10Encoder.encodeSubstandard2(num));
+        uint256 decoded = this.decode2(data, pad.length + 1);
+        assertEq(decoded, num, "error decoding uint256");
+    }
+
+    function testDecode3(bytes memory pad, uint256[] memory num) public {
+        bytes memory data = SIP10Encoder.encodeSubstandard3(num);
+        data = abi.encodePacked(pad, data);
+        uint256[] memory decoded = this.decode3(data, pad.length + 1);
+        assertEq(keccak256(abi.encode(decoded)), keccak256(abi.encode(num)), "error decoding uint256[]");
+    }
+
+    function testDecode5(bytes memory pad, uint256 num) public {
+        bytes memory data = SIP10Encoder.encodeSubstandard5(num);
+        data = abi.encodePacked(pad, data);
+        uint256 decoded = this.decode5(data, pad.length + 1);
+        assertEq(decoded, num, "error decoding uint256");
+    }
+
+    function testDecode6(bytes memory pad, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard6(data);
+        encoded = abi.encodePacked(pad, encoded);
+        bytes memory decoded = this.decode6(encoded, pad.length + 1);
+        assertEq(data, decoded, "error decoding bytes");
+    }
+
+    function testDecode7(bytes memory pad, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard7(data);
+        encoded = abi.encodePacked(pad, encoded);
+        bytes memory decoded = this.decode7(encoded, pad.length + 1);
+        assertEq(data, decoded, "error decoding bytes");
+    }
+
+    function testDecode8(bytes memory pad, uint256 num, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard8(num, data);
+        encoded = abi.encodePacked(pad, encoded);
+        (uint256 decodedNum, bytes memory decodedData) = this.decode8(encoded, pad.length + 1);
+        assertEq(num, decodedNum, "error decoding uint");
+        assertEq(data, decodedData, "error decoding packed bytes");
+    }
+
+    function testDecode9(bytes memory pad, uint256[] memory nums, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard9(nums, data);
+        encoded = abi.encodePacked(pad, encoded);
+        (uint256[] memory decodedNums, bytes memory decodedData) = this.decode9(encoded, pad.length + 1);
+        assertEq(keccak256(abi.encode(nums)), keccak256(abi.encode(decodedNums)), "error decoding uint[]");
+        assertEq(data, decodedData, "error decoding packed bytes");
+    }
+
+    function testDecode10(bytes memory pad, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard10(data);
+        encoded = abi.encodePacked(pad, encoded);
+
+        bytes memory decoded = this.decode10(encoded, pad.length + 1);
+        assertEq(data, decoded);
+    }
+
+    function testDecode11(bytes memory pad, uint256 num, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard11(num, data);
+        encoded = abi.encodePacked(pad, encoded);
+
+        (uint256 decodedNum, bytes memory decodedData) = this.decode11(encoded, pad.length + 1);
+        assertEq(num, decodedNum, "error decoding uint");
+        assertEq(data, decodedData, "error decoding packed bytes");
+    }
+
+    function testDecode12(bytes memory pad, bytes memory data) public {
+        bytes memory encoded = SIP10Encoder.encodeSubstandard12(data);
+        encoded = abi.encodePacked(pad, encoded);
+
+        bytes memory decoded = this.decode12(encoded, pad.length + 1);
         assertEq(data, decoded, "error decoding bytes");
     }
 
