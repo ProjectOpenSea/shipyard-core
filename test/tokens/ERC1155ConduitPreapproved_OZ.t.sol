@@ -4,12 +4,19 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {ERC1155_OZ} from "shipyard-core/reference/tokens/erc1155/ERC1155Preapproved_OZ.sol";
 import {CONDUIT} from "shipyard-core/lib/Constants.sol";
+import {IERC0001} from "shipyard-core/interfaces/IERC0001.sol";
 
-contract ERC1155ConduitPreapproved_OZTest is Test {
+contract ERC1155ConduitPreapproved_OZTest is Test, IERC0001 {
     ERC1155_OZ test;
 
     function setUp() public {
         test = new ERC1155_OZ();
+    }
+
+    function testConstructorEvent() public {
+        vm.expectEmit(true, true, false, false);
+        emit PreapprovalForAll(CONDUIT, true);
+        new ERC1155_OZ();
     }
 
     function testConduitPreapproved(address acct) public {
