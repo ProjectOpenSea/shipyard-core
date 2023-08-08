@@ -7,6 +7,14 @@ import {SIP7Encoder} from "shipyard-core/sips/lib/SIP7Encoder.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
 
 contract SIP7DecoderTest is Test {
+    struct ReceivedItemRaw {
+        uint8 itemType;
+        address token;
+        uint256 identifier;
+        uint256 amount;
+        address recipient;
+    }
+
     function testDecodeSubstandard1(uint256 num) public {
         bytes memory encoded = SIP7Encoder.encodeSubstandard1(num);
         uint256 result = this.decode1(encoded);
@@ -53,24 +61,18 @@ contract SIP7DecoderTest is Test {
         assertEq(result, num);
     }
 
-    function testDecodeSubstandard2(
-        bytes memory pad,
-        uint8 itemType_,
-        address _token,
-        uint256 _identifier,
-        uint256 _amount,
-        address _recipient
-    ) public {
-        ItemType _itemType = ItemType(uint8(bound(itemType_, 0, 5)));
-        bytes memory encoded = SIP7Encoder.encodeSubstandard2(_itemType, _token, _identifier, _amount, _recipient);
+    function testDecodeSubstandard2(bytes memory pad, ReceivedItemRaw memory item) public {
+        ItemType _itemType = ItemType(uint8(bound(item.itemType, 0, 5)));
+        bytes memory encoded =
+            SIP7Encoder.encodeSubstandard2(_itemType, item.token, item.identifier, item.amount, item.recipient);
         encoded = abi.encodePacked(pad, encoded);
         (ItemType itemType, address token, uint256 identifier, uint256 amount, address recipient) =
             this.decode2(encoded, pad.length + 1);
         assertEq(uint256(itemType), uint8(_itemType), "incorrect itemType");
-        assertEq(token, _token, "incorrect token");
-        assertEq(identifier, _identifier, "incorrect identifier");
-        assertEq(amount, _amount, "incorrect amount");
-        assertEq(recipient, _recipient, "incorrect recipient");
+        assertEq(token, item.token, "incorrect token");
+        assertEq(identifier, item.identifier, "incorrect identifier");
+        assertEq(amount, item.amount, "incorrect amount");
+        assertEq(recipient, item.recipient, "incorrect recipient");
     }
 
     function testDecodeSubstandard3(bytes memory pad, bytes32 num) public {

@@ -39,7 +39,7 @@ abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IERC0001 {
             mstore(0x20, SOLADY_ERC1155_MASTER_SLOT_SEED)
             mstore(0x14, caller())
             mstore(0x00, operator)
-            sstore(keccak256(0x0c, 0x34), isApproved)
+            sstore(keccak256(0x0c, 0x34), storedValue)
             // Emit the {ApprovalForAll} event.
             mstore(0x00, isApproved)
             // forgefmt: disable-next-line

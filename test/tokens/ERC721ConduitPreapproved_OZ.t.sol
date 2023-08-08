@@ -2,14 +2,14 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC721_Solady} from "shipyard-core/reference/tokens/erc721/ERC721Preapproved_Solady.sol";
+import {ERC721_OZ} from "shipyard-core/reference/tokens/erc721/ERC721Preapproved_OZ.sol";
 import {CONDUIT} from "shipyard-core/lib/Constants.sol";
 
-contract ERC721ConduitPreapproved_SoladyTest is Test {
-    ERC721_Solady test;
+contract ERC721ConduitPreapproved_OZTest is Test {
+    ERC721_OZ test;
 
     function setUp() public {
-        test = new ERC721_Solady();
+        test = new ERC721_OZ();
     }
 
     function testConduitPreapproved(address acct) public {
