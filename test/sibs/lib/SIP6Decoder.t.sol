@@ -4,31 +4,23 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
 import {SIP6Decoder} from "shipyard-core/sips/lib/SIP6Decoder.sol";
+import {SIP6Encoder} from "shipyard-core/sips/lib/SIP6Encoder.sol";
 
 contract SIP6DecoderTest is Test {
-    ///@dev hack to get around forge test reporting a huge number if vm.pauseGasMetering is in effect at end of a test run
-    modifier unmetered() {
-        vm.pauseGasMetering();
-        _;
-        vm.resumeGasMetering();
-    }
-
-    modifier metered() {
-        vm.resumeGasMetering();
-        _;
-        vm.pauseGasMetering();
-    }
-
-    function test_GasBaseline() public unmetered {}
-
-    function testDecode0() public unmetered {
+    function testDecode0() public {
         bytes memory variable = "hello world";
         bytes memory extraData = abi.encodePacked(uint8(0), variable);
         bytes memory decoded = this.decode0(extraData);
         assertEq(decoded, variable);
     }
 
-    function testDecode1() public unmetered {
+    function testDecode0(bytes memory variable) public {
+        bytes memory extraData = SIP6Encoder.encodeSubstandard0(variable);
+        bytes memory decoded = this.decode0(extraData);
+        assertEq(decoded, variable);
+    }
+
+    function testDecode1() public {
         bytes memory fixedData = "hello world";
         bytes32 expectedHash = keccak256(abi.encodePacked(fixedData));
         bytes memory extraData = abi.encodePacked(uint8(1), fixedData);
@@ -36,7 +28,22 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded, fixedData);
     }
 
-    function testDecode2() public unmetered {
+    function testDecode1_InvalidExtraData() public {
+        bytes memory fixedData = "hello world";
+        bytes32 expectedHash = bytes32(uint256(keccak256(abi.encodePacked(fixedData))) + 1);
+        bytes memory extraData = abi.encodePacked(uint8(1), fixedData);
+        vm.expectRevert(SIP6Decoder.InvalidExtraData.selector);
+        this.decode1(extraData, expectedHash);
+    }
+
+    function testDecode1(bytes memory fixedData) public {
+        bytes32 expectedHash = keccak256(abi.encodePacked(fixedData));
+        bytes memory extraData = SIP6Encoder.encodeSubstandard1(fixedData);
+        bytes memory decoded = this.decode1(extraData, expectedHash);
+        assertEq(decoded, fixedData);
+    }
+
+    function testDecode2() public {
         bytes memory fixedData = "hello";
         bytes memory variableData = "world";
         bytes32 expectedHash = keccak256(fixedData);
@@ -46,7 +53,15 @@ contract SIP6DecoderTest is Test {
         assertEq(decodedVariableData, variableData);
     }
 
-    function testDecode3() public unmetered {
+    function testDecode2(bytes memory fixedData, bytes memory variableData) public {
+        bytes32 expectedHash = keccak256(fixedData);
+        bytes memory extraData = SIP6Encoder.encodeSubstandard2(fixedData, variableData);
+        (bytes memory decodedFixedData, bytes memory decodedVariableData) = this.decode2(extraData, expectedHash);
+        assertEq(decodedFixedData, fixedData);
+        assertEq(decodedVariableData, variableData);
+    }
+
+    function testDecode3() public {
         bytes memory variableData1 = "hello";
         bytes memory variableData2 = "world";
         bytes[] memory variableDataArrays = new bytes[](2);
@@ -59,7 +74,16 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], variableData2);
     }
 
-    function testDecode3_emptyArray() public unmetered {
+    function testDecode3(bytes[] memory variableDataArrays) public {
+        bytes memory extraData = SIP6Encoder.encodeSubstandard3(variableDataArrays);
+        bytes[] memory decoded = this.decode3(extraData);
+        assertEq(decoded.length, variableDataArrays.length);
+        for (uint256 i; i < variableDataArrays.length; i++) {
+            assertEq(decoded[i], variableDataArrays[i]);
+        }
+    }
+
+    function testDecode3_emptyArray() public {
         bytes memory variableData1 = "";
         bytes memory variableData2 = "";
         bytes[] memory variableDataArrays = new bytes[](2);
@@ -72,7 +96,23 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], variableData2);
     }
 
-    function testDecode4() public unmetered {
+    function testDecode4_InvalidExtraData() public {
+        bytes memory fixedData1 = "hello";
+        bytes memory fixedData2 = "world";
+        bytes[] memory fixedDataArrays = new bytes[](2);
+        fixedDataArrays[0] = fixedData1;
+        fixedDataArrays[1] = fixedData2;
+        bytes32[] memory subhashes = new bytes32[](2);
+        subhashes[0] = keccak256(fixedData1);
+        subhashes[1] = keccak256(fixedData2);
+        bytes32 expectedHash = bytes32(1 + uint256(keccak256(abi.encodePacked(subhashes))));
+
+        bytes memory extraData = abi.encodePacked(uint8(4), abi.encode(fixedDataArrays));
+        vm.expectRevert(SIP6Decoder.InvalidExtraData.selector);
+        this.decode4(extraData, expectedHash);
+    }
+
+    function testDecode4() public {
         bytes memory fixedData1 = "hello";
         bytes memory fixedData2 = "world";
         bytes[] memory fixedDataArrays = new bytes[](2);
@@ -91,7 +131,22 @@ contract SIP6DecoderTest is Test {
         assertEq(decoded[1], fixedData2);
     }
 
-    function testDecode5() public unmetered {
+    function testDecode4(bytes[] memory fixedData) public {
+        bytes32[] memory subhashes = new bytes32[](fixedData.length);
+
+        for (uint256 i; i < fixedData.length; i++) {
+            subhashes[i] = keccak256(fixedData[i]);
+        }
+        bytes32 expectedHash = keccak256(abi.encodePacked(subhashes));
+
+        bytes memory extraData = SIP6Encoder.encodeSubstandard4(fixedData);
+        bytes[] memory decoded = this.decode4(extraData, expectedHash);
+        for (uint256 i; i < fixedData.length; i++) {
+            assertEq(decoded[i], fixedData[i]);
+        }
+    }
+
+    function testDecode5() public {
         bytes memory fixedData1 = "hello";
         bytes memory fixedData2 = "world";
         bytes[] memory fixedDataArrays = new bytes[](2);
@@ -118,33 +173,73 @@ contract SIP6DecoderTest is Test {
         assertEq(decodedVariable[1], variableData2);
     }
 
-    function decode0(bytes calldata extraData) external metered returns (bytes memory) {
+    function testDecode5_InvalidExtraData() public {
+        bytes memory fixedData1 = "hello";
+        bytes memory fixedData2 = "world";
+        bytes[] memory fixedDataArrays = new bytes[](2);
+        fixedDataArrays[0] = fixedData1;
+        fixedDataArrays[1] = fixedData2;
+        bytes32[] memory subhashes = new bytes32[](2);
+        subhashes[0] = keccak256(fixedData1);
+        subhashes[1] = keccak256(fixedData2);
+        bytes32 expectedHash = bytes32(1 + uint256(keccak256(abi.encodePacked(subhashes))));
+
+        bytes memory variableData1 = "hello2";
+        bytes memory variableData2 = "world2";
+        bytes[] memory variableDataArrays = new bytes[](2);
+        variableDataArrays[0] = variableData1;
+        variableDataArrays[1] = variableData2;
+
+        bytes memory encoded = abi.encodePacked(uint8(5), abi.encode(fixedDataArrays, variableDataArrays));
+        vm.expectRevert(SIP6Decoder.InvalidExtraData.selector);
+        this.decode5(encoded, expectedHash);
+    }
+
+    function testDecode5(bytes[] memory fixedDataArrays, bytes[] memory variableDataArrays) public {
+        bytes32[] memory subhashes = new bytes32[](fixedDataArrays.length);
+        for (uint256 i; i < fixedDataArrays.length; i++) {
+            subhashes[i] = keccak256(fixedDataArrays[i]);
+        }
+
+        bytes32 expectedHash = keccak256(abi.encodePacked(subhashes));
+
+        bytes memory extraData = SIP6Encoder.encodeSubstandard5(fixedDataArrays, variableDataArrays);
+        (bytes[] memory decodedFixed, bytes[] memory decodedVariable) = this.decode5(extraData, expectedHash);
+        for (uint256 i; i < decodedFixed.length; i++) {
+            assertEq(decodedFixed[i], fixedDataArrays[i]);
+        }
+        for (uint256 i; i < decodedVariable.length; i++) {
+            assertEq(decodedVariable[i], variableDataArrays[i]);
+        }
+    }
+
+    function decode0(bytes calldata extraData) external pure returns (bytes memory) {
         return SIP6Decoder.decodeSubstandard0(extraData);
     }
 
-    function decode1(bytes calldata extraData, bytes32 expectedHash) external metered returns (bytes memory) {
+    function decode1(bytes calldata extraData, bytes32 expectedHash) external pure returns (bytes memory) {
         return SIP6Decoder.decodeSubstandard1(extraData, expectedHash);
     }
 
     function decode2(bytes calldata extraData, bytes32 expectedHash)
         external
-        metered
+        pure
         returns (bytes memory, bytes memory)
     {
         return SIP6Decoder.decodeSubstandard2(extraData, expectedHash);
     }
 
-    function decode3(bytes calldata extraData) external metered returns (bytes[] memory) {
+    function decode3(bytes calldata extraData) external pure returns (bytes[] memory) {
         return SIP6Decoder.decodeSubstandard3(extraData);
     }
 
-    function decode4(bytes calldata extraData, bytes32 expectedHash) external metered returns (bytes[] memory) {
+    function decode4(bytes calldata extraData, bytes32 expectedHash) external pure returns (bytes[] memory) {
         return SIP6Decoder.decodeSubstandard4(extraData, expectedHash);
     }
 
     function decode5(bytes calldata extraData, bytes32 expectedHash)
         external
-        metered
+        pure
         returns (bytes[] memory, bytes[] memory)
     {
         return SIP6Decoder.decodeSubstandard5(extraData, expectedHash);

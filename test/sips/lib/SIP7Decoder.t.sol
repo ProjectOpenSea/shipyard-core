@@ -7,53 +7,122 @@ import {SIP7Encoder} from "shipyard-core/sips/lib/SIP7Encoder.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
 
 contract SIP7DecoderTest is Test {
-    function testDecodeSubstandard1() public {
-        bytes memory encoded = SIP7Encoder.encodeSubstandard1(1);
-        uint256 result = this.decode0(encoded);
-        assertEq(result, 1);
+    function testDecodeSubstandard1(uint256 num) public {
+        bytes memory encoded = SIP7Encoder.encodeSubstandard1(num);
+        uint256 result = this.decode1(encoded);
+        assertEq(result, num);
     }
 
-    function testDecodeSubstandard2() public {
-        bytes memory encoded = SIP7Encoder.encodeSubstandard2(ItemType(1), address(2), 3, 4, address(5));
+    function testDecodeSubstandard2(
+        uint8 itemType_,
+        address _token,
+        uint256 _identifier,
+        uint256 _amount,
+        address _recipient
+    ) public {
+        ItemType _itemType = ItemType(uint8(bound(itemType_, 0, 5)));
+        bytes memory encoded = SIP7Encoder.encodeSubstandard2(_itemType, _token, _identifier, _amount, _recipient);
         (ItemType itemType, address token, uint256 identifier, uint256 amount, address recipient) =
-            this.decode1(encoded);
-        assertEq(uint256(itemType), 1, "incorrect itemType");
-        assertEq(token, address(2), "incorrect token");
-        assertEq(identifier, 3, "incorrect identifier");
-        assertEq(amount, 4, "incorrect amount");
-        assertEq(recipient, address(5), "incorrect recipient");
+            this.decode2(encoded);
+        assertEq(uint256(itemType), uint8(_itemType), "incorrect itemType");
+        assertEq(token, _token, "incorrect token");
+        assertEq(identifier, _identifier, "incorrect identifier");
+        assertEq(amount, _amount, "incorrect amount");
+        assertEq(recipient, _recipient, "incorrect recipient");
     }
 
-    function testDecodeSubstandard3() public {
-        bytes memory encoded = SIP7Encoder.encodeSubstandard3(bytes32(uint256(1234)));
-        bytes32 result = this.decode2(encoded);
-        assertEq(result, bytes32(uint256(1234)));
+    function testDecodeSubstandard3(bytes32 num) public {
+        bytes memory encoded = SIP7Encoder.encodeSubstandard3(num);
+        bytes32 result = this.decode3(encoded);
+        assertEq(result, num);
     }
 
-    function testDecodeSubstandard4() public {
-        bytes32[] memory hashes = new bytes32[](2);
-        hashes[0] = bytes32(uint256(1234));
-        hashes[1] = bytes32(uint256(5678));
+    function testDecodeSubstandard4(bytes32[] memory hashes) public {
         bytes memory encoded = SIP7Encoder.encodeSubstandard4(hashes);
-        bytes32[] memory result = this.decode3(encoded);
-        assertEq(result.length, 2);
-        assertEq(result[0], bytes32(uint256(1234)));
-        assertEq(result[1], bytes32(uint256(5678)));
+        bytes32[] memory result = this.decode4(encoded);
+        assertEq(result.length, hashes.length);
+        for (uint256 i; i < hashes.length; i++) {
+            assertEq(result[i], hashes[i], "hashes[i] incorrect");
+        }
     }
 
-    function decode0(bytes calldata extraData) external pure returns (uint256) {
+    function testDecodeSubstandard1(bytes memory pad, uint256 num) public {
+        bytes memory encoded = SIP7Encoder.encodeSubstandard1(num);
+        encoded = abi.encodePacked(pad, encoded);
+        uint256 result = this.decode1(encoded, pad.length + 1);
+        assertEq(result, num);
+    }
+
+    function testDecodeSubstandard2(
+        bytes memory pad,
+        uint8 itemType_,
+        address _token,
+        uint256 _identifier,
+        uint256 _amount,
+        address _recipient
+    ) public {
+        ItemType _itemType = ItemType(uint8(bound(itemType_, 0, 5)));
+        bytes memory encoded = SIP7Encoder.encodeSubstandard2(_itemType, _token, _identifier, _amount, _recipient);
+        encoded = abi.encodePacked(pad, encoded);
+        (ItemType itemType, address token, uint256 identifier, uint256 amount, address recipient) =
+            this.decode2(encoded, pad.length + 1);
+        assertEq(uint256(itemType), uint8(_itemType), "incorrect itemType");
+        assertEq(token, _token, "incorrect token");
+        assertEq(identifier, _identifier, "incorrect identifier");
+        assertEq(amount, _amount, "incorrect amount");
+        assertEq(recipient, _recipient, "incorrect recipient");
+    }
+
+    function testDecodeSubstandard3(bytes memory pad, bytes32 num) public {
+        bytes memory encoded = SIP7Encoder.encodeSubstandard3(num);
+        encoded = abi.encodePacked(pad, encoded);
+        bytes32 result = this.decode3(encoded, pad.length + 1);
+        assertEq(result, num);
+    }
+
+    function testDecodeSubstandard4(bytes memory pad, bytes32[] memory hashes) public {
+        bytes memory encoded = SIP7Encoder.encodeSubstandard4(hashes);
+        encoded = abi.encodePacked(pad, encoded);
+        bytes32[] memory result = this.decode4(encoded, pad.length + 1);
+        assertEq(result.length, hashes.length);
+        for (uint256 i; i < hashes.length; i++) {
+            assertEq(result[i], hashes[i], "hashes[i] incorrect");
+        }
+    }
+
+    function decode1(bytes calldata extraData) external pure returns (uint256) {
         return SIP7Decoder.decodeSubstandard1(extraData);
     }
 
-    function decode1(bytes calldata extraData) external pure returns (ItemType, address, uint256, uint256, address) {
+    function decode2(bytes calldata extraData) external pure returns (ItemType, address, uint256, uint256, address) {
         return SIP7Decoder.decodeSubstandard2(extraData);
     }
 
-    function decode2(bytes calldata extraData) external pure returns (bytes32) {
+    function decode3(bytes calldata extraData) external pure returns (bytes32) {
         return SIP7Decoder.decodeSubstandard3(extraData);
     }
 
-    function decode3(bytes calldata extraData) external pure returns (bytes32[] memory) {
+    function decode4(bytes calldata extraData) external pure returns (bytes32[] memory) {
         return SIP7Decoder.decodeSubstandard4(extraData);
+    }
+
+    function decode1(bytes calldata extraData, uint256 start) external pure returns (uint256) {
+        return SIP7Decoder.decodeSubstandard1(extraData, start);
+    }
+
+    function decode2(bytes calldata extraData, uint256 start)
+        external
+        pure
+        returns (ItemType, address, uint256, uint256, address)
+    {
+        return SIP7Decoder.decodeSubstandard2(extraData, start);
+    }
+
+    function decode3(bytes calldata extraData, uint256 start) external pure returns (bytes32) {
+        return SIP7Decoder.decodeSubstandard3(extraData, start);
+    }
+
+    function decode4(bytes calldata extraData, uint256 start) external pure returns (bytes32[] memory) {
+        return SIP7Decoder.decodeSubstandard4(extraData, start);
     }
 }

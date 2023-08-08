@@ -32,9 +32,9 @@ library SIP7Decoder {
     function decodeSubstandard2(bytes calldata extraData, uint256 sip7DataStartRelativeOffset)
         internal
         pure
-        returns (uint8, address, uint256, uint256, address)
+        returns (ItemType, address, uint256, uint256, address)
     {
-        return abi.decode(extraData[sip7DataStartRelativeOffset:], (uint8, address, uint256, uint256, address));
+        return abi.decode(extraData[sip7DataStartRelativeOffset:], (ItemType, address, uint256, uint256, address));
     }
 
     function decodeSubstandard2(bytes calldata extraData)
@@ -42,7 +42,7 @@ library SIP7Decoder {
         pure
         returns (ItemType, address, uint256, uint256, address)
     {
-        return abi.decode(extraData[1:], (ItemType, address, uint256, uint256, address));
+        return decodeSubstandard2(extraData, 1);
     }
 
     function decodeSubstandard3(bytes calldata extraData, uint256 sip7DataStartRelativeOffset)
