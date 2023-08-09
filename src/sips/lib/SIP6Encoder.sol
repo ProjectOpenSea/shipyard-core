@@ -53,7 +53,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 0, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 1, which takes
      *         a single variable data field. Encodes a 0-byte for substandard version to save
      *         on calldata gas overhead.
      * @param variableData The variable data to be encoded for a SIP6 contract
@@ -63,7 +63,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 0, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 1, which takes
      *         a single variable data field.
      * @param variableData The variable data to be encoded for a SIP6 contract
      */
@@ -72,7 +72,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 1, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 2, which takes
      *         a single fixed data field.
      * @param fixedData The fixed data to be encoded for a SIP6 contract
      */
@@ -81,7 +81,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 2, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 3, which takes
      *         a single fixed data field and a single variable data field.
      * @param fixedData The fixed data to be encoded for a SIP6 contract
      * @param variableData The variable data to be encoded for a SIP6 contract
@@ -95,7 +95,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 3, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 4, which takes
      *         an array of variable data fields.
      * @param variableData The variable data to be encoded for a SIP6 contract
      */
@@ -104,7 +104,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 4, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 5, which takes
      *         an array of fixed data fields.
      * @param fixedData The fixed data to be encoded for a SIP6 contract
      */
@@ -113,7 +113,7 @@ library SIP6Encoder {
     }
 
     /**
-     * @notice Encode extraData for an SIP6 contract that implements substandard 5, which takes
+     * @notice Encode extraData for an SIP6 contract that implements substandard 6, which takes
      *         an array of fixed data fields and an array of variable data fields.
      * @param fixedData The fixed data to be encoded for a SIP6 contract
      * @param variableData The variable data to be encoded for a SIP6 contract

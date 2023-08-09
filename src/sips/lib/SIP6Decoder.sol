@@ -21,7 +21,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-0 extraData field. It should consist of a single byte 0x00 followed by a "variable" bytes array.
+     * @notice Decode an SIP6-Substandard-1 extraData field. It should consist of a single byte 0x00 followed by a "variable" bytes array.
      *         No validation is performed on the variable bytes array.
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x00), variableData)`.
      * @param extraData bytes calldata
@@ -31,7 +31,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-1 extraData field. It should consist of a single byte 0x01 followed by a "fixed" bytes array,
+     * @notice Decode an SIP6-Substandard-2 extraData field. It should consist of a single byte 0x01 followed by a "fixed" bytes array,
      *         the keccak256 hash of the packed bytes array (eg, `keccak256(abi.encodePacked(extraData))`) should match the
      *         expectedFixedDataHash parameter.
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x01), fixedData)`.
@@ -47,7 +47,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-2 extraData field. It should consist of a single byte 0x02 followed by a "fixed" bytes array,
+     * @notice Decode an SIP6-Substandard-3 extraData field. It should consist of a single byte 0x02 followed by a "fixed" bytes array,
      *         followed by a "variable" bytes array. The keccak256 hash of the "fixed" bytes array must match the expectedFixedDataHash parameter.
      *         No validation is performed on the "variable" bytes array.
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x02), abi.encode(fixedData, variableData))`.
@@ -77,7 +77,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-3 extraData field. It should consist of a single byte 0x03 followed by an array of "variable" bytes arrays.
+     * @notice Decode an SIP6-Substandard-4 extraData field. It should consist of a single byte 0x03 followed by an array of "variable" bytes arrays.
      *         No validation is performed on the "variable" bytes arrays.
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x03), abi.encode(variableDataArrays))`.
      * @param extraData bytes calldata
@@ -91,7 +91,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-4 extraData field. It should consist of a single byte 0x04 followed by an array of "fixed" bytes arrays.
+     * @notice Decode an SIP6-Substandard-5 extraData field. It should consist of a single byte 0x04 followed by an array of "fixed" bytes arrays.
      *         The keccak256 hash of the hashes of all "fixed" bytes arrays must match the expectedFixedDataHash parameter. The expected hash must
      *         be the equivalent of `keccak256(abi.encodePacked(keccak256(fixedData1), keccak256(fixedData2), ...))`.
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x04), abi.encode(fixedDataArrays))`.
@@ -110,7 +110,7 @@ library SIP6Decoder {
     }
 
     /**
-     * @notice Decode an SIP6-Substandard-5 extraData field. It should consist of a single byte 0x05 followed by an array of "fixed" bytes arrays,
+     * @notice Decode an SIP6-Substandard-6 extraData field. It should consist of a single byte 0x05 followed by an array of "fixed" bytes arrays,
      *         followed by an array of "variable" bytes arrays. The keccak256 hash of the hashes of all "fixed" bytes arrays must match the
      *         expectedFixedDataHash parameter. The expected hash must be the equivalent of `keccak256(abi.encodePacked(keccak256(fixedData1),
      *         keccak256(fixedData2), ...))`.

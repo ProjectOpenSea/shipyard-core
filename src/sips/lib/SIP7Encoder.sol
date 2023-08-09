@@ -25,7 +25,7 @@ library SIP7Encoder {
     }
 
     /**
-     * @notice Encode extraData for SIP7-substandard-1, which specifies a required considerationItem
+     * @notice Encode extraData for SIP7-substandard-2, which specifies a required considerationItem
      *         is present on an order
      * @param itemType The Seaport ItemType of the required tip
      * @param token The address of the token to be tipped
@@ -42,7 +42,7 @@ library SIP7Encoder {
     }
 
     /**
-     * @notice Encode extraData for SIP7-substandard-1, which specifies a required
+     * @notice Encode extraData for SIP7-substandard-2, which specifies a required
      *         considerationItem is present on an order
      * @param item The considerationItem to encode
      */
@@ -51,7 +51,7 @@ library SIP7Encoder {
     }
 
     /**
-     * @notice Encode extraData for SIP7-substandard-2, which specifies a hash that the hash of
+     * @notice Encode extraData for SIP7-substandard-3, which specifies a hash that the hash of
      *         the receivedItems array must match
      * @param receivedItemsHash The hash of the receivedItems array
      */
@@ -60,7 +60,7 @@ library SIP7Encoder {
     }
 
     /**
-     * @notice Encode extraData for SIP7-substandard-3, which specifies a list of orderHashes
+     * @notice Encode extraData for SIP7-substandard-4, which specifies a list of orderHashes
      *         that are forbidden from being included in the same fulfillment
      * @param forbiddenOrderHashes The list of forbidden orderHashes
      */
