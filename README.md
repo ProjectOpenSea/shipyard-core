@@ -1,30 +1,37 @@
 # Roadmap
 
-- [ ] Conduit pre-approvals
-  - [ ] ERC721
-    - [x] Solady
-    - [x] OpenZeppelin
-    - [ ] ERC721A
-  - [ ] ERC1155
-    - [ ] Solady
-    - [x] OpenZeppelin
-- [ ] Onchain helpers
-  - [x] json
-  - [ ] svg
-- [ ] Interfaces
-  - [ ] Redeemables?
-    - [ ] These are already defined in Redeemables repo
-  - [ ] SeaDrop?
-    - [ ] These are already defined in SeaDrop repo
-  - [ ] IERC4906?
-    - [ ] this is already defined in OpenZeppelin
-  - [x] Dynamic Metadata
-  - [x] Interface Delegation
-  - [x] PreapprovalForAll
-  - [ ] Queryable?
-    - [ ] maybe useful in tandem with interface delegation
-- [ ] Reference Implementations
-  - [ ] IERC5912 Staking
-  - [ ] IERC4906 Metadata Updates
-  - [ ] IERCDynamicMetadata
-  - [ ] IERCInterfaceDelegation
+-   [ ] Conduit pre-approvals
+    -   [ ] ERC721
+        -   [x] Solady
+        -   [x] OpenZeppelin
+        -   [ ] ERC721A
+    -   [x] ERC1155
+        -   [x] Solady
+        -   [x] OpenZeppelin
+-   [x] Onchain helpers
+    -   [x] json
+    -   [x] svg
+-   [ ] Interfaces
+    -   [ ] Redeemables?
+        -   [ ] These are already defined in Redeemables repo
+    -   [ ] SeaDrop?
+        -   [ ] These are already defined in SeaDrop repo
+    -   [ ] IERC4906?
+        -   [ ] this is already defined in OpenZeppelin
+    -   [x] Dynamic Metadata
+    -   [x] Interface Delegation
+    -   [x] PreapprovalForAll
+    -   [ ] Queryable?
+        -   [ ] maybe useful in tandem with interface delegation
+    -   [x] SIPS 5, 6, 7, 10
+-   [ ] Reference Implementations
+    -   [x] IERC5912 Staking
+    -   [ ] IERC4906 Metadata Updates
+    -   [ ] IERCDynamicMetadata
+    -   [ ] IERCInterfaceDelegation
+    -   [x] AbstractSIP5
+    -   [x] AbstractSIP6
+    -   [x] AbstractSIP7
+    -   [x] AbstractSIP10
+-   [ ] SignedZone
+    -   [ ] port from seaport repo
