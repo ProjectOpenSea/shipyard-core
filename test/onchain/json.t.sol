@@ -113,21 +113,6 @@ contract JsonTest is Test {
         assertTrue(quoted.indexOf(value, 0) != type(uint256).max);
     }
 
-    function testThing() public {
-        address noody;
-        bytes memory stuff =
-            hex"6014601d600c393636363636515afa3d36363e363d9161001b57fd5bf3FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-        assembly {
-            noody := create(0, add(stuff, 0x20), mload(stuff))
-        }
-        require(noody != address(0), "addy 0");
-        // require(noody.code.length > 0, "no code");
-        assembly {
-            noody := create(0, add(stuff, 0x20), mload(stuff))
-        }
-        require(noody != address(0), "addy 0");
-    }
-
     function testJoinComma(string memory str, uint8 times) public {
         times = uint8(bound(times, 1, 255));
         string[] memory strings = new string[](times);

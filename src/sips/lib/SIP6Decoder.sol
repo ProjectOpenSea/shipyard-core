@@ -26,8 +26,8 @@ library SIP6Decoder {
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x00), variableData)`.
      * @param extraData bytes calldata
      */
-    function decodeSubstandard0(bytes calldata extraData) internal pure returns (bytes calldata decodedExtraData) {
-        return _decodePackedBytesArrayFromExtraData(extraData, bytes1(0));
+    function decodeSubstandard1(bytes calldata extraData) internal pure returns (bytes calldata decodedExtraData) {
+        return _decodePackedBytesArrayFromExtraData(extraData);
     }
 
     /**
@@ -38,12 +38,12 @@ library SIP6Decoder {
      * @param extraData bytes calldata
      * @param expectedFixedDataHash Expected hash of the fixed bytes array
      */
-    function decodeSubstandard1(bytes calldata extraData, bytes32 expectedFixedDataHash)
+    function decodeSubstandard2(bytes calldata extraData, bytes32 expectedFixedDataHash)
         internal
         pure
         returns (bytes memory decodedExtraData)
     {
-        return _decodeBytesPackedFromExtraDataAndValidateExpectedHash(extraData, bytes1(0x01), expectedFixedDataHash);
+        return _decodeBytesPackedFromExtraDataAndValidateExpectedHash(extraData, expectedFixedDataHash);
     }
 
     /**
@@ -56,12 +56,11 @@ library SIP6Decoder {
      * @return decodedFixedData
      * @return decodedVariableData
      */
-    function decodeSubstandard2(bytes calldata extraData, bytes32 expectedFixedDataHash)
+    function decodeSubstandard3(bytes calldata extraData, bytes32 expectedFixedDataHash)
         internal
         pure
         returns (bytes memory decodedFixedData, bytes calldata decodedVariableData)
     {
-        _validateVersionByte(extraData, bytes1(0x02));
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
 
@@ -83,7 +82,7 @@ library SIP6Decoder {
      *         The expected encoding is the equivalent of `abi.encodePacked(uint8(0x03), abi.encode(variableDataArrays))`.
      * @param extraData bytes calldata
      */
-    function decodeSubstandard3(bytes calldata extraData)
+    function decodeSubstandard4(bytes calldata extraData)
         internal
         pure
         returns (bytes[] calldata decodedVariableDataArrays)
@@ -99,7 +98,7 @@ library SIP6Decoder {
      * @param extraData bytes calldata
      * @param expectedFixedDataHash The expected hash of the fixed bytes array.
      */
-    function decodeSubstandard4(bytes calldata extraData, bytes32 expectedFixedDataHash)
+    function decodeSubstandard5(bytes calldata extraData, bytes32 expectedFixedDataHash)
         internal
         pure
         returns (bytes[] memory decodedFixedData)
@@ -122,12 +121,11 @@ library SIP6Decoder {
      * @return decodedFixedData
      * @return decodedVariableData
      */
-    function decodeSubstandard5(bytes calldata extraData, bytes32 expectedFixedDataHash)
+    function decodeSubstandard6(bytes calldata extraData, bytes32 expectedFixedDataHash)
         internal
         pure
         returns (bytes[] memory decodedFixedData, bytes[] calldata decodedVariableData)
     {
-        _validateVersionByte(extraData, bytes1(0x05));
         uint256 pointerToFixedDataOffset;
         uint256 pointerToVariableDataoffset;
 
@@ -141,18 +139,6 @@ library SIP6Decoder {
         decodedVariableData = _decodeBytesArrays(pointerToVariableDataoffset, pointerToFixedDataOffset);
 
         return (decodedFixedData, decodedVariableData);
-    }
-
-    /**
-     * @dev Load the first byte of the extraData and validate that it matches the expected version byte.
-     * @param data bytes calldata
-     * @param expectedVersion Expected SIP6 substandard version byte
-     */
-    function _validateVersionByte(bytes calldata data, bytes1 expectedVersion) internal pure {
-        bytes1 versionByte = data[0];
-        if (versionByte != expectedVersion) {
-            revert ISIP6.UnsupportedExtraDataVersion(uint8(versionByte));
-        }
     }
 
     function _decodePackedBytesArray(bytes calldata data, uint256 absoluteStart)
@@ -192,12 +178,7 @@ library SIP6Decoder {
         }
     }
 
-    function _decodePackedBytesArrayFromExtraData(bytes calldata data, bytes1 expectedVersion)
-        internal
-        pure
-        returns (bytes calldata decoded)
-    {
-        _validateVersionByte(data, expectedVersion);
+    function _decodePackedBytesArrayFromExtraData(bytes calldata data) internal pure returns (bytes calldata decoded) {
         uint256 pointerToRelativeOffset;
         assembly {
             pointerToRelativeOffset := add(data.offset, 1)
@@ -247,7 +228,6 @@ library SIP6Decoder {
         pure
         returns (bytes calldata decodedData)
     {
-        _validateVersionByte(data, substandard);
         uint256 pointerToRelativeOffset;
 
         assembly {
@@ -258,12 +238,12 @@ library SIP6Decoder {
         return decodedData;
     }
 
-    function _decodeBytesPackedFromExtraDataAndValidateExpectedHash(
-        bytes calldata data,
-        bytes1 substandard,
-        bytes32 expectedHash
-    ) internal pure returns (bytes memory decodedData) {
-        decodedData = _decodePackedBytesArrayFromExtraData(data, substandard);
+    function _decodeBytesPackedFromExtraDataAndValidateExpectedHash(bytes calldata data, bytes32 expectedHash)
+        internal
+        pure
+        returns (bytes memory decodedData)
+    {
+        decodedData = _decodePackedBytesArrayFromExtraData(data);
         if (keccak256(decodedData) != expectedHash) {
             revert InvalidExtraData();
         }
@@ -273,15 +253,13 @@ library SIP6Decoder {
     /**
      * @dev Validate the version byte of extraData and return the contained bytes array.
      * @param data bytes calldata
-     * @param substandard Expected SIP6 substandard version byte
      * @param expectedHash Expected hash of the bytes array
      */
-    function _decodeBytesFromExtraDataAndValidateExpectedHash(
-        bytes calldata data,
-        bytes1 substandard,
-        bytes32 expectedHash
-    ) internal pure returns (bytes memory decodedData) {
-        _validateVersionByte(data, substandard);
+    function _decodeBytesFromExtraDataAndValidateExpectedHash(bytes calldata data, bytes32 expectedHash)
+        internal
+        pure
+        returns (bytes memory decodedData)
+    {
         uint256 pointerToRelativeOffset;
 
         assembly {
@@ -303,7 +281,6 @@ library SIP6Decoder {
         pure
         returns (bytes[] calldata decodedData)
     {
-        _validateVersionByte(data, substandard);
         uint256 pointerToRelativeOffset;
 
         assembly {
@@ -416,6 +393,7 @@ library SIP6Decoder {
         uint256 arrayLengthInBytes,
         bytes1 substandard
     ) internal pure {
+        ///@solidity memory-safe-assembly
         assembly {
             // TODO: how does this work with pointers to 0-length arrays?
             // check that the length of the array plus its offset is less than the length of the extraData plus its offset,
