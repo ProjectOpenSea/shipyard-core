@@ -8,7 +8,8 @@ remappings = [
     'solady-test/=lib/solady/test/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'shipyard-core/=src/',
-    'seaport-types/=lib/seaport-types/src/'
+    'seaport-types/=lib/seaport-types/src/',
+    'solarray/=lib/solarray/src/',
 ]
 # bytecode_hash = 'none'
 ignored_error_codes = ['license', 'code-size', 'init-code-size']
