@@ -15,6 +15,8 @@ enum DisplayType {
 }
 
 library Metadata {
+    string private constant NULL = "";
+
     using LibString for string;
 
     function attribute(string memory traitType, string memory value) internal pure returns (string memory) {
@@ -59,8 +61,12 @@ library Metadata {
         returns (string memory)
     {
         return string.concat(
-            "data:", dataType, ";", bytes(encoding).length > 0 ? string.concat(encoding, ",") : "", content
+            "data:", dataType, ";", bytes(encoding).length > 0 ? string.concat(encoding, ",") : NULL, content
         );
+    }
+
+    function dataURI(string memory dataType, string memory content) internal pure returns (string memory) {
+        return dataURI(dataType, NULL, content);
     }
 
     function jsonDataURI(string memory content, string memory encoding) internal pure returns (string memory) {
@@ -68,7 +74,7 @@ library Metadata {
     }
 
     function jsonDataURI(string memory content) internal pure returns (string memory) {
-        return jsonDataURI(content, "");
+        return jsonDataURI(content, NULL);
     }
 
     function base64JsonDataURI(string memory content) internal pure returns (string memory) {
@@ -80,6 +86,6 @@ library Metadata {
     }
 
     function svgDataURI(string memory content) internal pure returns (string memory) {
-        return svgDataURI(content, "");
+        return svgDataURI(content, NULL);
     }
 }

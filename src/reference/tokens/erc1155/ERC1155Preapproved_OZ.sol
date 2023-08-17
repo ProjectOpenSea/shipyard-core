@@ -7,7 +7,8 @@ contract ERC1155_OZ is ERC1155ConduitPreapproved_OZ {
     constructor() ERC1155("https://example.com") {}
 
     function mint(address to, uint256 tokenId, uint256 amount) public {
-        _mint(to, tokenId, amount, "");
+        bytes memory empty;
+        _mint(to, tokenId, amount, empty);
     }
 
     function uri(uint256) public pure override returns (string memory) {

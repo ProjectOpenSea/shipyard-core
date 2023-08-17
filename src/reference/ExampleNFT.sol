@@ -24,7 +24,7 @@ contract ExampleNFT is ERC721ConduitPreapproved_Solady {
     }
 
     function tokenURI(uint256 tokenId) public pure override returns (string memory) {
-        return string.concat("data:application/json;base64,", Base64.encode(bytes(stringURI(tokenId))));
+        return Metadata.base64JsonDataURI(stringURI(tokenId));
     }
 
     function stringURI(uint256 tokenId) internal pure returns (string memory) {
@@ -32,7 +32,7 @@ contract ExampleNFT is ERC721ConduitPreapproved_Solady {
             Solarray.strings(
                 json.property("name", string.concat("Example NFT #", tokenId.toString())),
                 json.property("description", "This is an example NFT"),
-                json.property("image", string.concat("data:image/svg+xml;", image(tokenId).escapeJSON())),
+                json.property("image", Metadata.svgDataURI(image(tokenId))),
                 json.rawProperty(
                     "attributes",
                     json.arrayOf(

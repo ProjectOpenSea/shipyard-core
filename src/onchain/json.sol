@@ -9,6 +9,8 @@ import {LibString} from "solady/utils/LibString.sol";
  * @notice TODO: overrides for common types that automatically stringify
  */
 library json {
+    string private constant NULL = "";
+
     using LibString for string;
 
     /**
@@ -61,7 +63,7 @@ library json {
      */
     function objectOf(string[] memory properties) internal pure returns (string memory) {
         if (properties.length == 0) {
-            return object("");
+            return object(NULL);
         }
         string memory result = properties[0];
         for (uint256 i = 1; i < properties.length; ++i) {
@@ -132,7 +134,7 @@ library json {
      */
     function _join(string[] memory values, string memory separator) internal pure returns (string memory) {
         if (values.length == 0) {
-            return "";
+            return NULL;
         }
         string memory result = values[0];
         for (uint256 i = 1; i < values.length; ++i) {
