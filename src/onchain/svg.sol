@@ -14,6 +14,10 @@ library svg {
     // used to simulate empty strings
     string internal constant NULL = "";
 
+    function top(string memory props, string memory children) internal pure returns (string memory) {
+        return svg_(true, props, children);
+    }
+
     function svg_(bool includeXmlns, string memory props, string memory children)
         internal
         pure

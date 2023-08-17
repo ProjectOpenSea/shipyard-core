@@ -52,8 +52,7 @@ contract ExampleNFT is ERC721ConduitPreapproved_Solady {
     }
 
     function image(uint256 tokenId) internal pure returns (string memory) {
-        return svg.svg_({
-            includeXmlns: true,
+        return svg.top({
             props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
             children: string.concat(
                 svg.rect({
