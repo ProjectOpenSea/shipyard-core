@@ -3,18 +3,30 @@ import { ethers } from 'ethers';
 import { type } from 'os';
 
 
+const args = process.argv;
+
 // Optionally specify a path to a file to read from. This is necessary because
 // running this from the command line requires `../../test-ffi/tmp/temp` and
 // running this from the test suite requires `./test-ffi/tmp/temp`. In ffi, the
 // script is executed from the top-level directory.
-const args = process.argv;
 const path = args[2] || './test-ffi/tmp/temp';
+
+// Optionally specify a response type. This can be either '--top-level' or
+// '--attribute'. If '--top-level' is specified, the script will extract the
+// name, description, and image from the JSON and return them. If '--attribute'
+// is specified, the script will extract the attribute from the JSON and return
+// the trait_type, value, and display_type.
 const responseType = args[3] || '--top-level';
+
+// Optionally specify an attribute index. This is only used if the response type
+// is '--attribute'.
 const attributeIndex = args[4] || 0;
 
+// Read the file at the specified path.
 const rawData = fs.readFileSync(path, "utf8");
 
 try {
+    // Parse the raw data as JSON.
     const formattedJson = JSON.parse(rawData);
 
     // Example JSON:
@@ -74,33 +86,3 @@ try {
     // JSON.parse failed. Likely the path to the file is wrong, the json is not populated, or the JSON is malformed.
     process.stdout.write('0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000004a534f4e2e7061727365206661696c65642e204c696b656c7920746865207061746820746f207468652066696c652069732077726f6e672c20746865206a736f6e206973206e6f7420706f70756c617465642c206f7220746865204a534f4e206973206d616c666f726d65642e00000000000000000000000000000000000000');
 }
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-// Saved for reference:
-
-// console.log('Decoding raw data');
-// // Decode the base64 encoded data
-// const decodedData = atob(rawData).replaceAll('\\\\\\', '');
-
-// console.log('Decoded data: ');
-// console.log(decodedData);
-
-// console.log('Converting bytes to string');
-// // Convert the bytes to a string
-// const stringJson = ethers.utils.defaultAbiCoder.decode(["bytes"], decodedData);
-
-// console.log('Parsing string as JSON');
-// Parse the string as JSON
-// const formattedJson = JSON.parse(stringJson);
