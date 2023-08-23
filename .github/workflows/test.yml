@@ -44,6 +44,11 @@ jobs:
           cd ../..
         id: yarn-install
 
+      - name: Create temp file
+        run: |
+          touch test-ffi/temp/temp.json
+        id: create-temp-file
+
       - name: Run Forge tests
         run: |
           forge test -vvv
