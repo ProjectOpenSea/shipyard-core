@@ -49,6 +49,11 @@ jobs:
           forge test -vvv
         id: test
 
+      - name: Clear temp files
+        run: |
+          rm test-ffi/temp/temp.json
+        id: clear
+
       - name: Lint
         run: |
           forge fmt
