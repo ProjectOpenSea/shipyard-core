@@ -51,7 +51,7 @@ jobs:
           forge test -vvv
         id: test
 
-      - name: Clear temp files
+      - name: Clear Temp Files
         run: |
           cd ./test-ffi/tmp
           rm temp.json
