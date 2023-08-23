@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import { ethers } from 'ethers';
-import { type } from 'os';
 
 
 const args = process.argv;
