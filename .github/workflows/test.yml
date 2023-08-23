@@ -37,26 +37,10 @@ jobs:
           forge build --sizes
         id: build
 
-      - name: Set Up ffi
-        run: |
-          cd ./test-ffi/scripts
-          yarn install
-          cd ../tmp
-          touch temp.json
-          cd ../..
-        id: yarn-install
-
       - name: Run Forge tests
         run: |
           forge test -vvv
         id: test
-
-      - name: Clear Temp Files
-        run: |
-          cd ./test-ffi/tmp
-          rm temp.json
-          cd ../..
-        id: clear
 
       - name: Lint
         run: |

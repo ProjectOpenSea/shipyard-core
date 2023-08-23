@@ -1,0 +1,59 @@
+name: test-ffi
+
+on:
+  push:
+    branches: [main]
+    tags: ["*"]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+env:
+  FOUNDRY_PROFILE: ci-ffi
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Run Forge build
+        run: |
+          forge --version
+          forge build --sizes
+        id: build
+
+      - name: Set Up ffi
+        run: |
+          cd ./test-ffi/scripts
+          yarn install
+          cd ../tmp
+          touch temp.json
+          cd ../..
+        id: yarn-install
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test
+
+      - name: Clear Temp Files
+        run: |
+          cd ./test-ffi/tmp
+          rm temp.json
+          cd ../..
+        id: clear

@@ -17,10 +17,20 @@ optimizer_runs = 99_999_999
 
 [profile.ffi]
 ffi = true
+test = 'test-ffi'
 fs_permissions = [{ access = 'read-write', path = './test-ffi/' }]
-fuzz_runs = 50
 
-[profile.ci]
+# Use a very small number of default fuzz runs to speed up local testing. It is
+# recommended to increase this number or use the `--fuzz-runs=256` flag to run
+# a proper fuzzing campaign before yeeting your project to mainnet.
+[profile.ffi.fuzz]
+runs = 5
+
+[profile.ci-ffi]
 ffi = true
 fs_permissions = [{ access = 'read-write', path = './test-ffi/' }]
-fuzz_runs = 10
+
+# Use a relatively small number of fuzz runs in CI because the ffi lifecycle is
+# slow.
+[profile.ci-ffi.fuzz]
+runs = 10
