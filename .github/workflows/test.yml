@@ -39,14 +39,14 @@ jobs:
 
       - name: Run Yarn install
         run: |
-          cd test-ffi/scripts
+          cd ./test-ffi/scripts
           yarn install
           cd ../..
         id: yarn-install
 
       - name: Create temp file
         run: |
-          touch test-ffi/tmp/temp.json
+          touch ./test-ffi/tmp/temp.json
         id: create-temp-file
 
       - name: Run Forge tests
@@ -56,7 +56,7 @@ jobs:
 
       - name: Clear temp files
         run: |
-          rm test-ffi/tmp/temp.json
+          rm ./test-ffi/tmp/temp.json
         id: clear
 
       - name: Lint
