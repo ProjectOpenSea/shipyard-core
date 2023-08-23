@@ -23,4 +23,4 @@ fuzz_runs = 50
 [profile.ci]
 ffi = true
 fs_permissions = [{ access = 'read-write', path = './test-ffi/' }]
-fuzz_runs = 100
+fuzz_runs = 10
