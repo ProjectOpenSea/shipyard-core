@@ -37,6 +37,13 @@ jobs:
           forge build --sizes
         id: build
 
+      - name: Run Yarn install
+        run: |
+          cd test-ffi/scripts
+          yarn install
+          cd ../..
+        id: yarn-install
+
       - name: Run Forge tests
         run: |
           forge test -vvv

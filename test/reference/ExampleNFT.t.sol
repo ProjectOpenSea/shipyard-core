@@ -14,7 +14,7 @@ struct Attribute {
 contract ExampleNFTTest is Test {
     ExampleNFT testExampleNft;
 
-    string TEMP_JSON_PATH = "test-ffi/tmp/temp";
+    string TEMP_JSON_PATH = "test-ffi/tmp/temp.json";
     string PROCESS_JSON_PATH = "test-ffi/scripts/process_json.js";
 
     function setUp() public {

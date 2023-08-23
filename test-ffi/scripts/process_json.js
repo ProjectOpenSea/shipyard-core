@@ -5,10 +5,10 @@ import { ethers } from 'ethers';
 const args = process.argv;
 
 // Optionally specify a path to a file to read from. This is necessary because
-// running this from the command line requires `../../test-ffi/tmp/temp` and
-// running this from the test suite requires `./test-ffi/tmp/temp`. In ffi, the
-// script is executed from the top-level directory.
-const path = args[2] || './test-ffi/tmp/temp';
+// running this from the command line requires `../../test-ffi/tmp/temp.json` &
+// running this from the test suite requires `./test-ffi/tmp/temp.json`. In ffi,
+// the script is executed from the top-level directory.
+const path = args[2] || './test-ffi/tmp/temp.json';
 
 // Optionally specify a response type. This can be either '--top-level' or
 // '--attribute'. If '--top-level' is specified, the script will extract the
@@ -22,7 +22,7 @@ const responseType = args[3] || '--top-level';
 const attributeIndex = args[4] || 0;
 
 // Example command, run in the terminal from the top level directory:
-// node test-ffi/scripts/process_json.js test-ffi/tmp/temp --attribute 1
+// node test-ffi/scripts/process_json.js test-ffi/tmp/temp.json --attribute 1
 
 // Read the file at the specified path.
 const rawData = fs.readFileSync(path, "utf8");
