@@ -28,6 +28,7 @@ runs = 5
 
 [profile.ci-ffi]
 ffi = true
+test = 'test-ffi'
 fs_permissions = [{ access = 'read-write', path = './test-ffi/' }]
 
 # Use a relatively small number of fuzz runs in CI because the ffi lifecycle is
