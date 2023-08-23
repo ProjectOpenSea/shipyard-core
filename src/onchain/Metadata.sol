@@ -20,11 +20,7 @@ library Metadata {
     using LibString for string;
 
     function attribute(string memory traitType, string memory value) internal pure returns (string memory) {
-        return json.objectOf(
-            Solarray.strings(
-                json.property("trait_type", traitType).escapeJSON(), json.property("value", value).escapeJSON()
-            )
-        );
+        return json.objectOf(Solarray.strings(json.property("trait_type", traitType), json.property("value", value)));
     }
 
     function attribute(string memory traitType, string memory value, DisplayType displayType)
@@ -34,8 +30,8 @@ library Metadata {
     {
         return json.objectOf(
             Solarray.strings(
-                json.property("trait_type", traitType).escapeJSON(),
-                json.property("value", value).escapeJSON(),
+                json.property("trait_type", traitType),
+                json.property("value", value),
                 json.property("display_type", _toString(displayType))
             )
         );
