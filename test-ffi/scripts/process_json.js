@@ -21,6 +21,9 @@ const responseType = args[3] || '--top-level';
 // is '--attribute'.
 const attributeIndex = args[4] || 0;
 
+// Example command, run in the terminal from the top level directory:
+// node test-ffi/scripts/process_json.js test-ffi/tmp/temp --attribute 1
+
 // Read the file at the specified path.
 const rawData = fs.readFileSync(path, "utf8");
 
