@@ -33,19 +33,21 @@ contract ExampleNFT is ERC721ConduitPreapproved_Solady {
                 json.property("name", string.concat("Example NFT #", tokenId.toString())),
                 json.property("description", "This is an example NFT"),
                 json.property("image", Metadata.svgDataURI(image(tokenId))),
-                json.rawProperty(
-                    "attributes",
-                    json.arrayOf(
-                        Solarray.strings(
-                            Metadata.attribute({traitType: "Example Attribute", value: "Example Value"}),
-                            Metadata.attribute({
-                                traitType: "Number",
-                                value: tokenId.toString(),
-                                displayType: DisplayType.Number
-                            }),
-                            Metadata.attribute({traitType: "Parity", value: tokenId % 2 == 0 ? "Even" : "Odd"})
-                        )
-                    )
+                _attribute(tokenId)
+            )
+        );
+    }
+
+    // @dev Split out from the stringURI function to allow compiling with the
+    // optimizer off / without via-IR.
+    function _attribute(uint256 tokenId) internal pure returns (string memory) {
+        return json.rawProperty(
+            "attributes",
+            json.arrayOf(
+                Solarray.strings(
+                    Metadata.attribute({traitType: "Example Attribute", value: "Example Value"}),
+                    Metadata.attribute({traitType: "Number", value: tokenId.toString(), displayType: DisplayType.Number}),
+                    Metadata.attribute({traitType: "Parity", value: tokenId % 2 == 0 ? "Even" : "Odd"})
                 )
             )
         );

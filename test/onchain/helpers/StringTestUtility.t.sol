@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import {Test} from "forge-std/Test.sol";
 import {StringTestUtility} from "./StringTestUtility.sol";
 
-contract StringtestUtilityTest is Test {
+contract StringTestUtilityTest is Test {
     using StringTestUtility for string;
 
     function testCountChar() public {

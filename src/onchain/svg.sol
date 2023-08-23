@@ -132,8 +132,8 @@ library svg {
     }
 
     // formats generic rgba color in css
-    function rgba(uint256 r, uint256 g, uint256 b, uint256 a) internal pure returns (string memory) {
+    function rgba(uint256 r, uint256 _g, uint256 b, uint256 a) internal pure returns (string memory) {
         string memory formattedA = a < 100 ? string.concat("0.", a.toString()) : "1";
-        return string.concat("rgba(", r.toString(), ",", g.toString(), ",", b.toString(), ",", formattedA, ")");
+        return string.concat("rgba(", r.toString(), ",", _g.toString(), ",", b.toString(), ",", formattedA, ")");
     }
 }
