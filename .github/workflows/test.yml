@@ -46,7 +46,7 @@ jobs:
 
       - name: Create temp file
         run: |
-          touch test-ffi/temp/temp.json
+          touch test-ffi/tmp/temp.json
         id: create-temp-file
 
       - name: Run Forge tests
@@ -56,7 +56,7 @@ jobs:
 
       - name: Clear temp files
         run: |
-          rm test-ffi/temp/temp.json
+          rm test-ffi/tmp/temp.json
         id: clear
 
       - name: Lint
