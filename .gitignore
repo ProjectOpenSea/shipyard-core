@@ -21,4 +21,4 @@ lcov.info
 
 test-ffi/scripts/node_modules
 test-ffi/scripts/yarn.lock
-# test-ffi/tmp/temp.json
+test-ffi/tmp
