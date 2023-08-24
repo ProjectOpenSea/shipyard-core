@@ -16,3 +16,6 @@
 [submodule "lib/solarray"]
 	path = lib/solarray
 	url = https://github.com/evmcheb/solarray
+[submodule "lib/dynamic-traits"]
+	path = lib/dynamic-traits
+	url = https://github.com/projectopensea/dynamic-traits
