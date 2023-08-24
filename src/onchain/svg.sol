@@ -86,9 +86,7 @@ library svg {
     {
         return el(
             "stop",
-            string.concat(
-                prop("stop-color", stopColor), " ", prop("offset", string.concat(offset.toString(), "%")), " ", props
-            )
+            string.concat(prop("stop-color", stopColor), prop("offset", string.concat(offset.toString(), "%")), props)
         );
     }
 
@@ -97,7 +95,7 @@ library svg {
     }
 
     function image(string memory href, string memory props) internal pure returns (string memory) {
-        return el("image", string.concat(prop("href", href), " ", props));
+        return el("image", string.concat(prop("href", href), props));
     }
 
     /* COMMON */
