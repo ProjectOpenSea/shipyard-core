@@ -43,11 +43,11 @@ library TraitLabelLib {
     error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
     function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
-        if (label.acceptableValues.length != 0) {
+        string[] memory acceptableValues = label.acceptableValues;
+        uint256 length = acceptableValues.length;
+        if (length != 0) {
             string memory stringValue = toString(traitValue);
             bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
-            string[] memory acceptableValues = label.acceptableValues;
-            uint256 length = acceptableValues.length;
             for (uint256 i = 0; i < length;) {
                 if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
                     return;

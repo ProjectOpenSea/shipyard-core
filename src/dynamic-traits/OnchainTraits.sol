@@ -16,6 +16,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     using TraitLabelLib for TraitLabelStorage;
 
     error InsufficientPrivilege();
+    error TraitDoesNotExist(bytes32 traitKey);
 
     ///@notice a mapping of traitKey to SSTORE2 storage addresses
     mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) public traitLabelStorage;
@@ -65,6 +66,9 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
+        if (labelStorage.storageAddress == address(0)) {
+            revert TraitDoesNotExist(traitKey);
+        }
         _verifySetterPrivilege(labelStorage, tokenId);
         if (labelStorage.checkValue) {
             TraitLabelLib.validateAcceptableValue(labelStorage.toTraitLabel(), traitKey, value);
@@ -147,7 +151,6 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     }
 
     function _dynamicAttributes(uint256 tokenId) internal view returns (string[] memory) {
-        // todo: can be griefed if traits are settable by anyone
         bytes32[] memory keys = _traitKeys.values();
         uint256 keysLength = keys.length;
 
