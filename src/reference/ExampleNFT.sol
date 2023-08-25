@@ -88,7 +88,7 @@ contract ExampleNFT is OnchainTraits, ERC721ConduitPreapproved_Solady {
         }
     }
 
-    function isOwnerOrApproved(uint256 tokenId, address addr) public view virtual override returns (bool) {
+    function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
         return ownerOf(tokenId) == addr || getApproved(tokenId) == addr || isApprovedForAll(ownerOf(tokenId), addr);
     }
 
