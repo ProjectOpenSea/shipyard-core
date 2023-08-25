@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {DynamicTraits} from "dynamic-traits/lib/DynamicTraits.sol";
+import {DynamicTraits} from "./DynamicTraits.sol";
 import {TraitLabel, AllowedEditor, Editors, TraitLabelLib, TraitLabelStorage, toBitMap} from "./lib/TraitLabelLib.sol";
 import {Metadata} from "shipyard-core/onchain/Metadata.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
@@ -20,6 +20,11 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     ///@notice a mapping of traitKey to SSTORE2 storage addresses
     mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) public traitLabelStorage;
     EnumerableSet.AddressSet internal _customEditors;
+
+    // ABSTRACT
+
+    ///@notice helper to determine if the given address is has the AllowedEditor.TokenOwner privilege
+    function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual returns (bool);
 
     // CUSTOM EDITORS
 
@@ -58,7 +63,45 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         return TraitLabelLib.toJson(keys, traitLabelStorage);
     }
 
-    function isOwnerOrApproved(uint256 tokenId, address addr) public view virtual returns (bool);
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external {
+        TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
+        _verifySetterPrivilege(labelStorage, tokenId);
+        if (labelStorage.checkValue) {
+            TraitLabelLib.validateAcceptableValue(labelStorage.toTraitLabel(), traitKey, value);
+        }
+        _setTrait(traitKey, tokenId, value);
+    }
+
+    function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external onlyOwner {
+        // TODO: optimize?
+        // bytes memory data;
+        // ///@solidity memory-safe-assembly
+        // assembly {
+        //     data := mload(0x40)
+        //     // add calldatasize() to the free mem pointer
+        //     // 0x20 length + abi-encoded TraitLabel - 0x20 traitKey
+        //     mstore(0x40, add(data, calldatasize()))
+        //     // store bytes length at data
+        //     let encodedStructLen := sub(calldatasize(), 0x20)
+        //     let dataOffset := add(data, 0x20)
+        //     mstore(data, encodedStructLen)
+        //     // copy calldata to data
+        //     calldatacopy(
+        //         // copy to dataOffset
+        //         dataOffset,
+        //         // start after traitKey arg
+        //         0x20,
+        //         // copy encodedStructLenBytes
+        //         encodedStructLen
+        //     )
+        //     // change struct offset pointer to 0x20
+        //     mstore(dataOffset, 0x20)
+        // }
+        _traitKeys.add(traitKey);
+        address storageAddress = SSTORE2.write(abi.encode(_traitLabel));
+        traitLabelStorage[traitKey] =
+            TraitLabelStorage(_traitLabel.editors, _traitLabel.acceptableValues.length > 0, storageAddress);
+    }
 
     function _verifySetterPrivilege(TraitLabelStorage memory labelStorage, uint256 tokenId) internal view {
         Editors _editors = labelStorage.allowedEditors;
@@ -132,46 +175,4 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
         return attributes;
     }
-
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external {
-        TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
-        _verifySetterPrivilege(labelStorage, tokenId);
-        if (labelStorage.checkValue) {
-            TraitLabelLib.validateAcceptableValue(labelStorage.toTraitLabel(), traitKey, value);
-        }
-        _setTrait(traitKey, tokenId, value);
-    }
-
-    function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external onlyOwner {
-        // TODO: optimize?
-        // bytes memory data;
-        // ///@solidity memory-safe-assembly
-        // assembly {
-        //     data := mload(0x40)
-        //     // add calldatasize() to the free mem pointer
-        //     // 0x20 length + abi-encoded TraitLabel - 0x20 traitKey
-        //     mstore(0x40, add(data, calldatasize()))
-        //     // store bytes length at data
-        //     let encodedStructLen := sub(calldatasize(), 0x20)
-        //     let dataOffset := add(data, 0x20)
-        //     mstore(data, encodedStructLen)
-        //     // copy calldata to data
-        //     calldatacopy(
-        //         // copy to dataOffset
-        //         dataOffset,
-        //         // start after traitKey arg
-        //         0x20,
-        //         // copy encodedStructLenBytes
-        //         encodedStructLen
-        //     )
-        //     // change struct offset pointer to 0x20
-        //     mstore(dataOffset, 0x20)
-        // }
-        _traitKeys.add(traitKey);
-        address storageAddress = SSTORE2.write(abi.encode(_traitLabel));
-        traitLabelStorage[traitKey] =
-            TraitLabelStorage(_traitLabel.editors, _traitLabel.acceptableValues.length > 0, storageAddress);
-    }
-
-    // ERC165
 }
