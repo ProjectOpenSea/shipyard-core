@@ -32,39 +32,34 @@ struct TraitLabel {
     Editors editors;
 }
 
-// Pack both allowedEditors (for writes) and storageAddress (for reads) into a single slot
+// Pack allowedEditors and valueRequiresValidation (for writes) plus storageAddress (for reads) into a single slot
 struct TraitLabelStorage {
     Editors allowedEditors;
-    bool checkValue;
+    bool valuesRequireValidation;
     address storageAddress;
 }
 
-library TraitLabelLib {
-    error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
+library TraitLabelStorageLib {
+    using LibUtils for bytes32;
+    using TraitLabelLib for TraitLabel;
+    using TraitLabelStorageLib for TraitLabelStorage;
 
-    function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
-        string[] memory acceptableValues = label.acceptableValues;
-        uint256 length = acceptableValues.length;
-        if (length != 0) {
-            string memory stringValue = toString(traitValue);
-            bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
-            for (uint256 i = 0; i < length;) {
-                if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
-                    return;
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-            revert InvalidTraitValue(traitKey, traitValue);
-        }
-    }
+    /**
+     * @notice Decode a TraitLabel from contract storage
+     * @param labelStorage TraitLabelStorage
+     */
 
     function toTraitLabel(TraitLabelStorage memory labelStorage) internal view returns (TraitLabel memory) {
         bytes memory data = SSTORE2.read(labelStorage.storageAddress);
         return abi.decode(data, (TraitLabel));
     }
 
+    /**
+     * @notice Given a trait key and value, render it as a properly formatted JSON attribute
+     * @param traitLabelStorage Storage mapping of trait keys to TraitLabelStorage
+     * @param traitKey Trait key
+     * @param traitValue Trait value
+     */
     function toAttributeJson(
         mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) storage traitLabelStorage,
         bytes32 traitKey,
@@ -73,6 +68,8 @@ library TraitLabelLib {
         // read and decode the trait label from contract storage
         TraitLabelStorage storage labelStorage = traitLabelStorage[traitKey];
         TraitLabel memory traitLabel = toTraitLabel(labelStorage);
+
+        // convert traitValue if necessary
         string memory actualTraitValue;
         if (traitLabel.fullTraitValues.length != 0) {
             // try to find matching FullTraitValue
@@ -91,9 +88,10 @@ library TraitLabelLib {
             }
             if (!found) {
                 // no matching FullTraitValue found, so use the raw traitValue
-                actualTraitValue = toString(traitValue);
+                actualTraitValue = traitValue.toString();
             }
         }
+        // render the attribute as JSON
         return Metadata.attribute({
             traitType: traitLabel.traitLabel,
             value: actualTraitValue,
@@ -101,7 +99,12 @@ library TraitLabelLib {
         });
     }
 
-    function toJson(bytes32[] memory keys, mapping(bytes32 => TraitLabelStorage) storage traitLabelStorage)
+    /**
+     * @notice Given trait keys, render their labels as a properly formatted JSON array
+     * @param traitLabelStorage Storage mapping of trait keys to TraitLabelStorage
+     * @param keys Trait keys to render labels for
+     */
+    function toLabelJson(mapping(bytes32 => TraitLabelStorage) storage traitLabelStorage, bytes32[] memory keys)
         internal
         view
         returns (string memory)
@@ -110,49 +113,23 @@ library TraitLabelLib {
         uint256 i;
         for (i; i < keys.length;) {
             bytes32 key = keys[i];
-            TraitLabel memory traitLabel = toTraitLabel(traitLabelStorage[key]);
-            // TraitLabel memory label = abi.decode()
-            result[i] = toJson(key, traitLabel);
+            TraitLabel memory traitLabel = traitLabelStorage[key].toTraitLabel();
+            result[i] = traitLabel.toLabelJson(key);
             unchecked {
                 ++i;
             }
         }
         return json.arrayOf(result);
     }
+}
 
-    function toJson(bytes32 traitKey, TraitLabel memory label) internal pure returns (string memory) {
-        return json.objectOf(
-            Solarray.strings(
-                json.property("traitKey", toString(traitKey)),
-                json.property("fullTraitKey", label.fullTraitKey),
-                json.property("traitLabel", label.traitLabel),
-                json.rawProperty("acceptableValues", toJson(label.acceptableValues)),
-                json.rawProperty("fullTraitValues", toJson(label.fullTraitValues)),
-                json.property("displayType", Metadata.toString(label.displayType)),
-                json.property("editors", toJson(label.editors.expand().castToUints()))
-            )
-        );
-    }
-
-    function toJson(uint8[] memory uints) internal pure returns (string memory) {
-        string[] memory result = new string[](uints.length);
-        for (uint256 i = 0; i < uints.length;) {
-            result[i] = LibString.toString(uints[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        return json.arrayOf(result);
-    }
-
-    function toJson(string[] memory acceptableValues) internal pure returns (string memory) {
-        return json.arrayOf(json.quote(acceptableValues));
-    }
+library FullTraitValueLib {
+    using LibUtils for bytes32;
 
     function toJson(FullTraitValue memory fullTraitValue) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
-                json.property("traitValue", toString(fullTraitValue.traitValue)),
+                json.property("traitValue", fullTraitValue.traitValue.toString()),
                 json.property("fullTraitValue", fullTraitValue.fullTraitValue)
             )
         );
@@ -168,7 +145,48 @@ library TraitLabelLib {
         }
         return json.arrayOf(result);
     }
+}
 
+library TraitLabelLib {
+    using LibUtils for bytes32;
+    using FullTraitValueLib for FullTraitValue[];
+
+    error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
+
+    function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
+        string[] memory acceptableValues = label.acceptableValues;
+        uint256 length = acceptableValues.length;
+        if (length != 0) {
+            string memory stringValue = traitValue.toString();
+            bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
+            for (uint256 i = 0; i < length;) {
+                if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
+                    return;
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+            revert InvalidTraitValue(traitKey, traitValue);
+        }
+    }
+
+    function toLabelJson(TraitLabel memory label, bytes32 traitKey) internal pure returns (string memory) {
+        return json.objectOf(
+            Solarray.strings(
+                json.property("traitKey", traitKey.toString()),
+                json.property("fullTraitKey", label.fullTraitKey),
+                json.property("traitLabel", label.traitLabel),
+                json.rawProperty("acceptableValues", LibUtils.toJson(label.acceptableValues)),
+                json.rawProperty("fullTraitValues", label.fullTraitValues.toJson()),
+                json.property("displayType", Metadata.toString(label.displayType)),
+                json.property("editors", LibUtils.toJson(label.editors.expand().castToUints()))
+            )
+        );
+    }
+}
+
+library LibUtils {
     function toString(bytes32 key) internal pure returns (string memory) {
         uint256 len = bytes32StringLength(key);
         string memory result;
@@ -197,6 +215,21 @@ library TraitLabelLib {
             }
         }
         return 32;
+    }
+
+    function toJson(uint8[] memory uints) internal pure returns (string memory) {
+        string[] memory result = new string[](uints.length);
+        for (uint256 i = 0; i < uints.length;) {
+            result[i] = LibString.toString(uints[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        return json.arrayOf(result);
+    }
+
+    function toJson(string[] memory acceptableValues) internal pure returns (string memory) {
+        return json.arrayOf(json.quote(acceptableValues));
     }
 }
 

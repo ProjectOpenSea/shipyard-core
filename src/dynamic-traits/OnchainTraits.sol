@@ -2,7 +2,15 @@
 pragma solidity ^0.8.17;
 
 import {DynamicTraits} from "./DynamicTraits.sol";
-import {TraitLabel, AllowedEditor, Editors, TraitLabelLib, TraitLabelStorage, toBitMap} from "./lib/TraitLabelLib.sol";
+import {
+    TraitLabel,
+    AllowedEditor,
+    Editors,
+    TraitLabelLib,
+    TraitLabelStorageLib,
+    TraitLabelStorage,
+    toBitMap
+} from "./lib/TraitLabelLib.sol";
 import {Metadata} from "shipyard-core/onchain/Metadata.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
@@ -12,8 +20,9 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.AddressSet;
     using {toBitMap} for AllowedEditor;
-    using TraitLabelLib for mapping(bytes32 => TraitLabelStorage);
-    using TraitLabelLib for TraitLabelStorage;
+    using TraitLabelStorageLib for mapping(bytes32 => TraitLabelStorage);
+    using TraitLabelStorageLib for TraitLabelStorage;
+    using TraitLabelLib for TraitLabel;
 
     error InsufficientPrivilege();
     error TraitDoesNotExist(bytes32 traitKey);
@@ -55,52 +64,32 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     // LABELS URI
 
-    function getTraitLabelsURI() external view override returns (string memory) {
+    function getTraitLabelsURI() external view virtual override returns (string memory) {
         return Metadata.jsonDataURI(getTraitLabelsJson());
     }
 
     function getTraitLabelsJson() internal view returns (string memory) {
         bytes32[] memory keys = _traitKeys.values();
-        return TraitLabelLib.toJson(keys, traitLabelStorage);
+        return traitLabelStorage.toLabelJson(keys);
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external {
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external virtual {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         if (labelStorage.storageAddress == address(0)) {
             revert TraitDoesNotExist(traitKey);
         }
         _verifySetterPrivilege(labelStorage, tokenId);
-        if (labelStorage.checkValue) {
-            TraitLabelLib.validateAcceptableValue(labelStorage.toTraitLabel(), traitKey, value);
+        if (labelStorage.valuesRequireValidation) {
+            labelStorage.toTraitLabel().validateAcceptableValue(traitKey, value);
         }
         _setTrait(traitKey, tokenId, value);
     }
 
-    function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external onlyOwner {
-        // TODO: optimize?
-        // bytes memory data;
-        // ///@solidity memory-safe-assembly
-        // assembly {
-        //     data := mload(0x40)
-        //     // add calldatasize() to the free mem pointer
-        //     // 0x20 length + abi-encoded TraitLabel - 0x20 traitKey
-        //     mstore(0x40, add(data, calldatasize()))
-        //     // store bytes length at data
-        //     let encodedStructLen := sub(calldatasize(), 0x20)
-        //     let dataOffset := add(data, 0x20)
-        //     mstore(data, encodedStructLen)
-        //     // copy calldata to data
-        //     calldatacopy(
-        //         // copy to dataOffset
-        //         dataOffset,
-        //         // start after traitKey arg
-        //         0x20,
-        //         // copy encodedStructLenBytes
-        //         encodedStructLen
-        //     )
-        //     // change struct offset pointer to 0x20
-        //     mstore(dataOffset, 0x20)
-        // }
+    function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external virtual onlyOwner {
+        _setTraitLabel(traitKey, _traitLabel);
+    }
+
+    function _setTraitLabel(bytes32 traitKey, TraitLabel memory _traitLabel) internal virtual {
         _traitKeys.add(traitKey);
         address storageAddress = SSTORE2.write(abi.encode(_traitLabel));
         traitLabelStorage[traitKey] =
