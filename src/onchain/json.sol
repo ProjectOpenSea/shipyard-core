@@ -108,6 +108,21 @@ library json {
     }
 
     /**
+     * @notice enclose each string in an array in double "quotes", escaping any existing quotes
+     * @param strs array of strings, each to escape and enclose in quotes
+     */
+    function quote(string[] memory strs) internal pure returns (string[] memory) {
+        string[] memory result = new string[](strs.length);
+        for (uint256 i = 0; i < strs.length;) {
+            result[i] = quote(strs[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        return result;
+    }
+
+    /**
      * @notice comma-join an array of strings
      * @param values array of strings to join
      * @return string of value,value,...
