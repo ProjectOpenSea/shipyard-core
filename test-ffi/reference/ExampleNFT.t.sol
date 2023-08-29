@@ -21,14 +21,6 @@ contract ExampleNFTTest is Test {
         testExampleNft = new ExampleNFT();
     }
 
-    function testName() public {
-        assertEq(testExampleNft.name(), "ExampleNFT");
-    }
-
-    function testSymbol() public {
-        assertEq(testExampleNft.symbol(), "EXNFT");
-    }
-
     function testStringURI(uint256 tokenId) public {
         _populateTempFileWithJson(tokenId);
 

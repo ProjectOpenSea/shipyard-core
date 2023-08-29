@@ -2,31 +2,40 @@
 pragma solidity ^0.8.19;
 
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
-import {IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
+import {OptionalTrait, IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
+import {
+    OptionalValueStorage, OptionalValue, OptionalValueStorageLib, OptionalValueType
+} from "./lib/DynamicTraitLib.sol";
 
 contract DynamicTraits is IERCDynamicTraits {
     using EnumerableSet for EnumerableSet.Bytes32Set;
+    using OptionalValueStorageLib for OptionalValueStorage;
 
     EnumerableSet.Bytes32Set internal _traitKeys;
-    mapping(uint256 tokenId => mapping(bytes32 traitKey => bytes32 traitValue)) internal _traits;
+    mapping(uint256 tokenId => mapping(bytes32 traitKey => OptionalValueStorage traitValue)) internal _traits;
     string internal _traitLabelsURI;
 
     error TraitValueUnchanged();
 
-    function getTraitValue(bytes32 traitKey, uint256 tokenId) external view virtual returns (bytes32 traitValue) {
-        return _traits[tokenId][traitKey];
+    function getTraitValue(bytes32 traitKey, uint256 tokenId)
+        external
+        view
+        virtual
+        returns (OptionalTrait memory traitValue)
+    {
+        return _traits[tokenId][traitKey].load();
     }
 
     function getTraitValues(bytes32 traitKey, uint256[] calldata tokenIds)
         external
         view
         virtual
-        returns (bytes32[] memory traitValues)
+        returns (OptionalTrait[] memory traitValues)
     {
         uint256 length = tokenIds.length;
-        bytes32[] memory result = new bytes32[](length);
+        OptionalTrait[] memory result = new OptionalTrait[](length);
         for (uint256 i = 0; i < length; i++) {
-            result[i] = _traits[tokenIds[i]][traitKey];
+            result[i] = _traits[tokenIds[i]][traitKey].load();
         }
         return result;
     }
@@ -47,18 +56,20 @@ contract DynamicTraits is IERCDynamicTraits {
         return _traitLabelsURI;
     }
 
-    function _setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) internal {
-        bytes32 oldValue = _traits[tokenId][traitKey];
-        if (oldValue == value) {
+    function _setTrait(bytes32 traitKey, uint256 tokenId, OptionalTrait memory newTrait) internal {
+        OptionalValueStorage storage existingStorage = _traits[tokenId][traitKey];
+        OptionalTrait memory loaded = existingStorage.load();
+
+        if (loaded.exists == newTrait.exists && loaded.value == newTrait.value) {
             revert TraitValueUnchanged();
         }
 
-        _traits[tokenId][traitKey] = value;
+        existingStorage.store(newTrait);
 
         // no-op if exists
         _traitKeys.add(traitKey);
 
-        emit TraitUpdated(traitKey, tokenId, value);
+        emit TraitUpdated(traitKey, tokenId, newTrait);
     }
 
     function _setTraitLabelsURI(string calldata uri) internal virtual {
