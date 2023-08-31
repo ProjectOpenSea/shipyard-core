@@ -9,6 +9,7 @@ import {
     TraitLabelLib,
     TraitLabelStorageLib,
     TraitLabelStorage,
+    StoredTraitLabel,
     toBitMap
 } from "./lib/TraitLabelLib.sol";
 import {Metadata} from "shipyard-core/onchain/Metadata.sol";
@@ -33,7 +34,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     // ABSTRACT
 
-    ///@notice helper to determine if the given address is has the AllowedEditor.TokenOwner privilege
+    ///@notice helper to determine if a given address has the AllowedEditor.TokenOwner privilege
     function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual returns (bool);
 
     // CUSTOM EDITORS
@@ -73,16 +74,27 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         return traitLabelStorage.toLabelJson(keys);
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external virtual {
+    error TraitIsRequired();
+
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait, bool clear) external virtual {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
-        if (labelStorage.storageAddress == address(0)) {
+        StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
+        if (!storedTraitLabel.exists()) {
             revert TraitDoesNotExist(traitKey);
         }
-        _verifySetterPrivilege(labelStorage, tokenId);
-        if (labelStorage.valuesRequireValidation) {
-            labelStorage.toTraitLabel().validateAcceptableValue(traitKey, value);
+        _verifySetterPrivilege(labelStorage.allowedEditors, tokenId);
+        if (clear) {
+            if (labelStorage.required) {
+                revert TraitIsRequired();
+            } else {
+                _setTrait(traitKey, tokenId, bytes32(0), true);
+                return;
+            }
         }
-        _setTrait(traitKey, tokenId, value);
+        if (labelStorage.valuesRequireValidation) {
+            storedTraitLabel.load().validateAcceptableValue(traitKey, trait);
+        }
+        _setTrait(traitKey, tokenId, trait, false);
     }
 
     function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external virtual onlyOwner {
@@ -91,52 +103,45 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     function _setTraitLabel(bytes32 traitKey, TraitLabel memory _traitLabel) internal virtual {
         _traitKeys.add(traitKey);
-        address storageAddress = SSTORE2.write(abi.encode(_traitLabel));
-        traitLabelStorage[traitKey] =
-            TraitLabelStorage(_traitLabel.editors, _traitLabel.acceptableValues.length > 0, storageAddress);
+        traitLabelStorage[traitKey] = TraitLabelStorage({
+            allowedEditors: _traitLabel.editors,
+            required: _traitLabel.required,
+            valuesRequireValidation: _traitLabel.acceptableValues.length > 0,
+            storedLabel: _traitLabel.store()
+        });
     }
 
-    function _verifySetterPrivilege(TraitLabelStorage memory labelStorage, uint256 tokenId) internal view {
-        Editors _editors = labelStorage.allowedEditors;
-        uint256 editors = Editors.unwrap(_editors);
-        bool err;
+    function _verifySetterPrivilege(Editors editors, uint256 tokenId) internal view {
         // anyone
-        if (editors & AllowedEditor.Anyone.toBitMap() != 0) {
+        if (editors.contains(AllowedEditor.Anyone)) {
             // short circuit
             return;
         }
-        if (editors & AllowedEditor.Self.toBitMap() != 0) {
-            err = true;
-        }
+        if (editors.contains(AllowedEditor.Self)) {}
 
         // tokenOwner
-        if (editors & AllowedEditor.TokenOwner.toBitMap() != 0) {
+        if (editors.contains(AllowedEditor.TokenOwner)) {
             if (isOwnerOrApproved(tokenId, msg.sender)) {
                 // short circuit
                 return;
             }
-            err = true;
         }
         // customEditor
-        if (editors & AllowedEditor.Custom.toBitMap() != 0) {
+        if (editors.contains(AllowedEditor.Custom)) {
             if (_customEditors.contains(msg.sender)) {
                 // short circuit
                 return;
             }
-            err = true;
         }
         // contractOwner
-        if (editors & AllowedEditor.ContractOwner.toBitMap() != 0) {
+        if (editors.contains(AllowedEditor.ContractOwner)) {
             if (owner() == msg.sender) {
                 // short circuit
                 return;
             }
-            err = true;
         }
 
-        if (err) {
-            revert InsufficientPrivilege();
-        }
+        revert InsufficientPrivilege();
     }
 
     function _dynamicAttributes(uint256 tokenId) internal view returns (string[] memory) {
@@ -147,10 +152,12 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         uint256 num;
         for (uint256 i = 0; i < keysLength;) {
             bytes32 key = keys[i];
-            bytes32 value = _traits[tokenId][key];
-            // TODO: this breaks with 0-value numerical traits
-            if (value != bytes32(0)) {
-                attributes[num] = traitLabelStorage.toAttributeJson(key, value);
+            bytes32 trait = _traits[tokenId][key];
+            if (trait != bytes32(0)) {
+                if (trait == ZERO_VALUE) {
+                    trait = bytes32(0);
+                }
+                attributes[num] = traitLabelStorage.toAttributeJson(key, trait);
                 unchecked {
                     ++num;
                 }

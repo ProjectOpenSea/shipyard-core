@@ -9,6 +9,8 @@ import {SSTORE2} from "solady/utils/SSTORE2.sol";
 
 type Editors is uint8;
 
+type StoredTraitLabel is address;
+
 enum AllowedEditor {
     Anyone,
     Self,
@@ -30,13 +32,15 @@ struct TraitLabel {
     // packed
     DisplayType displayType;
     Editors editors;
+    bool required;
 }
 
 // Pack allowedEditors and valueRequiresValidation (for writes) plus storageAddress (for reads) into a single slot
 struct TraitLabelStorage {
     Editors allowedEditors;
+    bool required;
     bool valuesRequireValidation;
-    address storageAddress;
+    StoredTraitLabel storedLabel;
 }
 
 library TraitLabelStorageLib {
@@ -48,10 +52,8 @@ library TraitLabelStorageLib {
      * @notice Decode a TraitLabel from contract storage
      * @param labelStorage TraitLabelStorage
      */
-
     function toTraitLabel(TraitLabelStorage memory labelStorage) internal view returns (TraitLabel memory) {
-        bytes memory data = SSTORE2.read(labelStorage.storageAddress);
-        return abi.decode(data, (TraitLabel));
+        return labelStorage.storedLabel.load();
     }
 
     /**
@@ -152,6 +154,10 @@ library TraitLabelLib {
     using FullTraitValueLib for FullTraitValue[];
 
     error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
+
+    function store(TraitLabel memory self) internal returns (StoredTraitLabel) {
+        return StoredTraitLabel.wrap(SSTORE2.write(abi.encode(self)));
+    }
 
     function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
         string[] memory acceptableValues = label.acceptableValues;
@@ -290,5 +296,19 @@ function toBitMap(AllowedEditor editor) pure returns (uint256) {
     return 1 << uint256(editor);
 }
 
-using {expand} for Editors global;
+function contains(Editors self, AllowedEditor editor) pure returns (bool) {
+    return Editors.unwrap(self) & toBitMap(editor) != 0;
+}
+
+function exists(StoredTraitLabel storedTraitLabel) pure returns (bool) {
+    return StoredTraitLabel.unwrap(storedTraitLabel) != address(0);
+}
+
+function load(StoredTraitLabel storedTraitLabel) view returns (TraitLabel memory) {
+    bytes memory data = SSTORE2.read(StoredTraitLabel.unwrap(storedTraitLabel));
+    return abi.decode(data, (TraitLabel));
+}
+
+using {expand, contains} for Editors global;
+using {exists, load} for StoredTraitLabel global;
 using {castToUints} for AllowedEditor[];

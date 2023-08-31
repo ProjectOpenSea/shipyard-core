@@ -2,40 +2,50 @@
 pragma solidity ^0.8.19;
 
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
-import {OptionalTrait, IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
-import {
-    OptionalValueStorage, OptionalValue, OptionalValueStorageLib, OptionalValueType
-} from "./lib/DynamicTraitLib.sol";
+import {IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
 
 contract DynamicTraits is IERCDynamicTraits {
     using EnumerableSet for EnumerableSet.Bytes32Set;
-    using OptionalValueStorageLib for OptionalValueStorage;
+
+    error TraitNotSet(bytes32 traitKey);
+    error TraitCannotBeZeroValueHash();
+    error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
     EnumerableSet.Bytes32Set internal _traitKeys;
-    mapping(uint256 tokenId => mapping(bytes32 traitKey => OptionalValueStorage traitValue)) internal _traits;
+    mapping(uint256 tokenId => mapping(bytes32 traitKey => bytes32 traitValue)) internal _traits;
     string internal _traitLabelsURI;
+    bytes32 constant ZERO_VALUE = keccak256("DYNAMIC_TRAITS_ZERO_VALUE");
 
     error TraitValueUnchanged();
 
-    function getTraitValue(bytes32 traitKey, uint256 tokenId)
-        external
-        view
-        virtual
-        returns (OptionalTrait memory traitValue)
-    {
-        return _traits[tokenId][traitKey].load();
+    function getTraitValue(bytes32 traitKey, uint256 tokenId) external view virtual returns (bytes32) {
+        bytes32 value = _traits[tokenId][traitKey];
+        if (value == bytes32(0)) {
+            revert TraitNotSet(traitKey);
+        } else if (value == ZERO_VALUE) {
+            return bytes32(0);
+        } else {
+            return value;
+        }
     }
 
     function getTraitValues(bytes32 traitKey, uint256[] calldata tokenIds)
         external
         view
         virtual
-        returns (OptionalTrait[] memory traitValues)
+        returns (bytes32[] memory traitValues)
     {
         uint256 length = tokenIds.length;
-        OptionalTrait[] memory result = new OptionalTrait[](length);
+        bytes32[] memory result = new bytes32[](length);
         for (uint256 i = 0; i < length; i++) {
-            result[i] = _traits[tokenIds[i]][traitKey].load();
+            bytes32 value = _traits[tokenIds[i]][traitKey];
+            if (value == bytes32(0)) {
+                revert TraitNotSet(traitKey);
+            } else if (value == ZERO_VALUE) {
+                value = bytes32(0);
+            } else {
+                result[i] = value;
+            }
         }
         return result;
     }
@@ -56,20 +66,35 @@ contract DynamicTraits is IERCDynamicTraits {
         return _traitLabelsURI;
     }
 
-    function _setTrait(bytes32 traitKey, uint256 tokenId, OptionalTrait memory newTrait) internal {
-        OptionalValueStorage storage existingStorage = _traits[tokenId][traitKey];
-        OptionalTrait memory loaded = existingStorage.load();
+    function _setTrait(bytes32 traitKey, uint256 tokenId, bytes32 newTrait, bool clear) internal {
+        bytes32 existingValue = _traits[tokenId][traitKey];
 
-        if (loaded.exists == newTrait.exists && loaded.value == newTrait.value) {
-            revert TraitValueUnchanged();
+        if (clear) {
+            if (existingValue == bytes32(0)) {
+                revert TraitValueUnchanged();
+            }
+
+            _traits[tokenId][traitKey] = bytes32(0);
+            emit TraitUpdated(traitKey, tokenId, bytes32(0));
+            return;
+        } else {
+            if (newTrait == bytes32(0)) {
+                newTrait = ZERO_VALUE;
+            } else if (newTrait == ZERO_VALUE) {
+                revert InvalidTraitValue(traitKey, newTrait);
+            }
+
+            if (existingValue == newTrait) {
+                revert TraitValueUnchanged();
+            }
+
+            // no-op if exists
+            _traitKeys.add(traitKey);
+
+            _traits[tokenId][traitKey] = newTrait;
+
+            emit TraitUpdated(traitKey, tokenId, newTrait);
         }
-
-        existingStorage.store(newTrait);
-
-        // no-op if exists
-        _traitKeys.add(traitKey);
-
-        emit TraitUpdated(traitKey, tokenId, newTrait);
     }
 
     function _setTraitLabelsURI(string calldata uri) internal virtual {
