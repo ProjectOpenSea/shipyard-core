@@ -7,7 +7,6 @@ import {
 import {json} from "shipyard-core/onchain/json.sol";
 import {svg} from "shipyard-core/onchain/svg.sol";
 import {LibString} from "solady/utils/LibString.sol";
-import {Base64} from "solady/utils/Base64.sol";
 import {Solarray} from "solarray/Solarray.sol";
 import {Metadata, DisplayType} from "shipyard-core/onchain/Metadata.sol";
 import {OnchainTraits, DynamicTraits} from "shipyard-core/dynamic-traits/OnchainTraits.sol";
@@ -26,40 +25,59 @@ contract ExampleNFT is OnchainTraits, ERC721ConduitPreapproved_Solady {
         return "EXNFT";
     }
 
+    /**
+     * @notice Get the metdata URI for a given token ID
+     * @param tokenId The token ID to get the tokenURI for
+     */
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         return Metadata.base64JsonDataURI(stringURI(tokenId));
     }
 
+    /**
+     * @notice Helper function to get the raw JSON metadata representing a given token ID
+     * @param tokenId The token ID to get URI for
+     */
     function stringURI(uint256 tokenId) internal view returns (string memory) {
         return json.objectOf(
             Solarray.strings(
                 json.property("name", string.concat("Example NFT #", tokenId.toString())),
                 json.property("description", "This is an example NFT"),
                 json.property("image", Metadata.svgDataURI(image(tokenId))),
-                _attribute(tokenId)
+                _attributes(tokenId)
             )
         );
     }
 
-    // @dev Split out from the stringURI function to allow compiling with the
-    // optimizer off / without via-IR.
-    function _attribute(uint256 tokenId) internal view returns (string memory) {
-        string[] memory staticTraits = Solarray.strings(
+    /**
+     * @notice Helper function to get both the static and dynamic attributes for a given token ID
+     * @param tokenId The token ID to get the static and dynamic attributes for
+     */
+    function _attributes(uint256 tokenId) internal view returns (string memory) {
+        // get the static attributes
+        string[] memory staticTraits = _staticAttributes(tokenId);
+        // get the dynamic attributes
+        string[] memory dynamicTraits = _dynamicAttributes(tokenId);
+
+        // return the combined attributes as a property containing an array
+        return json.rawProperty("attributes", json.arrayOf(staticTraits, dynamicTraits));
+    }
+
+    /**
+     * @notice Helper function to get the static attributes for a given token ID
+     * @param tokenId The token ID to get the static attributes for
+     */
+    function _staticAttributes(uint256 tokenId) internal view virtual returns (string[] memory) {
+        return Solarray.strings(
             Metadata.attribute({traitType: "Example Attribute", value: "Example Value"}),
             Metadata.attribute({traitType: "Number", value: tokenId.toString(), displayType: DisplayType.Number}),
             Metadata.attribute({traitType: "Parity", value: tokenId % 2 == 0 ? "Even" : "Odd"})
         );
-        string[] memory dynamicTraits = _dynamicAttributes(tokenId);
-        string[] memory combined = new string[](staticTraits.length + dynamicTraits.length);
-        for (uint256 i = 0; i < staticTraits.length; i++) {
-            combined[i] = staticTraits[i];
-        }
-        for (uint256 i = 0; i < dynamicTraits.length; i++) {
-            combined[staticTraits.length + i] = dynamicTraits[i];
-        }
-        return json.rawProperty("attributes", json.arrayOf(combined));
     }
 
+    /**
+     * @notice Helper function to get the raw SVG image for a given token ID
+     * @param tokenId The token ID to get the dynamic attributes for
+     */
     function image(uint256 tokenId) internal pure returns (string memory) {
         return svg.top({
             props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
@@ -89,7 +107,7 @@ contract ExampleNFT is OnchainTraits, ERC721ConduitPreapproved_Solady {
     }
 
     function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
-        return ownerOf(tokenId) == addr || getApproved(tokenId) == addr || isApprovedForAll(ownerOf(tokenId), addr);
+        return ownerOf(tokenId) == addr || isApprovedForAll(ownerOf(tokenId), addr) || getApproved(tokenId) == addr;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(DynamicTraits, ERC721) returns (bool) {

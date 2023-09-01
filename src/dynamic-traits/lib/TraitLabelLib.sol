@@ -7,10 +7,13 @@ import {Solarray} from "solarray/Solarray.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
 
+///@notice Bitmap type for storing allowed editors
 type Editors is uint8;
 
+///@notice alias type for storing and loading TraitLabels using SSTORE2
 type StoredTraitLabel is address;
 
+///@notice Enumeration of allowed editor roles
 enum AllowedEditor {
     Anyone,
     Self,
@@ -19,27 +22,39 @@ enum AllowedEditor {
     ContractOwner
 }
 
+///@notice Struct associating a bytes32 traitValue to its string representation
 struct FullTraitValue {
     bytes32 traitValue;
     string fullTraitValue;
 }
 
+///@notice Struct representing a trait label
 struct TraitLabel {
+    // The full trait key string if different from the bytes32 traitKey
     string fullTraitKey;
+    // The string label for the trait
     string traitLabel;
+    // The list of acceptable values for the trait, if it must be validated
     string[] acceptableValues;
+    // The list of full trait values, if the trait value should be converted to a different string
     FullTraitValue[] fullTraitValues;
-    // packed
+    // The display type for the trait
     DisplayType displayType;
+    // The list of editors allowed to set the trait
     Editors editors;
+    // Whether the trait is required to have a value
     bool required;
 }
 
 // Pack allowedEditors and valueRequiresValidation (for writes) plus storageAddress (for reads) into a single slot
 struct TraitLabelStorage {
+    // The bitmap of editors allowed to set the trait
     Editors allowedEditors;
+    // true if TraitLabel.required == true
     bool required;
+    // true if TraitLabel.acceptableValues.length != 0
     bool valuesRequireValidation;
+    // The address of the TraitLabel in contract storage, aliased as a StoredTraitLabel
     StoredTraitLabel storedLabel;
 }
 
@@ -121,6 +136,9 @@ library TraitLabelStorageLib {
 }
 
 library FullTraitValueLib {
+    /**
+     * @notice Convert a FullTraitValue to a JSON object
+     */
     function toJson(FullTraitValue memory fullTraitValue) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
@@ -130,6 +148,9 @@ library FullTraitValueLib {
         );
     }
 
+    /**
+     * @notice Convert an array of FullTraitValues to a JSON array of objects
+     */
     function toJson(FullTraitValue[] memory fullTraitValues) internal pure returns (string memory) {
         string[] memory result = new string[](fullTraitValues.length);
         for (uint256 i = 0; i < fullTraitValues.length;) {
@@ -145,10 +166,19 @@ library FullTraitValueLib {
 library TraitLabelLib {
     error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
+    /**
+     * @notice Store a TraitLabel in contract storage using SSTORE2 and return the StoredTraitLabel
+     */
     function store(TraitLabel memory self) internal returns (StoredTraitLabel) {
         return StoredTraitLabel.wrap(SSTORE2.write(abi.encode(self)));
     }
 
+    /**
+     * @notice Validate a trait value against a TraitLabel's acceptableValues
+     * @param label TraitLabel
+     * @param traitKey Trait key
+     * @param traitValue Trait value
+     */
     function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
         string[] memory acceptableValues = label.acceptableValues;
         uint256 length = acceptableValues.length;
@@ -167,22 +197,35 @@ library TraitLabelLib {
         }
     }
 
+    /**
+     * @notice Convert a TraitLabel to a JSON object
+     * @param label TraitLabel
+     * @param traitKey Trait key for the label
+     */
     function toLabelJson(TraitLabel memory label, bytes32 traitKey) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
-                json.property("traitKey", TraitLib.toString(traitKey, DisplayType.String)),
-                json.property("fullTraitKey", label.fullTraitKey),
+                json.property("traitKey", TraitLib.asString(traitKey)),
+                json.property(
+                    "fullTraitKey",
+                    bytes(label.fullTraitKey).length == 0 ? TraitLib.asString(traitKey) : label.fullTraitKey
+                ),
                 json.property("traitLabel", label.traitLabel),
                 json.rawProperty("acceptableValues", TraitLib.toJson(label.acceptableValues)),
                 json.rawProperty("fullTraitValues", FullTraitValueLib.toJson(label.fullTraitValues)),
                 json.property("displayType", Metadata.toString(label.displayType)),
-                json.rawProperty("editors", TraitLib.toJson(EditorsLib.castToUints(EditorsLib.expand(label.editors))))
+                json.rawProperty("editors", EditorsLib.toJson(label.editors))
             )
         );
     }
 }
 
 library TraitLib {
+    /**
+     * @notice Convert a bytes32 trait value to a string
+     * @param key The trait value to convert
+     * @param displayType The display type of the trait value
+     */
     function toString(bytes32 key, DisplayType displayType) internal pure returns (string memory) {
         if (
             displayType == DisplayType.Number || displayType == DisplayType.BoostNumber
@@ -194,6 +237,10 @@ library TraitLib {
         }
     }
 
+    /**
+     * @notice Convert a bytes32 to a string
+     * @param key The bytes32 to convert
+     */
     function asString(bytes32 key) internal pure returns (string memory) {
         uint256 len = _bytes32StringLength(key);
         string memory result;
@@ -211,6 +258,9 @@ library TraitLib {
         return result;
     }
 
+    /**
+     * @notice Get the "length" of a bytes32 by counting number of non-zero leading bytes
+     */
     function _bytes32StringLength(bytes32 str) internal pure returns (uint256) {
         // only meant to be called in a view context, so this optimizes for bytecode size over performance
         for (uint256 i; i < 32;) {
@@ -224,17 +274,9 @@ library TraitLib {
         return 32;
     }
 
-    function toJson(uint8[] memory uints) internal pure returns (string memory) {
-        string[] memory result = new string[](uints.length);
-        for (uint256 i = 0; i < uints.length;) {
-            result[i] = LibString.toString(uints[i]);
-            unchecked {
-                ++i;
-            }
-        }
-        return json.arrayOf(result);
-    }
-
+    /**
+     * @notice Convert an array of strings to a JSON array of strings
+     */
     function toJson(string[] memory acceptableValues) internal pure returns (string memory) {
         return json.arrayOf(json.quote(acceptableValues));
     }
@@ -252,6 +294,9 @@ library EditorsLib {
         }
     }
 
+    /**
+     * @notice Convert an array of AllowedEditor enum values to an Editors bitmap
+     */
     function aggregate(AllowedEditor[] memory editors) internal pure returns (Editors) {
         uint256 editorsLength = editors.length;
         uint256 result;
@@ -264,6 +309,9 @@ library EditorsLib {
         return Editors.wrap(uint8(result));
     }
 
+    /**
+     * @notice Convert an Editors bitmap to an array of AllowedEditor enum values
+     */
     function expand(Editors editors) internal pure returns (AllowedEditor[] memory allowedEditors) {
         uint8 _editors = Editors.unwrap(editors);
         if (_editors & 1 == 1) {
@@ -293,20 +341,53 @@ library EditorsLib {
         return result;
     }
 
+    /**
+     * @notice Convert an AllowedEditor enum value to its corresponding bit in an Editors bitmap
+     */
     function toBitMap(AllowedEditor editor) internal pure returns (uint8) {
         return uint8(1 << uint256(editor));
     }
 
+    /**
+     * @notice Check if an Editors bitmap contains a given AllowedEditor
+     */
     function contains(Editors self, AllowedEditor editor) internal pure returns (bool) {
         return Editors.unwrap(self) & toBitMap(editor) != 0;
+    }
+
+    /**
+     * @notice Convert an Editors bitmap to a JSON array of numbers
+     */
+    function toJson(Editors editors) internal pure returns (string memory) {
+        return toJson(expand(editors));
+    }
+
+    /**
+     * @notice Convert an array of AllowedEditors to a JSON array of numbers
+     */
+    function toJson(AllowedEditor[] memory editors) internal pure returns (string memory) {
+        string[] memory result = new string[](editors.length);
+        for (uint256 i = 0; i < editors.length;) {
+            result[i] = LibString.toString(uint8(editors[i]));
+            unchecked {
+                ++i;
+            }
+        }
+        return json.arrayOf(result);
     }
 }
 
 library StoredTraitLabelLib {
+    /**
+     * @notice Check that a StoredTraitLabel is not the zero address, ie, that it exists
+     */
     function exists(StoredTraitLabel storedTraitLabel) internal pure returns (bool) {
         return StoredTraitLabel.unwrap(storedTraitLabel) != address(0);
     }
 
+    /**
+     * @notice Load a TraitLabel from contract storage using SSTORE2
+     */
     function load(StoredTraitLabel storedTraitLabel) internal view returns (TraitLabel memory) {
         bytes memory data = SSTORE2.read(StoredTraitLabel.unwrap(storedTraitLabel));
         return abi.decode(data, (TraitLabel));
