@@ -22,6 +22,8 @@ interface IERC7496 is IERC165 {
     function getTraitKeys() external view returns (bytes32[] memory traitKeys);
     function getTraitKeyAt(uint256 index) external view returns (bytes32 traitKey);
     function getTraitLabelsURI() external view returns (string memory labelsURI);
+
+    /* Setters */
     function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external;
     function deleteTrait(bytes32 traitKey, uint256 tokenId) external;
 }
