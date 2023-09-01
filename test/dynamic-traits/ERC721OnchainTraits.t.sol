@@ -82,7 +82,7 @@ contract ERC721OnchainTraitsTest is Test {
         _setLabel();
         assertEq(
             token.getTraitLabelsURI(),
-            'data:application/json;[{"traitKey":"test.key","fullTraitKey":"","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
+            'data:application/json;[{"traitKey":"test.key","fullTraitKey":"test.key","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
         );
     }
 

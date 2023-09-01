@@ -142,6 +142,7 @@ library FullTraitValueLib {
     function toJson(FullTraitValue memory fullTraitValue) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
+                // TODO: is hex string appropriate here? doesn't make sense to render hashes as strings otherwise
                 json.property("traitValue", LibString.toHexString(uint256(fullTraitValue.traitValue))),
                 json.property("fullTraitValue", fullTraitValue.fullTraitValue)
             )
@@ -182,8 +183,9 @@ library TraitLabelLib {
     function validateAcceptableValue(TraitLabel memory label, bytes32 traitKey, bytes32 traitValue) internal pure {
         string[] memory acceptableValues = label.acceptableValues;
         uint256 length = acceptableValues.length;
+        DisplayType displayType = label.displayType;
         if (length != 0) {
-            string memory stringValue = TraitLib.toString(traitValue, label.displayType); //.toString();
+            string memory stringValue = TraitLib.toString(traitValue, displayType);
             bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
             for (uint256 i = 0; i < length;) {
                 if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
@@ -283,17 +285,6 @@ library TraitLib {
 }
 
 library EditorsLib {
-    /**
-     * @notice convert an array of AllowedEditor enum values to an array of uint8s
-     * @param editors Array of AllowedEditor enum values
-     */
-    function castToUints(AllowedEditor[] memory editors) internal pure returns (uint8[] memory result) {
-        ///@solidity memory-safe-assembly
-        assembly {
-            result := editors
-        }
-    }
-
     /**
      * @notice Convert an array of AllowedEditor enum values to an Editors bitmap
      */
