@@ -2,31 +2,40 @@
 pragma solidity ^0.8.17;
 
 import {DynamicTraits} from "./DynamicTraits.sol";
-import {
-    TraitLabel,
-    AllowedEditor,
-    Editors,
-    TraitLabelLib,
-    TraitLabelStorageLib,
-    TraitLabelStorage,
-    StoredTraitLabel,
-    toBitMap
-} from "./lib/TraitLabelLib.sol";
+// import {
+//     TraitLabel,
+//     AllowedEditor,
+//     Editors,
+//     TraitLabelLib,
+//     TraitLabelStorageLib,
+//     TraitLabelStorage,
+//     StoredTraitLabel,
+//     toBitMap
+// } from "./lib/TraitLabelLib.sol";
 import {Metadata} from "shipyard-core/onchain/Metadata.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import {
+    TraitLabelHelpers,
+    TraitLabelStorage,
+    TraitLabel,
+    Editors,
+    StoredTraitLabel,
+    AllowedEditor
+} from "./TraitLabelHelpers.sol";
 
-abstract contract OnchainTraits is Ownable, DynamicTraits {
+abstract contract OnchainTraits is Ownable, DynamicTraits, TraitLabelHelpers {
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.AddressSet;
-    using {toBitMap} for AllowedEditor;
-    using TraitLabelStorageLib for mapping(bytes32 => TraitLabelStorage);
-    using TraitLabelStorageLib for TraitLabelStorage;
-    using TraitLabelLib for TraitLabel;
 
     error InsufficientPrivilege();
     error TraitDoesNotExist(bytes32 traitKey);
+    error TraitIsRequired();
+
+    constructor() {
+        _initializeOwner(msg.sender);
+    }
 
     ///@notice a mapping of traitKey to SSTORE2 storage addresses
     mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) public traitLabelStorage;
@@ -71,30 +80,34 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     function getTraitLabelsJson() internal view returns (string memory) {
         bytes32[] memory keys = _traitKeys.values();
-        return traitLabelStorage.toLabelJson(keys);
+        return toLabelJson(traitLabelStorage, keys);
     }
 
-    error TraitIsRequired();
-
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait, bool clear) external virtual {
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external virtual {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
-        if (!storedTraitLabel.exists()) {
+        if (!exists(storedTraitLabel)) {
             revert TraitDoesNotExist(traitKey);
         }
         _verifySetterPrivilege(labelStorage.allowedEditors, tokenId);
-        if (clear) {
-            if (labelStorage.required) {
-                revert TraitIsRequired();
-            } else {
-                _setTrait(traitKey, tokenId, bytes32(0), true);
-                return;
-            }
-        }
+
         if (labelStorage.valuesRequireValidation) {
-            storedTraitLabel.load().validateAcceptableValue(traitKey, trait);
+            validateAcceptableValue(load(storedTraitLabel), traitKey, trait);
         }
-        _setTrait(traitKey, tokenId, trait, false);
+        _setTrait(traitKey, tokenId, trait);
+    }
+
+    function clearTrait(bytes32 traitKey, uint256 tokenId) external virtual {
+        TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
+        StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
+        if (!exists(storedTraitLabel)) {
+            revert TraitDoesNotExist(traitKey);
+        }
+        _verifySetterPrivilege(labelStorage.allowedEditors, tokenId);
+        if (labelStorage.required) {
+            revert TraitIsRequired();
+        }
+        _clearTrait(traitKey, tokenId);
     }
 
     function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external virtual onlyOwner {
@@ -107,34 +120,34 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
             allowedEditors: _traitLabel.editors,
             required: _traitLabel.required,
             valuesRequireValidation: _traitLabel.acceptableValues.length > 0,
-            storedLabel: _traitLabel.store()
+            storedLabel: store(_traitLabel)
         });
     }
 
     function _verifySetterPrivilege(Editors editors, uint256 tokenId) internal view {
         // anyone
-        if (editors.contains(AllowedEditor.Anyone)) {
+        if (contains(editors, AllowedEditor.Anyone)) {
             // short circuit
             return;
         }
-        if (editors.contains(AllowedEditor.Self)) {}
+        if (contains(editors, AllowedEditor.Self)) {}
 
         // tokenOwner
-        if (editors.contains(AllowedEditor.TokenOwner)) {
+        if (contains(editors, AllowedEditor.TokenOwner)) {
             if (isOwnerOrApproved(tokenId, msg.sender)) {
                 // short circuit
                 return;
             }
         }
         // customEditor
-        if (editors.contains(AllowedEditor.Custom)) {
+        if (contains(editors, AllowedEditor.Custom)) {
             if (_customEditors.contains(msg.sender)) {
                 // short circuit
                 return;
             }
         }
         // contractOwner
-        if (editors.contains(AllowedEditor.ContractOwner)) {
+        if (contains(editors, AllowedEditor.ContractOwner)) {
             if (owner() == msg.sender) {
                 // short circuit
                 return;
@@ -157,7 +170,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
                 if (trait == ZERO_VALUE) {
                     trait = bytes32(0);
                 }
-                attributes[num] = traitLabelStorage.toAttributeJson(key, trait);
+                attributes[num] = toAttributeJson(traitLabelStorage, key, trait);
                 unchecked {
                     ++num;
                 }

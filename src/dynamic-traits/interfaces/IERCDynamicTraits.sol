@@ -4,6 +4,8 @@ pragma solidity ^0.8.19;
 import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
 interface IERCDynamicTraits is IERC165 {
+    error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
+
     /* Events */
     event TraitUpdated(bytes32 indexed traitKey, uint256 indexed tokenId, bytes32 trait);
     event TraitUpdatedBulkConsecutive(bytes32 indexed traitKeyPattern, uint256 fromTokenId, uint256 toTokenId);

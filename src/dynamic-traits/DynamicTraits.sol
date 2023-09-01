@@ -7,9 +7,8 @@ import {IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
 contract DynamicTraits is IERCDynamicTraits {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
-    error TraitNotSet(bytes32 traitKey);
+    error TraitNotSet(uint256 tokenId, bytes32 traitKey);
     error TraitCannotBeZeroValueHash();
-    error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
     EnumerableSet.Bytes32Set internal _traitKeys;
     mapping(uint256 tokenId => mapping(bytes32 traitKey => bytes32 traitValue)) internal _traits;
@@ -21,7 +20,7 @@ contract DynamicTraits is IERCDynamicTraits {
     function getTraitValue(bytes32 traitKey, uint256 tokenId) external view virtual returns (bytes32) {
         bytes32 value = _traits[tokenId][traitKey];
         if (value == bytes32(0)) {
-            revert TraitNotSet(traitKey);
+            revert TraitNotSet(tokenId, traitKey);
         } else if (value == ZERO_VALUE) {
             return bytes32(0);
         } else {
@@ -38,9 +37,10 @@ contract DynamicTraits is IERCDynamicTraits {
         uint256 length = tokenIds.length;
         bytes32[] memory result = new bytes32[](length);
         for (uint256 i = 0; i < length; i++) {
-            bytes32 value = _traits[tokenIds[i]][traitKey];
+            uint256 tokenId = tokenIds[i];
+            bytes32 value = _traits[tokenId][traitKey];
             if (value == bytes32(0)) {
-                revert TraitNotSet(traitKey);
+                revert TraitNotSet(tokenId, traitKey);
             } else if (value == ZERO_VALUE) {
                 value = bytes32(0);
             } else {
@@ -66,35 +66,35 @@ contract DynamicTraits is IERCDynamicTraits {
         return _traitLabelsURI;
     }
 
-    function _setTrait(bytes32 traitKey, uint256 tokenId, bytes32 newTrait, bool clear) internal {
+    function _setTrait(bytes32 traitKey, uint256 tokenId, bytes32 newTrait) internal {
         bytes32 existingValue = _traits[tokenId][traitKey];
 
-        if (clear) {
-            if (existingValue == bytes32(0)) {
-                revert TraitValueUnchanged();
-            }
-
-            _traits[tokenId][traitKey] = bytes32(0);
-            emit TraitUpdated(traitKey, tokenId, bytes32(0));
-            return;
-        } else {
-            if (newTrait == bytes32(0)) {
-                newTrait = ZERO_VALUE;
-            } else if (newTrait == ZERO_VALUE) {
-                revert InvalidTraitValue(traitKey, newTrait);
-            }
-
-            if (existingValue == newTrait) {
-                revert TraitValueUnchanged();
-            }
-
-            // no-op if exists
-            _traitKeys.add(traitKey);
-
-            _traits[tokenId][traitKey] = newTrait;
-
-            emit TraitUpdated(traitKey, tokenId, newTrait);
+        if (newTrait == bytes32(0)) {
+            newTrait = ZERO_VALUE;
+        } else if (newTrait == ZERO_VALUE) {
+            revert InvalidTraitValue(traitKey, newTrait);
         }
+
+        if (existingValue == newTrait) {
+            revert TraitValueUnchanged();
+        }
+
+        // no-op if exists
+        _traitKeys.add(traitKey);
+
+        _traits[tokenId][traitKey] = newTrait;
+
+        emit TraitUpdated(traitKey, tokenId, newTrait);
+    }
+
+    function _clearTrait(bytes32 traitKey, uint256 tokenId) internal {
+        bytes32 existingValue = _traits[tokenId][traitKey];
+        if (existingValue == bytes32(0)) {
+            revert TraitValueUnchanged();
+        }
+
+        _traits[tokenId][traitKey] = bytes32(0);
+        emit TraitUpdated(traitKey, tokenId, bytes32(0));
     }
 
     function _setTraitLabelsURI(string calldata uri) internal virtual {

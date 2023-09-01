@@ -7,7 +7,7 @@ import {IERCDynamicTraits} from "src/dynamic-traits/interfaces/IERCDynamicTraits
 import {ERC721DynamicTraits, DynamicTraits} from "src/dynamic-traits/ERC721DynamicTraits.sol";
 import {Solarray} from "solarray/Solarray.sol";
 
-contract DynamicTraitsTest is Test {
+contract ERC721DynamicTraitsTest is Test {
     ERC721DynamicTraits token;
 
     /* Events */
@@ -127,4 +127,41 @@ contract DynamicTraitsTest is Test {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(0x1234)));
         token.setTraitLabelsURI(uri);
     }
+
+    function testGetTraitValue_TraitNotSet() public {
+        bytes32 key = bytes32("test.key");
+        uint256 tokenId = 1;
+
+        vm.expectRevert(abi.encodeWithSelector(DynamicTraits.TraitNotSet.selector, tokenId, key));
+        token.getTraitValue(key, tokenId);
+    }
+
+    function testGetTraitValue_ZeroValue() public {
+        bytes32 key = bytes32("test.key");
+        uint256 tokenId = 1;
+
+        token.setTrait(key, tokenId, bytes32(0));
+        bytes32 result = token.getTraitValue(key, tokenId);
+        assertEq(result, bytes32(0), "should return bytes32(0)");
+    }
+
+    function testGetTraitValues_ZeroValue() public {
+        bytes32 key = bytes32("test.key");
+        uint256 tokenId = 1;
+
+        token.setTrait(key, tokenId, bytes32(0));
+        bytes32[] memory result = token.getTraitValues(key, Solarray.uint256s(tokenId));
+        assertEq(result[0], bytes32(0), "should return bytes32(0)");
+    }
+
+    function testSetTrait_ZeroValueHash() public {
+        bytes32 key = bytes32("test.key");
+        uint256 tokenId = 1;
+        bytes32 badValue = keccak256("DYNAMIC_TRAITS_ZERO_VALUE");
+
+        vm.expectRevert(abi.encodeWithSelector(IERCDynamicTraits.InvalidTraitValue.selector, key, badValue));
+        token.setTrait(key, tokenId, badValue);
+    }
+
+    function testClearTrait() public {}
 }

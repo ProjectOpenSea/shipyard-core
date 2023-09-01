@@ -3,23 +3,16 @@ pragma solidity ^0.8.19;
 
 import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {OnchainTraits} from "./OnchainTraits.sol";
 import {DynamicTraits} from "./DynamicTraits.sol";
 
-contract ERC721DynamicTraits is DynamicTraits, Ownable, ERC721 {
-    constructor() Ownable(msg.sender) ERC721("ERC721DynamicTraits", "ERC721DT") {
+contract ERC721OnchainTraits is OnchainTraits, ERC721 {
+    constructor() ERC721("ERC721DynamicTraits", "ERC721DT") {
         _traitLabelsURI = "https://example.com";
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external onlyOwner {
-        _setTrait(traitKey, tokenId, value);
-    }
-
-    function clearTrait(bytes32 traitKey, uint256 tokenId) external onlyOwner {
-        _clearTrait(traitKey, tokenId);
-    }
-
-    function setTraitLabelsURI(string calldata uri) external onlyOwner {
-        _setTraitLabelsURI(uri);
+    function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
+        return addr == ownerOf(tokenId) || isApprovedForAll(ownerOf(tokenId), addr) || getApproved(tokenId) == addr;
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, DynamicTraits) returns (bool) {

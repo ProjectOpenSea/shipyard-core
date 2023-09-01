@@ -17,6 +17,9 @@ remappings = [
 ignored_error_codes = ['license', 'code-size', 'init-code-size', 2519]
 optimizer_runs = 99_999_999
 
+[profile.lite.fuzz]
+runs = 1
+
 [profile.ffi]
 ffi = true
 test = 'test-ffi'
