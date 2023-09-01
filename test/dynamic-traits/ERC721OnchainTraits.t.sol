@@ -4,14 +4,18 @@ pragma solidity ^0.8.17;
 import {Test} from "forge-std/Test.sol";
 import {ExampleNFT, DynamicTraits} from "src/reference/ExampleNFT.sol";
 import {
-    TraitLabelHelpers,
     TraitLabelStorage,
+    TraitLabelStorageLib,
     TraitLabel,
+    TraitLabelLib,
     Editors,
+    FullTraitValue,
     StoredTraitLabel,
     AllowedEditor,
-    FullTraitValue
-} from "src/dynamic-traits/TraitLabelHelpers.sol";
+    TraitLib,
+    StoredTraitLabelLib,
+    EditorsLib
+} from "src/dynamic-traits/lib/TraitLabelLib.sol";
 import {DisplayType} from "src/onchain/Metadata.sol";
 
 contract Debug is ExampleNFT {
@@ -20,7 +24,7 @@ contract Debug is ExampleNFT {
     }
 }
 
-contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
+contract ERC721OnchainTraitsTest is Test {
     Debug token;
 
     function setUp() public {
@@ -70,7 +74,7 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
         assertEq(Editors.unwrap(editors), Editors.unwrap(label.editors));
         assertEq(required, label.required);
         assertEq(shouldValidate, false);
-        TraitLabel memory retrieved = load(storedlabel);
+        TraitLabel memory retrieved = StoredTraitLabelLib.load(storedlabel);
         assertEq(label, retrieved);
     }
 
@@ -78,7 +82,7 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
         _setLabel();
         assertEq(
             token.getTraitLabelsURI(),
-            'data:application/json;[{"traitKey":"test.key","fullTraitKey":"","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0],"required":"false"}]'
+            'data:application/json;[{"traitKey":"test.key","fullTraitKey":"","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
         );
     }
 
@@ -111,7 +115,7 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
             acceptableValues: new string[](0),
             fullTraitValues: new FullTraitValue[](0),
             displayType: DisplayType.String,
-            editors: Editors.wrap(toBitMap(AllowedEditor.Anyone)),
+            editors: Editors.wrap(EditorsLib.toBitMap(AllowedEditor.Anyone)),
             required: false
         });
         token.setTraitLabel(bytes32("test.key"), label);
@@ -129,10 +133,10 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
     }
 
     function testBytes32ToString() public {
-        string memory x = toString(bytes32("foo"));
+        string memory x = TraitLib.asString(bytes32("foo"));
         assertEq(x, "foo");
-        x = toString(bytes32("the string is 32 characters long"));
-        assertEq(x, "the string is 32 characters long");
+        x = TraitLib.asString(bytes32("a string that's exactly 32 chars"));
+        assertEq(x, "a string that's exactly 32 chars");
     }
 
     function testEditorsAggregateExpand() public {
@@ -141,15 +145,16 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
         editors[1] = AllowedEditor.TokenOwner;
         editors[2] = AllowedEditor.Custom;
         editors[3] = AllowedEditor.ContractOwner;
-        Editors aggregated = aggregate(editors);
-        AllowedEditor[] memory expanded = expand(aggregated);
+        Editors aggregated = EditorsLib.aggregate(editors);
+        AllowedEditor[] memory expanded = EditorsLib.expand(aggregated);
         assertEq(keccak256(abi.encode(editors)), keccak256(abi.encode(expanded)));
 
         editors = new AllowedEditor[](2);
         editors[0] = AllowedEditor.Self;
         editors[1] = AllowedEditor.TokenOwner;
-        aggregated = aggregate(editors);
-        expanded = expand(aggregated);
+        aggregated = EditorsLib.aggregate(editors);
+        expanded = EditorsLib.expand(aggregated);
+        assertTrue(expanded.length == 2, "wrong length");
         assertEq(keccak256(abi.encode(editors)), keccak256(abi.encode(expanded)));
     }
 }

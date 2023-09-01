@@ -44,16 +44,12 @@ struct TraitLabelStorage {
 }
 
 library TraitLabelStorageLib {
-    using LibUtils for bytes32;
-    using TraitLabelLib for TraitLabel;
-    using TraitLabelStorageLib for TraitLabelStorage;
-
     /**
      * @notice Decode a TraitLabel from contract storage
      * @param labelStorage TraitLabelStorage
      */
     function toTraitLabel(TraitLabelStorage memory labelStorage) internal view returns (TraitLabel memory) {
-        return labelStorage.storedLabel.load();
+        return StoredTraitLabelLib.load(labelStorage.storedLabel);
     }
 
     /**
@@ -71,27 +67,26 @@ library TraitLabelStorageLib {
         TraitLabelStorage storage labelStorage = traitLabelStorage[traitKey];
         TraitLabel memory traitLabel = toTraitLabel(labelStorage);
 
-        // convert traitValue if necessary
         string memory actualTraitValue;
+        // convert traitValue if possible
+
         if (traitLabel.fullTraitValues.length != 0) {
             // try to find matching FullTraitValue
             uint256 length = traitLabel.fullTraitValues.length;
-            bool found;
             for (uint256 i = 0; i < length;) {
                 FullTraitValue memory fullTraitValue = traitLabel.fullTraitValues[i];
                 if (fullTraitValue.traitValue == traitValue) {
                     actualTraitValue = fullTraitValue.fullTraitValue;
-                    found = true;
                     break;
                 }
                 unchecked {
                     ++i;
                 }
             }
-            if (!found) {
-                // no matching FullTraitValue found, so use the raw traitValue
-                actualTraitValue = traitValue.toString();
-            }
+        }
+        // if no match, use traitValue as-is
+        if (bytes(actualTraitValue).length == 0) {
+            actualTraitValue = TraitLib.toString(traitValue, traitLabel.displayType);
         }
         // render the attribute as JSON
         return Metadata.attribute({
@@ -115,8 +110,8 @@ library TraitLabelStorageLib {
         uint256 i;
         for (i; i < keys.length;) {
             bytes32 key = keys[i];
-            TraitLabel memory traitLabel = traitLabelStorage[key].toTraitLabel();
-            result[i] = traitLabel.toLabelJson(key);
+            TraitLabel memory traitLabel = TraitLabelStorageLib.toTraitLabel(traitLabelStorage[key]); //.toTraitLabel();
+            result[i] = TraitLabelLib.toLabelJson(traitLabel, key);
             unchecked {
                 ++i;
             }
@@ -126,12 +121,10 @@ library TraitLabelStorageLib {
 }
 
 library FullTraitValueLib {
-    using LibUtils for bytes32;
-
     function toJson(FullTraitValue memory fullTraitValue) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
-                json.property("traitValue", fullTraitValue.traitValue.toString()),
+                json.property("traitValue", LibString.toHexString(uint256(fullTraitValue.traitValue))),
                 json.property("fullTraitValue", fullTraitValue.fullTraitValue)
             )
         );
@@ -150,9 +143,6 @@ library FullTraitValueLib {
 }
 
 library TraitLabelLib {
-    using LibUtils for bytes32;
-    using FullTraitValueLib for FullTraitValue[];
-
     error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
     function store(TraitLabel memory self) internal returns (StoredTraitLabel) {
@@ -163,7 +153,7 @@ library TraitLabelLib {
         string[] memory acceptableValues = label.acceptableValues;
         uint256 length = acceptableValues.length;
         if (length != 0) {
-            string memory stringValue = traitValue.toString();
+            string memory stringValue = TraitLib.toString(traitValue, label.displayType); //.toString();
             bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
             for (uint256 i = 0; i < length;) {
                 if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
@@ -180,21 +170,32 @@ library TraitLabelLib {
     function toLabelJson(TraitLabel memory label, bytes32 traitKey) internal pure returns (string memory) {
         return json.objectOf(
             Solarray.strings(
-                json.property("traitKey", traitKey.toString()),
+                json.property("traitKey", TraitLib.toString(traitKey, DisplayType.String)),
                 json.property("fullTraitKey", label.fullTraitKey),
                 json.property("traitLabel", label.traitLabel),
-                json.rawProperty("acceptableValues", LibUtils.toJson(label.acceptableValues)),
-                json.rawProperty("fullTraitValues", label.fullTraitValues.toJson()),
+                json.rawProperty("acceptableValues", TraitLib.toJson(label.acceptableValues)),
+                json.rawProperty("fullTraitValues", FullTraitValueLib.toJson(label.fullTraitValues)),
                 json.property("displayType", Metadata.toString(label.displayType)),
-                json.property("editors", LibUtils.toJson(label.editors.expand().castToUints()))
+                json.rawProperty("editors", TraitLib.toJson(EditorsLib.castToUints(EditorsLib.expand(label.editors))))
             )
         );
     }
 }
 
-library LibUtils {
-    function toString(bytes32 key) internal pure returns (string memory) {
-        uint256 len = bytes32StringLength(key);
+library TraitLib {
+    function toString(bytes32 key, DisplayType displayType) internal pure returns (string memory) {
+        if (
+            displayType == DisplayType.Number || displayType == DisplayType.BoostNumber
+                || displayType == DisplayType.BoostPercent
+        ) {
+            return LibString.toString(uint256(key));
+        } else {
+            return asString(key);
+        }
+    }
+
+    function asString(bytes32 key) internal pure returns (string memory) {
+        uint256 len = _bytes32StringLength(key);
         string memory result;
         ///@solidity memory-safe-assembly
         assembly {
@@ -210,7 +211,7 @@ library LibUtils {
         return result;
     }
 
-    function bytes32StringLength(bytes32 str) internal pure returns (uint256) {
+    function _bytes32StringLength(bytes32 str) internal pure returns (uint256) {
         // only meant to be called in a view context, so this optimizes for bytecode size over performance
         for (uint256 i; i < 32;) {
             if (str[i] == 0) {
@@ -239,76 +240,78 @@ library LibUtils {
     }
 }
 
-/**
- * @notice convert an array of AllowedEditor enum values to an array of uint8s
- * @param editors Array of AllowedEditor enum values
- */
-function castToUints(AllowedEditor[] memory editors) pure returns (uint8[] memory result) {
-    ///@solidity memory-safe-assembly
-    assembly {
-        result := editors
-    }
-}
-
-function aggregate(AllowedEditor[] memory editors) pure returns (uint8) {
-    uint256 editorsLength = editors.length;
-    uint256 result;
-    for (uint256 i = 0; i < editorsLength;) {
-        result |= 1 << uint8(editors[i]);
-        unchecked {
-            ++i;
+library EditorsLib {
+    /**
+     * @notice convert an array of AllowedEditor enum values to an array of uint8s
+     * @param editors Array of AllowedEditor enum values
+     */
+    function castToUints(AllowedEditor[] memory editors) internal pure returns (uint8[] memory result) {
+        ///@solidity memory-safe-assembly
+        assembly {
+            result := editors
         }
     }
-    return uint8(result);
-}
 
-function expand(Editors editors) pure returns (AllowedEditor[] memory allowedEditors) {
-    uint8 _editors = Editors.unwrap(editors);
-    require(_editors < 2 ** 5, "invalid editors");
-    if (_editors & 1 == 1) {
-        allowedEditors = new AllowedEditor[](1);
-        allowedEditors[0] = AllowedEditor.Anyone;
-        return allowedEditors;
-    }
-    // optimistically allocate 4 slots
-    AllowedEditor[] memory result = new AllowedEditor[](4);
-    uint256 num;
-    for (uint256 i = 1; i < 5;) {
-        bool set = _editors & (1 << i) != 0;
-        if (set) {
-            result[num] = AllowedEditor(i);
+    function aggregate(AllowedEditor[] memory editors) internal pure returns (Editors) {
+        uint256 editorsLength = editors.length;
+        uint256 result;
+        for (uint256 i = 0; i < editorsLength;) {
+            result |= 1 << uint8(editors[i]);
             unchecked {
-                ++num;
+                ++i;
             }
         }
-        unchecked {
-            ++i;
+        return Editors.wrap(uint8(result));
+    }
+
+    function expand(Editors editors) internal pure returns (AllowedEditor[] memory allowedEditors) {
+        uint8 _editors = Editors.unwrap(editors);
+        if (_editors & 1 == 1) {
+            allowedEditors = new AllowedEditor[](1);
+            allowedEditors[0] = AllowedEditor.Anyone;
+            return allowedEditors;
         }
+        // optimistically allocate 4 slots
+        AllowedEditor[] memory result = new AllowedEditor[](4);
+        uint256 num;
+        for (uint256 i = 1; i < 5;) {
+            bool set = _editors & (1 << i) != 0;
+            if (set) {
+                result[num] = AllowedEditor(i);
+                unchecked {
+                    ++num;
+                }
+            }
+            unchecked {
+                ++i;
+            }
+        }
+        ///@solidity memory-safe-assembly
+        assembly {
+            mstore(result, num)
+        }
+        return result;
     }
-    ///@solidity memory-safe-assembly
-    assembly {
-        mstore(result, num)
+
+    function toBitMap(AllowedEditor editor) internal pure returns (uint8) {
+        return uint8(1 << uint256(editor));
     }
-    return result;
+
+    function contains(Editors self, AllowedEditor editor) internal pure returns (bool) {
+        return Editors.unwrap(self) & toBitMap(editor) != 0;
+    }
 }
 
-function toBitMap(AllowedEditor editor) pure returns (uint256) {
-    return 1 << uint256(editor);
+library StoredTraitLabelLib {
+    function exists(StoredTraitLabel storedTraitLabel) internal pure returns (bool) {
+        return StoredTraitLabel.unwrap(storedTraitLabel) != address(0);
+    }
+
+    function load(StoredTraitLabel storedTraitLabel) internal view returns (TraitLabel memory) {
+        bytes memory data = SSTORE2.read(StoredTraitLabel.unwrap(storedTraitLabel));
+        return abi.decode(data, (TraitLabel));
+    }
 }
 
-function contains(Editors self, AllowedEditor editor) pure returns (bool) {
-    return Editors.unwrap(self) & toBitMap(editor) != 0;
-}
-
-function exists(StoredTraitLabel storedTraitLabel) pure returns (bool) {
-    return StoredTraitLabel.unwrap(storedTraitLabel) != address(0);
-}
-
-function load(StoredTraitLabel storedTraitLabel) view returns (TraitLabel memory) {
-    bytes memory data = SSTORE2.read(StoredTraitLabel.unwrap(storedTraitLabel));
-    return abi.decode(data, (TraitLabel));
-}
-
-using {expand, contains} for Editors global;
-using {exists, load} for StoredTraitLabel global;
-using {castToUints} for AllowedEditor[];
+using EditorsLib for Editors global;
+using StoredTraitLabelLib for StoredTraitLabel global;
