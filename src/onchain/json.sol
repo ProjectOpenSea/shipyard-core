@@ -62,14 +62,7 @@ library json {
      * @return string of {"name":"value","name":"value",...}
      */
     function objectOf(string[] memory properties) internal pure returns (string memory) {
-        if (properties.length == 0) {
-            return object(NULL);
-        }
-        string memory result = properties[0];
-        for (uint256 i = 1; i < properties.length; ++i) {
-            result = string.concat(result, ",", properties[i]);
-        }
-        return object(result);
+        return object(_commaJoin(properties));
     }
 
     /**

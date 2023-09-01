@@ -2,16 +2,6 @@
 pragma solidity ^0.8.17;
 
 import {DynamicTraits} from "./DynamicTraits.sol";
-// import {
-//     TraitLabel,
-//     AllowedEditor,
-//     Editors,
-//     TraitLabelLib,
-//     TraitLabelStorageLib,
-//     TraitLabelStorage,
-//     StoredTraitLabel,
-//     toBitMap
-// } from "./lib/TraitLabelLib.sol";
 import {Metadata} from "shipyard-core/onchain/Metadata.sol";
 import {Ownable} from "solady/auth/Ownable.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
@@ -83,7 +73,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits, TraitLabelHelpers {
         return toLabelJson(traitLabelStorage, keys);
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external virtual {
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external virtual override {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
         if (!exists(storedTraitLabel)) {
@@ -97,7 +87,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits, TraitLabelHelpers {
         _setTrait(traitKey, tokenId, trait);
     }
 
-    function clearTrait(bytes32 traitKey, uint256 tokenId) external virtual {
+    function deleteTrait(bytes32 traitKey, uint256 tokenId) external virtual override {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
         if (!exists(storedTraitLabel)) {
@@ -107,7 +97,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits, TraitLabelHelpers {
         if (labelStorage.required) {
             revert TraitIsRequired();
         }
-        _clearTrait(traitKey, tokenId);
+        _deleteTrait(traitKey, tokenId);
     }
 
     function setTraitLabel(bytes32 traitKey, TraitLabel calldata _traitLabel) external virtual onlyOwner {

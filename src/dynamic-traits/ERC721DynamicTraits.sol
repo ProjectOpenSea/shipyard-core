@@ -10,12 +10,12 @@ contract ERC721DynamicTraits is DynamicTraits, Ownable, ERC721 {
         _traitLabelsURI = "https://example.com";
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external onlyOwner {
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external virtual override onlyOwner {
         _setTrait(traitKey, tokenId, value);
     }
 
-    function clearTrait(bytes32 traitKey, uint256 tokenId) external onlyOwner {
-        _clearTrait(traitKey, tokenId);
+    function deleteTrait(bytes32 traitKey, uint256 tokenId) external virtual override onlyOwner {
+        _deleteTrait(traitKey, tokenId);
     }
 
     function setTraitLabelsURI(string calldata uri) external onlyOwner {

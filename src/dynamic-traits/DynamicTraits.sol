@@ -2,9 +2,9 @@
 pragma solidity ^0.8.19;
 
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
-import {IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
+import {IERC7496} from "./interfaces/IERC7496.sol";
 
-contract DynamicTraits is IERCDynamicTraits {
+abstract contract DynamicTraits is IERC7496 {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     error TraitNotSet(uint256 tokenId, bytes32 traitKey);
@@ -16,6 +16,9 @@ contract DynamicTraits is IERCDynamicTraits {
     bytes32 constant ZERO_VALUE = keccak256("DYNAMIC_TRAITS_ZERO_VALUE");
 
     error TraitValueUnchanged();
+
+    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external virtual;
+    function deleteTrait(bytes32 traitKey, uint256 tokenId) external virtual;
 
     function getTraitValue(bytes32 traitKey, uint256 tokenId) external view virtual returns (bytes32) {
         bytes32 value = _traits[tokenId][traitKey];
@@ -87,7 +90,7 @@ contract DynamicTraits is IERCDynamicTraits {
         emit TraitUpdated(traitKey, tokenId, newTrait);
     }
 
-    function _clearTrait(bytes32 traitKey, uint256 tokenId) internal {
+    function _deleteTrait(bytes32 traitKey, uint256 tokenId) internal {
         bytes32 existingValue = _traits[tokenId][traitKey];
         if (existingValue == bytes32(0)) {
             revert TraitValueUnchanged();
@@ -103,6 +106,6 @@ contract DynamicTraits is IERCDynamicTraits {
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
-        return interfaceId == type(IERCDynamicTraits).interfaceId;
+        return interfaceId == type(IERC7496).interfaceId;
     }
 }

@@ -88,7 +88,7 @@ contract ERC721OnchainTraitsTest is Test, TraitLabelHelpers {
         token.setTrait(bytes32("test.key"), 1, bytes32("foo"));
         assertEq(token.getTraitValue(bytes32("test.key"), 1), bytes32("foo"));
 
-        token.clearTrait(bytes32("test.key"), 1);
+        token.deleteTrait(bytes32("test.key"), 1);
         vm.expectRevert(abi.encodeWithSelector(DynamicTraits.TraitNotSet.selector, 1, bytes32("test.key")));
         token.getTraitValue(bytes32("test.key"), 1);
     }

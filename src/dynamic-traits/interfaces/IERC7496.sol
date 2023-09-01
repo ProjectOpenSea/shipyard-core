@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
-interface IERCDynamicTraits is IERC165 {
+interface IERC7496 is IERC165 {
     error InvalidTraitValue(bytes32 traitKey, bytes32 traitValue);
 
     /* Events */
@@ -22,11 +22,6 @@ interface IERCDynamicTraits is IERC165 {
     function getTraitKeys() external view returns (bytes32[] memory traitKeys);
     function getTraitKeyAt(uint256 index) external view returns (bytes32 traitKey);
     function getTraitLabelsURI() external view returns (string memory labelsURI);
-
-    // The set methods are optional on the public interface,
-    // and should not be included when calculating the interfaceId.
-    /*
     function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external;
-    function setTraitLabelsURI(string calldata uri) external;
-    */
+    function deleteTrait(bytes32 traitKey, uint256 tokenId) external;
 }

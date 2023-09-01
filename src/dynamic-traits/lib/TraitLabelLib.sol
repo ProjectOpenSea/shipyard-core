@@ -92,16 +92,6 @@ library TraitLabelStorageLib {
                 // no matching FullTraitValue found, so use the raw traitValue
                 actualTraitValue = traitValue.toString();
             }
-        } else {
-            DisplayType displayType = traitLabel.displayType;
-            if (
-                displayType == DisplayType.Number || displayType == DisplayType.BoostNumber
-                    || displayType == DisplayType.BoostPercent
-            ) {
-                actualTraitValue = LibString.toString(uint256(traitValue));
-            } else {
-                actualTraitValue = traitValue.toString();
-            }
         }
         // render the attribute as JSON
         return Metadata.attribute({
@@ -189,39 +179,16 @@ library TraitLabelLib {
 
     function toLabelJson(TraitLabel memory label, bytes32 traitKey) internal pure returns (string memory) {
         return json.objectOf(
-            _strings(
+            Solarray.strings(
                 json.property("traitKey", traitKey.toString()),
                 json.property("fullTraitKey", label.fullTraitKey),
                 json.property("traitLabel", label.traitLabel),
                 json.rawProperty("acceptableValues", LibUtils.toJson(label.acceptableValues)),
                 json.rawProperty("fullTraitValues", label.fullTraitValues.toJson()),
                 json.property("displayType", Metadata.toString(label.displayType)),
-                json.rawProperty("editors", LibUtils.toJson(label.editors.expand().castToUints())),
-                json.property("required", label.required ? "true" : "false")
+                json.property("editors", LibUtils.toJson(label.editors.expand().castToUints()))
             )
         );
-    }
-
-    function _strings(
-        string memory a,
-        string memory b,
-        string memory c,
-        string memory d,
-        string memory e,
-        string memory f,
-        string memory g,
-        string memory h
-    ) internal pure returns (string[] memory) {
-        string[] memory arr = new string[](8);
-        arr[0] = a;
-        arr[1] = b;
-        arr[2] = c;
-        arr[3] = d;
-        arr[4] = e;
-        arr[5] = f;
-        arr[6] = g;
-        arr[7] = h;
-        return arr;
     }
 }
 
@@ -325,8 +292,8 @@ function expand(Editors editors) pure returns (AllowedEditor[] memory allowedEdi
     return result;
 }
 
-function toBitMap(AllowedEditor editor) pure returns (uint8) {
-    return uint8(1 << uint256(editor));
+function toBitMap(AllowedEditor editor) pure returns (uint256) {
+    return 1 << uint256(editor);
 }
 
 function contains(Editors self, AllowedEditor editor) pure returns (bool) {

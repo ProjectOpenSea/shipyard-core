@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
-import {IERCDynamicTraits} from "src/dynamic-traits/interfaces/IERCDynamicTraits.sol";
+import {IERC7496} from "src/dynamic-traits/interfaces/IERC7496.sol";
 import {ERC721DynamicTraits, DynamicTraits} from "src/dynamic-traits/ERC721DynamicTraits.sol";
 import {Solarray} from "solarray/Solarray.sol";
 
@@ -21,7 +21,7 @@ contract ERC721DynamicTraitsTest is Test {
     }
 
     function testSupportsInterfaceId() public {
-        assertTrue(token.supportsInterface(type(IERCDynamicTraits).interfaceId));
+        assertTrue(token.supportsInterface(type(IERC7496).interfaceId));
     }
 
     function testReturnsValueSet() public {
@@ -159,9 +159,9 @@ contract ERC721DynamicTraitsTest is Test {
         uint256 tokenId = 1;
         bytes32 badValue = keccak256("DYNAMIC_TRAITS_ZERO_VALUE");
 
-        vm.expectRevert(abi.encodeWithSelector(IERCDynamicTraits.InvalidTraitValue.selector, key, badValue));
+        vm.expectRevert(abi.encodeWithSelector(IERC7496.InvalidTraitValue.selector, key, badValue));
         token.setTrait(key, tokenId, badValue);
     }
 
-    function testClearTrait() public {}
+    function testdeleteTrait() public {}
 }

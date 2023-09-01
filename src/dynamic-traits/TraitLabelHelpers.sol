@@ -6,7 +6,7 @@ import {json} from "shipyard-core/onchain/json.sol";
 import {Solarray} from "solarray/Solarray.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
-import {IERCDynamicTraits} from "./interfaces/IERCDynamicTraits.sol";
+import {IERC7496} from "./interfaces/IERC7496.sol";
 
 type Editors is uint8;
 
@@ -44,6 +44,12 @@ struct TraitLabelStorage {
     StoredTraitLabel storedLabel;
 }
 
+/**
+ * @title TraitLabelHelpers
+ * @author emo.eth
+ * @notice Helpers for various structs and types – used instead of libraries to account for Forge coverage
+ *         reporting's lack of support for libraries.
+ */
 contract TraitLabelHelpers {
     /**
      * @notice Decode a TraitLabel from contract storage
@@ -68,8 +74,9 @@ contract TraitLabelHelpers {
         TraitLabelStorage storage labelStorage = traitLabelStorage[traitKey];
         TraitLabel memory traitLabel = toTraitLabel(labelStorage);
 
-        // convert traitValue if necessary
         string memory actualTraitValue;
+        // convert traitValue if possible
+
         if (traitLabel.fullTraitValues.length != 0) {
             // try to find matching FullTraitValue
             uint256 length = traitLabel.fullTraitValues.length;
@@ -84,6 +91,7 @@ contract TraitLabelHelpers {
                 }
             }
         }
+        // if no match, use traitValue as-is
         if (bytes(actualTraitValue).length == 0) {
             DisplayType displayType = traitLabel.displayType;
             if (
@@ -164,7 +172,7 @@ contract TraitLabelHelpers {
                     ++i;
                 }
             }
-            revert IERCDynamicTraits.InvalidTraitValue(traitKey, traitValue);
+            revert IERC7496.InvalidTraitValue(traitKey, traitValue);
         }
     }
 
