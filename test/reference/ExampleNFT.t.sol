@@ -5,9 +5,17 @@ import {Test} from "forge-std/Test.sol";
 import {ExampleNFT} from "src/reference/ExampleNFT.sol";
 
 contract ExampleNFTTest is Test {
-    ExampleNFT test;
+    ExampleNFT testExampleNft;
 
     function setUp() public {
-        test = new ExampleNFT();
+        testExampleNft = new ExampleNFT();
+    }
+
+    function testName() public {
+        assertEq(testExampleNft.name(), "ExampleNFT");
+    }
+
+    function testSymbol() public {
+        assertEq(testExampleNft.symbol(), "EXNFT");
     }
 }

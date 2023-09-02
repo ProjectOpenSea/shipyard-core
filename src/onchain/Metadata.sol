@@ -11,7 +11,8 @@ enum DisplayType {
     Number,
     Date,
     BoostPercent,
-    BoostNumber
+    BoostNumber,
+    Hidden
 }
 
 library Metadata {
@@ -32,12 +33,12 @@ library Metadata {
             Solarray.strings(
                 json.property("trait_type", traitType),
                 json.property("value", value),
-                json.property("display_type", _toString(displayType))
+                json.property("display_type", toString(displayType))
             )
         );
     }
 
-    function _toString(DisplayType displayType) internal pure returns (string memory) {
+    function toString(DisplayType displayType) internal pure returns (string memory) {
         if (displayType == DisplayType.String) {
             return "string";
         } else if (displayType == DisplayType.Number) {
@@ -46,8 +47,10 @@ library Metadata {
             return "date";
         } else if (displayType == DisplayType.BoostNumber) {
             return "boost_number";
-        } /*if (displayType == DisplayType.BoostPercent)*/ else {
+        } else if (displayType == DisplayType.BoostPercent) {
             return "boost_percent";
+        } else {
+            return "hidden";
         }
     }
 

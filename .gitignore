@@ -21,3 +21,4 @@ lcov.info
 
 test-ffi/scripts/node_modules
 test-ffi/tmp/temp.json
+broadcast

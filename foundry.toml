@@ -10,10 +10,15 @@ remappings = [
     'shipyard-core/=src/',
     'seaport-types/=lib/seaport-types/src/',
     'solarray/=lib/solarray/src/',
+    'dynamic-traits/=lib/dynamic-traits/src/',
+    'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
 ]
 # bytecode_hash = 'none'
-ignored_error_codes = ['license', 'code-size', 'init-code-size']
+ignored_error_codes = ['license', 'code-size', 'init-code-size', 2519]
 optimizer_runs = 99_999_999
+
+[profile.lite.fuzz]
+runs = 1
 
 [profile.ffi]
 ffi = true

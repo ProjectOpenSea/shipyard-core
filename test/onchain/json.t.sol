@@ -7,20 +7,17 @@ import {LibString} from "solady/utils/LibString.sol";
 import {StringTestUtility} from "./helpers/StringTestUtility.sol";
 
 contract JsonTest is Test {
-    using json for string;
     using LibString for string;
     using LibString for string[];
-    // using LibString for string;
-    using StringTestUtility for string;
 
     function testObject(string memory objectContents) public {
-        string memory objectified = objectContents.object();
+        string memory objectified = json.object(objectContents);
         assertTrue(objectified.startsWith("{"));
         assertTrue(objectified.endsWith("}"));
     }
 
     function testArray(string memory arrayContents) public {
-        string memory arrayified = arrayContents.array();
+        string memory arrayified = json.array(arrayContents);
         assertTrue(arrayified.startsWith("["));
         assertTrue(arrayified.endsWith("]"));
     }
@@ -30,8 +27,8 @@ contract JsonTest is Test {
         assertTrue(propertyified.startsWith('"'));
         assertTrue(propertyified.endsWith('"'));
         assertTrue(propertyified.indexOf(":", 0) != type(uint256).max);
-        assertTrue(propertyified.startsWith(name.quote()));
-        assertTrue(propertyified.endsWith(value.quote()));
+        assertTrue(propertyified.startsWith(json.quote(name)));
+        assertTrue(propertyified.endsWith(json.quote(value)));
     }
 
     function testRawProperty(string memory name, string memory value) public {
@@ -41,7 +38,7 @@ contract JsonTest is Test {
             assertFalse(propertyified.endsWith('"'));
         }
         assertTrue(propertyified.indexOf(":", 0) != type(uint256).max);
-        assertTrue(propertyified.startsWith(name.quote()));
+        assertTrue(propertyified.startsWith(json.quote(name)));
         assertTrue(propertyified.endsWith(value));
     }
 
@@ -56,10 +53,10 @@ contract JsonTest is Test {
         assertTrue(objectified.endsWith("}"));
         assertTrue(objectified.startsWith(string.concat("{", property)));
         assertTrue(objectified.endsWith(string.concat(property, "}")));
-        uint256 countNativeComma = property.countChar(",");
+        uint256 countNativeComma = StringTestUtility.countChar(property, ",");
         uint256 expectedAddedCommas = num > 0 ? num - 1 : 0;
         uint256 expectedNativeCommas = num * countNativeComma;
-        assertEq(objectified.countChar(","), expectedAddedCommas + expectedNativeCommas);
+        assertEq(StringTestUtility.countChar(objectified, ","), expectedAddedCommas + expectedNativeCommas);
     }
 
     function testArrayOf(string memory value, uint8 num) public {
@@ -73,10 +70,10 @@ contract JsonTest is Test {
         assertTrue(jsonArray.endsWith("]"));
         assertTrue(jsonArray.startsWith(string.concat("[", value)));
         assertTrue(jsonArray.endsWith(string.concat(value, "]")));
-        uint256 countNativeComma = value.countChar(",");
+        uint256 countNativeComma = StringTestUtility.countChar(value, ",");
         uint256 expectedAddedCommas = num > 0 ? num - 1 : 0;
         uint256 expectedNativeCommas = num * countNativeComma;
-        assertEq(jsonArray.countChar(","), expectedAddedCommas + expectedNativeCommas);
+        assertEq(StringTestUtility.countChar(jsonArray, ","), expectedAddedCommas + expectedNativeCommas);
     }
 
     function testArrayOfTwo(string memory value, uint8 num1, uint8 num2) public {
@@ -98,16 +95,16 @@ contract JsonTest is Test {
         assertTrue(jsonArray.endsWith("]"));
         assertTrue(jsonArray.startsWith(string.concat("[", value)));
         assertTrue(jsonArray.endsWith(string.concat(value, "]")));
-        uint256 countNativeComma = value.countChar(",");
+        uint256 countNativeComma = StringTestUtility.countChar(value, ",");
         uint256 expectedAddedCommas = total > 0 ? total - 1 : 0;
         uint256 expectedNativeCommas = total * countNativeComma;
-        assertEq(jsonArray.countChar(","), expectedAddedCommas + expectedNativeCommas);
+        assertEq(StringTestUtility.countChar(jsonArray, ","), expectedAddedCommas + expectedNativeCommas);
     }
 
     function testQuote(string memory value) public {
         string memory newValue = LibString.escapeJSON(value);
         vm.assume(bytes(newValue).length == bytes(value).length);
-        string memory quoted = value.quote();
+        string memory quoted = json.quote(value);
         assertTrue(quoted.startsWith('"'));
         assertTrue(quoted.endsWith('"'));
         assertTrue(quoted.indexOf(value, 0) != type(uint256).max);
@@ -122,10 +119,10 @@ contract JsonTest is Test {
         string memory joined = json._commaJoin(strings);
         assertTrue(joined.startsWith(str));
         assertTrue(joined.endsWith(str));
-        uint256 countNativeComma = str.countChar(",");
+        uint256 countNativeComma = StringTestUtility.countChar(str, ",");
         uint256 expectedAddedCommas = times - 1;
         uint256 expectedNativeCommas = times * countNativeComma;
-        assertEq(joined.countChar(","), expectedAddedCommas + expectedNativeCommas);
+        assertEq(StringTestUtility.countChar(joined, ","), expectedAddedCommas + expectedNativeCommas);
     }
 
     function testJoinComma() public {

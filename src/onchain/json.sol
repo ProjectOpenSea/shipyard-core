@@ -62,14 +62,7 @@ library json {
      * @return string of {"name":"value","name":"value",...}
      */
     function objectOf(string[] memory properties) internal pure returns (string memory) {
-        if (properties.length == 0) {
-            return object(NULL);
-        }
-        string memory result = properties[0];
-        for (uint256 i = 1; i < properties.length; ++i) {
-            result = string.concat(result, ",", properties[i]);
-        }
-        return object(result);
+        return object(_commaJoin(properties));
     }
 
     /**
@@ -105,6 +98,21 @@ library json {
      */
     function quote(string memory str) internal pure returns (string memory) {
         return string.concat('"', str.escapeJSON(), '"');
+    }
+
+    /**
+     * @notice enclose each string in an array in double "quotes", escaping any existing quotes
+     * @param strs array of strings, each to escape and enclose in quotes
+     */
+    function quote(string[] memory strs) internal pure returns (string[] memory) {
+        string[] memory result = new string[](strs.length);
+        for (uint256 i = 0; i < strs.length;) {
+            result[i] = quote(strs[i]);
+            unchecked {
+                ++i;
+            }
+        }
+        return result;
     }
 
     /**
