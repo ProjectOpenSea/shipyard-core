@@ -16,3 +16,6 @@
 [submodule "lib/solarray"]
 	path = lib/solarray
 	url = https://github.com/evmcheb/solarray
+[submodule "redeemables"]
+	path = redeemables
+	url = https://github.com/ProjectOpenSea/redeemables.git
