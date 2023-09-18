@@ -36,6 +36,78 @@
 -   [ ] SignedZone
     -   [ ] port from seaport repo
 
+# Quick Start Guide.
+
+To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, swap in the appropriate values for `<your_key>` and `<your_pk>` in this command, open a terminal window, and run the following:
+
+```
+git clone git@github.com:ProjectOpenSea/shipyard-core.git &&
+cd shipyard-core &&
+curl -L https://foundry.paradigm.xyz | bash &&
+foundryup &&
+forge build &&
+export GOERLI_RPC='https://goerli.blockpi.network/v1/rpc/public &&
+export ETHERSCAN_API_KEY='<your_key>' &&
+export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>' &&
+forge create --rpc-url $GOERLI_RPC \
+    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
+    --etherscan-api-key $ETHERSCAN_API_KEY \
+    --verify \
+    src/reference/ExampleNFT.sol:ExampleNFT
+```
+
+A quick breakdown of each step follows.
+
+Clone the `shipyard-core` repository and change directories into it:
+```
+git clone git@github.com:ProjectOpenSea/shipyard-core.git &&
+cd shipyard-core
+```
+
+Install the `foundryup` up command and run it, which in turn installs forge, cast, anvil, and chisel:
+```
+curl -L https://foundry.paradigm.xyz | bash &&
+foundryup
+```
+
+Install dependencies and compile the contracts:
+```
+forge build
+```
+
+Set up your environment variables:
+```
+export GOERLI_RPC='https://goerli.blockpi.network/v1/rpc/public	 &&
+export ETHERSCAN_API_KEY='<your_key>' &&
+export MY_ACTUAL_PK_BE_CAREFUL='<your_pk>'
+```
+
+Run the `forge create` command, which deploys the contract:
+```
+forge create --rpc-url $GOERLI_RPC \
+    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
+    --etherscan-api-key $ETHERSCAN_API_KEY \
+    --verify \
+    src/reference/ExampleNFT.sol:ExampleNFT
+```
+
+See https://book.getfoundry.sh/reference/forge/forge-create for more information on `forge create`.
+
+## Deploying to mainnet
+
+To deploy to mainnet, just replace the value supplied to `--rpc-url` with a mainnet RPC URL. For example:
+
+```
+export MAINNET_RPC='https://eth.llamarpc.com' &&
+forge create --rpc-url $MAINNET_RPC \
+    --private-key $MY_ACTUAL_PK_BE_CAREFUL \
+    --etherscan-api-key $ETHERSCAN_API_KEY \
+    --verify \
+    src/reference/ExampleNFT.sol:ExampleNFT
+```
+
+Note that this will deploy ExampleNFT to mainnet, which will cost real money and will not produce much value as a result.
+
 ## Running ffi tests.
 
 Currently, the ffi tests are the only way to test the output of ExampleNFT's tokenURI response. More options soon™.
