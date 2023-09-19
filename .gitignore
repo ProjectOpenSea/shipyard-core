@@ -20,5 +20,5 @@ lcov.info
 .DS_Store
 
 test-ffi/scripts/node_modules
-test-ffi/tmp/temp.json
+test-ffi/tmp/temp*
 broadcast
