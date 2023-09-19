@@ -7,7 +7,8 @@ import {ISeaDrop} from "./interfaces/ISeaDrop.sol";
 
 import {AllowListData, PublicDrop, TokenGatedDropStage, SignedMintValidationParams} from "./lib/SeaDropStructs.sol";
 
-import {TwoStepAdministered} from "utility-contracts/TwoStepAdministered.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
+import {TwoStepAdministered, IOwnable} from "src/TwoStepAdministered.sol";
 
 /**
  * @title  ERC721PartnerSeaDrop
@@ -33,6 +34,10 @@ contract ERC721PartnerSeaDrop is ERC721SeaDrop, TwoStepAdministered {
     /// @notice To prevent Owner from overriding fees, Administrator must
     ///         first initialize with fee.
     error AdministratorMustInitializeWithFee();
+
+    function owner() public view virtual override(TwoStepAdministered, Ownable) returns (address) {
+        return super.owner();
+    }
 
     /**
      * @notice Deploy the token contract with its name, symbol,

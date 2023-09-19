@@ -20,7 +20,7 @@ import {ReentrancyGuard} from "openzeppelin-contracts/security/ReentrancyGuard.s
 
 import {IERC721} from "openzeppelin-contracts/token/ERC721/IERC721.sol";
 
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
 import {ECDSA} from "openzeppelin-contracts/utils/cryptography/ECDSA.sol";
 

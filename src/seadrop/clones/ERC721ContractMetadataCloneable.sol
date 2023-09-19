@@ -1,25 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ISeaDropTokenContractMetadata} from "./interfaces/ISeaDropTokenContractMetadata.sol";
+import {ISeaDropTokenContractMetadata} from "../interfaces/ISeaDropTokenContractMetadata.sol";
 
-import {ERC721A} from "ERC721A/ERC721A.sol";
+import {ERC721ACloneable} from "./ERC721ACloneable.sol";
 
 import {Ownable} from "solady/auth/Ownable.sol";
 
 import {IERC2981} from "openzeppelin-contracts/interfaces/IERC2981.sol";
 
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
+import {IERC165} from "openzeppelin-contracts/interfaces/IERC165.sol";
 
 /**
- * @title  ERC721ContractMetadata
+ * @title  ERC721ContractMetadataCloneable
  * @author James Wenzel (emo.eth)
  * @author Ryan Ghods (ralxz.eth)
  * @author Stephan Min (stephanm.eth)
  * @notice ERC721ContractMetadata is a token contract that extends ERC721A
  *         with additional metadata and ownership capabilities.
  */
-contract ERC721ContractMetadata is ERC721A, Ownable, ISeaDropTokenContractMetadata {
+contract ERC721ContractMetadataCloneable is ERC721ACloneable, Ownable, ISeaDropTokenContractMetadata {
     /// @notice Track the max supply.
     uint256 _maxSupply;
 
@@ -47,11 +47,6 @@ contract ERC721ContractMetadata is ERC721A, Ownable, ISeaDropTokenContractMetada
             revert Unauthorized();
         }
     }
-
-    /**
-     * @notice Deploy the token contract with its name and symbol.
-     */
-    constructor(string memory name, string memory symbol) ERC721A(name, symbol) {}
 
     /**
      * @notice Sets the base URI for the token metadata and emits an event.
@@ -243,11 +238,11 @@ contract ERC721ContractMetadata is ERC721A, Ownable, ISeaDropTokenContractMetada
      * @return receiver      Address of who should be sent the royalty payment.
      * @return royaltyAmount The royalty payment amount for _salePrice.
      */
-    function royaltyInfo(uint256, /* _tokenId */ uint256 _salePrice)
-        external
-        view
-        returns (address receiver, uint256 royaltyAmount)
-    {
+    function royaltyInfo(
+        uint256,
+        /* _tokenId */
+        uint256 _salePrice
+    ) external view returns (address receiver, uint256 royaltyAmount) {
         // Put the royalty info on the stack for more efficient access.
         RoyaltyInfo storage info = _royaltyInfo;
 
@@ -264,7 +259,13 @@ contract ERC721ContractMetadata is ERC721A, Ownable, ISeaDropTokenContractMetada
      *
      * @param interfaceId The interface id to check against.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721A) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, ERC721ACloneable)
+        returns (bool)
+    {
         return interfaceId == type(IERC2981).interfaceId || interfaceId == 0x49064906 // ERC-4906
             || super.supportsInterface(interfaceId);
     }

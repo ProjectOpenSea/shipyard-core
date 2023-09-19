@@ -14,9 +14,7 @@ import {ERC721SeaDropStructsErrorsAndEvents} from "./lib/ERC721SeaDropStructsErr
 import {ERC721A} from "ERC721A/ERC721A.sol";
 
 import {ReentrancyGuard} from "openzeppelin-contracts/security/ReentrancyGuard.sol";
-
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
-
+import {IERC165} from "openzeppelin-contracts/interfaces/IERC165.sol";
 /**
  * @title  ERC721SeaDrop
  * @author James Wenzel (emo.eth)
@@ -26,6 +24,7 @@ import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
  * @notice ERC721SeaDrop is a token contract that contains methods
  *         to properly interact with SeaDrop.
  */
+
 contract ERC721SeaDrop is
     ERC721ContractMetadata,
     INonFungibleSeaDropToken,

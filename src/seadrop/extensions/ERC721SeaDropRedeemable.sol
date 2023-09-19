@@ -3,6 +3,8 @@ pragma solidity ^0.8.17;
 
 import {ERC721SeaDrop} from "../ERC721SeaDrop.sol";
 
+import {OfferItem, ConsiderationItem} from "seaport-types/lib/ConsiderationStructs.sol";
+
 interface IERC721RedemptionMintable {
     enum ItemType {
         NATIVE,
@@ -23,6 +25,16 @@ interface IERC721RedemptionMintable {
     function mintRedemption(address to, SpentItem[] calldata spent) external returns (uint256 tokenId);
 }
 
+struct CampaignParams {
+    uint32 startTime;
+    uint32 endTime;
+    uint32 maxCampaignRedemptions;
+    address manager;
+    address signer;
+    OfferItem[] offer;
+    ConsiderationItem[] consideration;
+}
+
 /**
  * @title  ERC721SeaDropRedemptionMintable
  * @author James Wenzel (emo.eth)
@@ -32,7 +44,7 @@ interface IERC721RedemptionMintable {
  * @notice ERC721SeaDropRedemptionMintable is a token contract that extends
  *         ERC721SeaDrop to additionally add a mintRedemption function.
  */
-contract ERC721SeaDropRedemptionMintable is ERC721SeaDrop, IERC721RedemptionMintable {
+contract ERC721SeaDropRedeemable is ERC721SeaDrop, IERC721RedemptionMintable {
     address internal immutable _REDEEMABLE_CONTRACT_OFFERER;
     address internal immutable _REDEEM_TOKEN;
 
@@ -89,9 +101,9 @@ contract ERC721SeaDropRedemptionMintable is ERC721SeaDrop, IERC721RedemptionMint
                 // 30% chance of tokenURI 2
                 // 10% chance of tokenURI 3
 
-                // block.difficulty returns PREVRANDAO on Ethereum post-merge
+                // block.prevrandao returns PREVRANDAO on Ethereum post-merge
                 // NOTE: do not use this on other chains
-                uint256 randomness = (uint256(keccak256(abi.encode(block.difficulty))) % 100) + 1;
+                uint256 randomness = (uint256(keccak256(abi.encode(block.prevrandao))) % 100) + 1;
 
                 uint256 tokenURINumber = 1;
                 if (randomness >= 60 && randomness < 90) {

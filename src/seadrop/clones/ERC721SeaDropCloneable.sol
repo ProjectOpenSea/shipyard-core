@@ -13,8 +13,9 @@ import {ERC721ACloneable} from "./ERC721ACloneable.sol";
 
 import {ReentrancyGuardUpgradeable} from "openzeppelin-contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 
-import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
-
+import {IERC165} from "openzeppelin-contracts/interfaces/IERC165.sol";
+import {ERC721ContractMetadataCloneable} from "./ERC721ContractMetadataCloneable.sol";
+import {ISeaDropTokenContractMetadata} from "../interfaces/ISeaDropTokenContractMetadata.sol";
 /**
  * @title  ERC721SeaDrop
  * @author James Wenzel (emo.eth)
@@ -23,6 +24,7 @@ import {IERC165} from "openzeppelin-contracts/utils/introspection/IERC165.sol";
  * @notice ERC721SeaDrop is a token contract that contains methods
  *         to properly interact with SeaDrop.
  */
+
 contract ERC721SeaDropCloneable is
     ERC721ContractMetadataCloneable,
     INonFungibleSeaDropToken,
@@ -61,7 +63,7 @@ contract ERC721SeaDropCloneable is
         __ERC721ACloneable__init(__name, __symbol);
         __ReentrancyGuard_init();
         _updateAllowedSeaDrop(allowedSeaDrop);
-        _transferOwnership(initialOwner);
+        _initializeOwner(initialOwner);
         emit SeaDropTokenDeployed();
     }
 

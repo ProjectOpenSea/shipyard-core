@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import {ERC721PartnerSeaDrop} from "../ERC721PartnerSeaDrop.sol";
 /**
  * @title  ERC721PartnerSeaDropBurnable
  * @author James Wenzel (emo.eth)
@@ -9,7 +10,8 @@ pragma solidity ^0.8.17;
  * @notice ERC721PartnerSeaDropBurnable is a token contract that extends
  *         ERC721PartnerSeaDrop to additionally provide a burn function.
  */
-contract ERC721PartnerSeaDropBurnable {
+
+contract ERC721PartnerSeaDropBurnable is ERC721PartnerSeaDrop {
     /**
      * @notice Deploy the token contract with its name, symbol,
      *         administrator, and allowed SeaDrop addresses.

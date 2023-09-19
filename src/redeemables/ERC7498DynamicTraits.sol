@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {AbstractDynamicTraits} from "../dynamic-traits/AbstractDynamicTraits.sol";
 import {ERC20} from "solady/tokens/ERC20.sol";
 import {ERC721} from "solady/tokens/ERC721.sol";
-import {ERC721SeaDrop} from "../seadrop/src/ERC721SeaDrop.sol";
+import {ERC721SeaDrop} from "../seadrop/ERC721SeaDrop.sol";
 import {IERC7498} from "./interfaces/IERC7498.sol";
 import {OfferItem, ConsiderationItem, SpentItem} from "seaport-types/lib/ConsiderationStructs.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
@@ -25,7 +25,7 @@ contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498
     /// @dev The total current redemptions by campaign id.
     mapping(uint256 campaignId => uint256 count) private _totalRedemptions;
 
-    constructor() AbstractDynamicTraits() ERC721SeaDrop() {}
+    constructor(address[] memory allowedSeaDrop) ERC721SeaDrop("ERC7498 NFT Redeemables", "NFTR", allowedSeaDrop) {}
 
     function name() public pure override returns (string memory) {
         return "ERC7498 NFT Redeemables";
@@ -239,5 +239,15 @@ contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498
         assembly {
             inactive := or(iszero(gt(endTime, timestamp())), gt(startTime, timestamp()))
         }
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AbstractDynamicTraits, ERC721SeaDrop)
+        returns (bool)
+    {
+        return interfaceId == type(IERC7498).interfaceId || super.supportsInterface(interfaceId);
     }
 }

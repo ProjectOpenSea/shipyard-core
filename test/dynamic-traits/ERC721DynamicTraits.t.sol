@@ -2,14 +2,28 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {Ownable} from "solady/auth/Ownable.sol";
 import {IERC7496} from "src/dynamic-traits/interfaces/IERC7496.sol";
 import {AbstractDynamicTraits, DynamicTraits} from "src/dynamic-traits/AbstractDynamicTraits.sol";
 import {ERC721} from "solady/tokens/ERC721.sol";
 import {Solarray} from "solarray/Solarray.sol";
 
 contract ERC721DynamicTraits is AbstractDynamicTraits, ERC721 {
-    function supportsInterface(bytes4) public view override(AbstractDynamicTraits, ERC721) returns (bool) {}
+    function name() public pure override returns (string memory) {
+        return "ERC721DynamicTraits";
+    }
+
+    function symbol() public pure override returns (string memory) {
+        return "ERC721DT";
+    }
+
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return "tokenURI";
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(AbstractDynamicTraits, ERC721) returns (bool) {
+        return AbstractDynamicTraits.supportsInterface(interfaceId) || ERC721.supportsInterface(interfaceId);
+    }
 }
 
 contract ERC721DynamicTraitsTest is Test {
@@ -22,7 +36,7 @@ contract ERC721DynamicTraitsTest is Test {
     event TraitLabelsURIUpdated(string uri);
 
     function setUp() public {
-        token = new AbstractDynamicTraits();
+        token = new ERC721DynamicTraits();
     }
 
     function testSupportsInterfaceId() public {
@@ -45,7 +59,7 @@ contract ERC721DynamicTraitsTest is Test {
     function testOnlyOwnerCanSetValues() public {
         address alice = makeAddr("alice");
         vm.prank(alice);
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
+        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         token.setTrait(bytes32("test"), 0, bytes32("test"));
     }
 
@@ -129,7 +143,7 @@ contract ERC721DynamicTraitsTest is Test {
         assertEq(token.getTraitLabelsURI(), uri);
 
         vm.prank(address(0x1234));
-        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, address(0x1234)));
+        vm.expectRevert(abi.encodeWithSelector(Ownable.Unauthorized.selector));
         token.setTraitLabelsURI(uri);
     }
 
