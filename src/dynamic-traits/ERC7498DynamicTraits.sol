@@ -69,6 +69,7 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
             }
         }
 
+        // TODO: get traitRedemptions from extraData.
         TraitRedemption[] memory traitRedemptions;
 
         // Iterate over the trait redemptions and set traits on the tokens.
@@ -88,51 +89,57 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
                 revert InvalidCaller(token);
             }
 
-            // Get the substandard and place on the stack.
-            uint8 substandard = traitRedemptions[i].substandard;
+            // Declare a new block to manage stack depth.
+            {
+                // Get the substandard and place on the stack.
+                uint8 substandard = traitRedemptions[i].substandard;
 
-            // Get the substandard value and place on the stack.
-            bytes32 substandardValue = traitRedemptions[i].substandardValue;
+                // Get the substandard value and place on the stack.
+                bytes32 substandardValue = traitRedemptions[i].substandardValue;
 
-            // Get the trait key and place on the stack.
-            bytes32 traitKey = traitRedemptions[i].traitKey;
+                // Get the trait key and place on the stack.
+                bytes32 traitKey = traitRedemptions[i].traitKey;
 
-            // Get the current trait value and place on the stack.
-            bytes32 currentTraitValue = getTraitValue(traitKey, identifier);
+                // Get the current trait value and place on the stack.
+                bytes32 currentTraitValue = getTraitValue(traitKey, identifier);
 
-            // If substandard is 1, set trait to traitValue.
-            if (substandard == 1) {
-                // Revert if the current trait value does not match the substandard value.
-                if (currentTraitValue != substandardValue) {
-                    revert InvalidRequiredValue(existingTraitValue, substandardValue);
+                // If substandard is 1, set trait to traitValue.
+                if (substandard == 1) {
+                    // Revert if the current trait value does not match the substandard value.
+                    if (currentTraitValue != substandardValue) {
+                        revert InvalidRequiredValue(existingTraitValue, substandardValue);
+                    }
+
+                    // Set the trait to the trait value.
+                    _setTrait(
+                        traitRedemptions[i].traitKey, traitRedemptions[i].identifier, traitRedemptions[i].traitValue
+                    );
+                    // If substandard is 2, increment trait by traitValue.
+                } else if (substandard == 2) {
+                    // Revert if the current trait value is greater than the substandard value.
+                    if (currentTraitValue > substandardValue) {
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
+                    }
+
+                    // Increment the trait by the trait value.
+                    _setTrait(
+                        traitRedemptions[i].traitKey,
+                        traitRedemptions[i].identifier,
+                        currentTraitValue + traitRedemptions[i].traitValue
+                    );
+                } else if (substandard == 3) {
+                    // Revert if the current trait value is less than the substandard value.
+                    if (currentTraitValue < substandardValue) {
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
+                    }
+
+                    // Decrement the trait by the trait value.
+                    _setTrait(
+                        traitRedemptions[i].traitKey,
+                        traitRedemptions[i].identifier,
+                        currentTraitValue - traitRedemptions[i].traitValue
+                    );
                 }
-
-                // Set the trait to the trait value.
-                _setTrait(traitRedemptions[i].traitKey, traitRedemptions[i].identifier, traitRedemptions[i].traitValue);
-                // If substandard is 2, increment trait by traitValue.
-            } else if (substandard == 2) {
-                // Revert if the current trait value is greater than the substandard value.
-                if (currentTraitValue > substandardValue) {
-                    revert InvalidRequiredValue(currentTraitValue, substandardValue);
-                }
-
-                // Increment the trait by the trait value.
-                _setTrait(
-                    traitRedemptions[i].traitKey,
-                    traitRedemptions[i].identifier,
-                    currentTraitValue + traitRedemptions[i].traitValue
-                );
-            } else if (substandard == 3) {
-                if (currentTraitValue < substandardValue) {
-                    revert InvalidRequiredValue(currentTraitValue, substandardValue);
-                }
-
-                // Decrement the trait by the trait value.
-                _setTrait(
-                    traitRedemptions[i].traitKey,
-                    traitRedemptions[i].identifier,
-                    currentTraitValue - traitRedemptions[i].traitValue
-                );
             }
         }
 
