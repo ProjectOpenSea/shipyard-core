@@ -4,11 +4,16 @@ pragma solidity ^0.8.19;
 import "forge-std/Test.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {IERC7496} from "src/dynamic-traits/interfaces/IERC7496.sol";
-import {ERC721DynamicTraits, DynamicTraits} from "src/dynamic-traits/ERC721DynamicTraits.sol";
+import {AbstractDynamicTraits, DynamicTraits} from "src/dynamic-traits/AbstractDynamicTraits.sol";
+import {ERC721} from "solady/tokens/ERC721.sol";
 import {Solarray} from "solarray/Solarray.sol";
 
+contract ERC721DynamicTraits is AbstractDynamicTraits, ERC721 {
+    function supportsInterface(bytes4) public view override(AbstractDynamicTraits, ERC721) returns (bool) {}
+}
+
 contract ERC721DynamicTraitsTest is Test {
-    ERC721DynamicTraits token;
+    AbstractDynamicTraits token;
 
     /* Events */
     event TraitUpdated(bytes32 indexed traitKey, uint256 indexed tokenId, bytes32 value);
@@ -17,7 +22,7 @@ contract ERC721DynamicTraitsTest is Test {
     event TraitLabelsURIUpdated(string uri);
 
     function setUp() public {
-        token = new ERC721DynamicTraits();
+        token = new AbstractDynamicTraits();
     }
 
     function testSupportsInterfaceId() public {

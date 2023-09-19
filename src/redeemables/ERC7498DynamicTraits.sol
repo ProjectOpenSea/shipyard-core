@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import {ERC721DynamicTraits} from "./ERC721DynamicTraits.sol";
-import {ERC20} from "solady/src/tokens/ERC20.sol";
-import {IERC7498} from "../interfaces/IERC7498.sol";
-import {OfferItem, ConsiderationItem, SpentItem} from "seaport-types/src/lib/ConsiderationStructs.sol";
-import {ItemType} from "seaport-types/src/lib/ConsiderationEnums.sol";
-import {IERC721RedemptionMintable} from "../interfaces/IERC721RedemptionMintable.sol";
-import {CampaignParams} from "./RedeemableStructs.sol";
-import {RedeemableErrorsAndEvents} from "./RedeemableErrorsAndEvents.sol";
+import {AbstractDynamicTraits} from "../dynamic-traits/AbstractDynamicTraits.sol";
+import {ERC20} from "solady/tokens/ERC20.sol";
+import {ERC721} from "solady/tokens/ERC721.sol";
+import {ERC721SeaDrop} from "../seadrop/src/ERC721SeaDrop.sol";
+import {IERC7498} from "./interfaces/IERC7498.sol";
+import {OfferItem, ConsiderationItem, SpentItem} from "seaport-types/lib/ConsiderationStructs.sol";
+import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
+import {IERC721RedemptionMintable} from "./interfaces/IERC721RedemptionMintable.sol";
+import {CampaignParams, TraitRedemption} from "./lib/RedeemablesStructs.sol";
+import {RedeemablesErrorsAndEvents} from "./lib/RedeemablesErrorsAndEvents.sol";
 
-contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableErrorsAndEvents {
+contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498, RedeemablesErrorsAndEvents {
     /// @dev Counter for next campaign id.
     uint256 private _nextCampaignId = 1;
 
@@ -23,7 +25,7 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
     /// @dev The total current redemptions by campaign id.
     mapping(uint256 campaignId => uint256 count) private _totalRedemptions;
 
-    constructor() ERC721 {}
+    constructor() AbstractDynamicTraits() ERC721SeaDrop() {}
 
     function name() public pure override returns (string memory) {
         return "ERC7498 NFT Redeemables";
@@ -41,7 +43,10 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
         _mint(to, tokenId);
     }
 
-    function redeem(uint256[] calldata tokenIds, address recipient, bytes calldata extraData) public virtual {
+    // at 64 will be pointer to array
+    // mload pointer, pointer points to length
+    // next word is start of array
+    function redeem(uint256[] calldata tokenIds, address recipient, bytes calldata extraData) public virtual override {
         // Get the campaign.
         uint256 campaignId = uint256(bytes32(extraData[0:32]));
         CampaignParams storage params = _campaignParams[campaignId];
@@ -69,8 +74,19 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
             }
         }
 
-        // TODO: get traitRedemptions from extraData.
-        TraitRedemption[] memory traitRedemptions;
+        TraitRedemption[] calldata traitRedemptions;
+
+        // calldata array is two vars on stack (length, ptr to start of array)
+        assembly {
+            // Get the pointer to the length of the trait redemptions array by adding 0x40 to the extraData offset.
+            let traitRedemptionsLengthPtr := calldataload(add(0x40, extraData.offset))
+
+            // Set the length of the trait redeptions array to the value at the array length pointer.
+            traitRedemptions.length := calldataload(traitRedemptionsLengthPtr)
+
+            // Set the pointer to the start of the trait redemptions array to the word after the length.
+            traitRedemptions.offset := add(0x20, traitRedemptionsLengthPtr)
+        }
 
         // Iterate over the trait redemptions and set traits on the tokens.
         for (uint256 i; i < traitRedemptions.length;) {
@@ -100,6 +116,8 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
                 // Get the trait key and place on the stack.
                 bytes32 traitKey = traitRedemptions[i].traitKey;
 
+                bytes32 traitValue = traitRedemptions[i].traitValue;
+
                 // Get the current trait value and place on the stack.
                 bytes32 currentTraitValue = getTraitValue(traitKey, identifier);
 
@@ -107,13 +125,11 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
                 if (substandard == 1) {
                     // Revert if the current trait value does not match the substandard value.
                     if (currentTraitValue != substandardValue) {
-                        revert InvalidRequiredValue(existingTraitValue, substandardValue);
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
                     }
 
                     // Set the trait to the trait value.
-                    _setTrait(
-                        traitRedemptions[i].traitKey, traitRedemptions[i].identifier, traitRedemptions[i].traitValue
-                    );
+                    _setTrait(traitRedemptions[i].traitKey, identifier, traitValue);
                     // If substandard is 2, increment trait by traitValue.
                 } else if (substandard == 2) {
                     // Revert if the current trait value is greater than the substandard value.
@@ -122,24 +138,23 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
                     }
 
                     // Increment the trait by the trait value.
-                    _setTrait(
-                        traitRedemptions[i].traitKey,
-                        traitRedemptions[i].identifier,
-                        currentTraitValue + traitRedemptions[i].traitValue
-                    );
+                    uint256 newTraitValue = uint256(currentTraitValue) + uint256(traitValue);
+
+                    _setTrait(traitRedemptions[i].traitKey, identifier, bytes32(newTraitValue));
                 } else if (substandard == 3) {
                     // Revert if the current trait value is less than the substandard value.
                     if (currentTraitValue < substandardValue) {
                         revert InvalidRequiredValue(currentTraitValue, substandardValue);
                     }
 
+                    uint256 newTraitValue = uint256(currentTraitValue) - uint256(traitValue);
+
                     // Decrement the trait by the trait value.
-                    _setTrait(
-                        traitRedemptions[i].traitKey,
-                        traitRedemptions[i].identifier,
-                        currentTraitValue - traitRedemptions[i].traitValue
-                    );
+                    _setTrait(traitRedemptions[i].traitKey, traitRedemptions[i].identifier, bytes32(newTraitValue));
                 }
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -217,19 +232,6 @@ contract ERC7498NFTRedeemables is ERC721DynamicTraits, IERC7498, RedeemableError
         external
         override
     {}
-
-    /**
-     * @dev Internal pure function to cast a `bool` value to a `uint256` value.
-     *
-     * @param b The `bool` value to cast.
-     *
-     * @return u The `uint256` value.
-     */
-    function _cast(bool b) internal pure returns (uint256 u) {
-        assembly {
-            u := b
-        }
-    }
 
     function _isInactive(uint256 startTime, uint256 endTime) internal view returns (bool inactive) {
         // Using the same check for time boundary from Seaport.

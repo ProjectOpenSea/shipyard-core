@@ -21,7 +21,3 @@ struct TraitRedemption {
     bytes32 traitValue;
     bytes32 substandardValue;
 }
-
-struct RedemptionContext {
-    SpentItem[] spent;
-}

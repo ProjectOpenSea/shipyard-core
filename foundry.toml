@@ -1,9 +1,11 @@
 [profile.default]
+solc = "0.8.21"
 src = "src"
 out = "out"
 libs = ["lib"]
 remappings = [
     'forge-std/=lib/forge-std/src',
+    'ERC721A/=lib/ERC721A/contracts',
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
@@ -12,6 +14,8 @@ remappings = [
     'solarray/=lib/solarray/src/',
     'dynamic-traits/=lib/dynamic-traits/src/',
     'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
+    'openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
+    'utility-contracts/=lib/utility-contracts/src/',
 ]
 # bytecode_hash = 'none'
 ignored_error_codes = ['license', 'code-size', 'init-code-size', 2519]
