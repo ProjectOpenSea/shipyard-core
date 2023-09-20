@@ -15,7 +15,7 @@ interface RedeemablesErrorsAndEvents {
     error InvalidCampaignId();
     error CampaignAlreadyExists();
     error InvalidCaller(address caller);
-    error NotActive(uint256 currentTimestamp, uint256 startTime, uint256 endTime);
+    // error NotActive(uint256 currentTimestamp, uint256 startTime, uint256 endTime);
     error MaxRedemptionsReached(uint256 total, uint256 max);
     error MaxCampaignRedemptionsReached(uint256 total, uint256 max);
     error NativeTransferFailed();
@@ -27,7 +27,7 @@ interface RedeemablesErrorsAndEvents {
     error InvalidNativeOfferItem();
     error InvalidOwner();
     error InvalidRequiredValue(bytes32 got, bytes32 want);
-    error InvalidSubstandard(uint256 substandard);
+    // error InvalidSubstandard(uint256 substandard);
     error InvalidToken(address token);
     error InvalidTraitRedemption();
     error InvalidTraitRedemptionToken(address token);

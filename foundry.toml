@@ -5,21 +5,26 @@ out = "out"
 libs = ["lib"]
 remappings = [
     'forge-std/=lib/forge-std/src',
+    'ds-test/=lib/ds-test/src',
     'ERC721A/=lib/ERC721A/contracts/',
     'solady/=lib/solady/src/',
     'solady-test/=lib/solady/test/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
+    'operator-filter-registry/=lib/seadrop/lib/operator-filter-registry/src/',
     'shipyard-core/=src/',
     'seaport-types/=lib/seaport-types/src/',
     'solarray/=lib/solarray/src/',
     'dynamic-traits/=lib/dynamic-traits/src/',
     'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
+    '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/',
     'openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
     'utility-contracts/=lib/utility-contracts/src/',
+    'seadrop/=lib/seadrop/src/',
 ]
+auto_detect_remappings = false
 # bytecode_hash = 'none'
 ignored_error_codes = ['license', 'code-size', 'init-code-size', 2519]
-optimizer_runs = 99_999_999
+optimizer_runs = 2_000_000
 
 [profile.lite.fuzz]
 runs = 1

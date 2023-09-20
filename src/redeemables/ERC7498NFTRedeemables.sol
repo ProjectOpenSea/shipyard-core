@@ -4,15 +4,16 @@ pragma solidity ^0.8.19;
 import {AbstractDynamicTraits} from "../dynamic-traits/AbstractDynamicTraits.sol";
 import {ERC20} from "solady/tokens/ERC20.sol";
 import {ERC721} from "solady/tokens/ERC721.sol";
-import {ERC721SeaDrop} from "../seadrop/ERC721SeaDrop.sol";
+import {ERC721SeaDrop} from "seadrop/ERC721SeaDrop.sol";
+import {ERC721SeaDropContractOfferer} from "seadrop/lib/ERC721SeaDropContractOfferer.sol";
 import {IERC7498} from "./interfaces/IERC7498.sol";
 import {OfferItem, ConsiderationItem, SpentItem} from "seaport-types/lib/ConsiderationStructs.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
-import {IERC721RedemptionMintable} from "./interfaces/IERC721RedemptionMintable.sol";
+import {IRedemptionMintable} from "./interfaces/IRedemptionMintable.sol";
 import {CampaignParams, TraitRedemption} from "./lib/RedeemablesStructs.sol";
 import {RedeemablesErrorsAndEvents} from "./lib/RedeemablesErrorsAndEvents.sol";
 
-contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndEvents {
+contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498, RedeemablesErrorsAndEvents {
     /// @dev Counter for next campaign id.
     uint256 private _nextCampaignId = 1;
 
@@ -25,15 +26,13 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
     /// @dev The total current redemptions by campaign id.
     mapping(uint256 campaignId => uint256 count) private _totalRedemptions;
 
-    constructor(address[] memory allowedSeaDrop) ERC721SeaDrop("ERC7498 NFT Redeemables", "NFTR", allowedSeaDrop) {}
-
-    function name() public pure override returns (string memory) {
-        return "ERC7498 NFT Redeemables";
-    }
-
-    function symbol() public pure override returns (string memory) {
-        return "NFTR";
-    }
+    constructor(
+        address allowedConfigurer,
+        address allowedConduit,
+        address allowedSeaport,
+        string memory _name,
+        string memory _symbol
+    ) ERC721SeaDrop(allowedConfigurer, allowedConduit, allowedSeaport, _name, _symbol) {}
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         return "https://example.com/";
@@ -68,89 +67,89 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
         // Get the campaign consideration.
         ConsiderationItem[] memory consideration = params.consideration;
 
-        // TraitRedemption[] calldata traitRedemptions;
+        TraitRedemption[] calldata traitRedemptions;
 
-        // // calldata array is two vars on stack (length, ptr to start of array)
-        // assembly {
-        //     // Get the pointer to the length of the trait redemptions array by adding 0x40 to the extraData offset.
-        //     let traitRedemptionsLengthPtr := calldataload(add(0x40, extraData.offset))
+        // calldata array is two vars on stack (length, ptr to start of array)
+        assembly {
+            // Get the pointer to the length of the trait redemptions array by adding 0x40 to the extraData offset.
+            let traitRedemptionsLengthPtr := calldataload(add(0x40, extraData.offset))
 
-        //     // Set the length of the trait redeptions array to the value at the array length pointer.
-        //     traitRedemptions.length := calldataload(traitRedemptionsLengthPtr)
+            // Set the length of the trait redeptions array to the value at the array length pointer.
+            traitRedemptions.length := calldataload(traitRedemptionsLengthPtr)
 
-        //     // Set the pointer to the start of the trait redemptions array to the word after the length.
-        //     traitRedemptions.offset := add(0x20, traitRedemptionsLengthPtr)
-        // }
+            // Set the pointer to the start of the trait redemptions array to the word after the length.
+            traitRedemptions.offset := add(0x20, traitRedemptionsLengthPtr)
+        }
 
-        // // Iterate over the trait redemptions and set traits on the tokens.
-        // for (uint256 i; i < traitRedemptions.length;) {
-        //     // Get the trait redemption token address and place on the stack.
-        //     address token = traitRedemptions[i].token;
+        // Iterate over the trait redemptions and set traits on the tokens.
+        for (uint256 i; i < traitRedemptions.length;) {
+            // Get the trait redemption token address and place on the stack.
+            address token = traitRedemptions[i].token;
 
-        //     uint256 identifier = traitRedemptions[i].identifier;
+            uint256 identifier = traitRedemptions[i].identifier;
 
-        //     // Revert if the trait redemption token is not this token contract.
-        //     if (token != address(this)) {
-        //         revert InvalidToken(token);
-        //     }
+            // Revert if the trait redemption token is not this token contract.
+            if (token != address(this)) {
+                revert InvalidToken(token);
+            }
 
-        //     // Revert if the trait redemption identifier is not owned by the caller.
-        //     if (ERC721(token).ownerOf(identifier) != msg.sender) {
-        //         revert InvalidCaller(token);
-        //     }
+            // Revert if the trait redemption identifier is not owned by the caller.
+            if (ERC721(token).ownerOf(identifier) != msg.sender) {
+                revert InvalidCaller(token);
+            }
 
-        //     // Declare a new block to manage stack depth.
-        //     {
-        //         // Get the substandard and place on the stack.
-        //         uint8 substandard = traitRedemptions[i].substandard;
+            // Declare a new block to manage stack depth.
+            {
+                // Get the substandard and place on the stack.
+                uint8 substandard = traitRedemptions[i].substandard;
 
-        //         // Get the substandard value and place on the stack.
-        //         bytes32 substandardValue = traitRedemptions[i].substandardValue;
+                // Get the substandard value and place on the stack.
+                bytes32 substandardValue = traitRedemptions[i].substandardValue;
 
-        //         // Get the trait key and place on the stack.
-        //         bytes32 traitKey = traitRedemptions[i].traitKey;
+                // Get the trait key and place on the stack.
+                bytes32 traitKey = traitRedemptions[i].traitKey;
 
-        //         bytes32 traitValue = traitRedemptions[i].traitValue;
+                bytes32 traitValue = traitRedemptions[i].traitValue;
 
-        //         // Get the current trait value and place on the stack.
-        //         bytes32 currentTraitValue = getTraitValue(traitKey, identifier);
+                // Get the current trait value and place on the stack.
+                bytes32 currentTraitValue = getTraitValue(traitKey, identifier);
 
-        //         // If substandard is 1, set trait to traitValue.
-        //         if (substandard == 1) {
-        //             // Revert if the current trait value does not match the substandard value.
-        //             if (currentTraitValue != substandardValue) {
-        //                 revert InvalidRequiredValue(currentTraitValue, substandardValue);
-        //             }
+                // If substandard is 1, set trait to traitValue.
+                if (substandard == 1) {
+                    // Revert if the current trait value does not match the substandard value.
+                    if (currentTraitValue != substandardValue) {
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
+                    }
 
-        //             // Set the trait to the trait value.
-        //             _setTrait(traitRedemptions[i].traitKey, identifier, traitValue);
-        //             // If substandard is 2, increment trait by traitValue.
-        //         } else if (substandard == 2) {
-        //             // Revert if the current trait value is greater than the substandard value.
-        //             if (currentTraitValue > substandardValue) {
-        //                 revert InvalidRequiredValue(currentTraitValue, substandardValue);
-        //             }
+                    // Set the trait to the trait value.
+                    _setTrait(traitRedemptions[i].traitKey, identifier, traitValue);
+                    // If substandard is 2, increment trait by traitValue.
+                } else if (substandard == 2) {
+                    // Revert if the current trait value is greater than the substandard value.
+                    if (currentTraitValue > substandardValue) {
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
+                    }
 
-        //             // Increment the trait by the trait value.
-        //             uint256 newTraitValue = uint256(currentTraitValue) + uint256(traitValue);
+                    // Increment the trait by the trait value.
+                    uint256 newTraitValue = uint256(currentTraitValue) + uint256(traitValue);
 
-        //             _setTrait(traitRedemptions[i].traitKey, identifier, bytes32(newTraitValue));
-        //         } else if (substandard == 3) {
-        //             // Revert if the current trait value is less than the substandard value.
-        //             if (currentTraitValue < substandardValue) {
-        //                 revert InvalidRequiredValue(currentTraitValue, substandardValue);
-        //             }
+                    _setTrait(traitRedemptions[i].traitKey, identifier, bytes32(newTraitValue));
+                } else if (substandard == 3) {
+                    // Revert if the current trait value is less than the substandard value.
+                    if (currentTraitValue < substandardValue) {
+                        revert InvalidRequiredValue(currentTraitValue, substandardValue);
+                    }
 
-        //             uint256 newTraitValue = uint256(currentTraitValue) - uint256(traitValue);
+                    uint256 newTraitValue = uint256(currentTraitValue) - uint256(traitValue);
 
-        //             // Decrement the trait by the trait value.
-        //             _setTrait(traitRedemptions[i].traitKey, traitRedemptions[i].identifier, bytes32(newTraitValue));
-        //         }
-        //     }
-        //     unchecked {
-        //         ++i;
-        //     }
-        // }
+                    // Decrement the trait by the trait value.
+                    _setTrait(traitRedemptions[i].traitKey, traitRedemptions[i].identifier, bytes32(newTraitValue));
+                }
+            }
+            unchecked {
+                ++i;
+            }
+        }
 
         // Iterate over the token IDs and check if caller is the owner or approved operator.
         // Redeem the token if the caller is valid.
@@ -174,7 +173,7 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
             }
 
             // Mint the redemption token.
-            IERC721RedemptionMintable(params.offer[0].token).mintRedemption(recipient, identifier);
+            IRedemptionMintable(params.offer[0].token).mintRedemption(campaignId, recipient, consideration);
 
             unchecked {
                 ++i;
@@ -294,7 +293,13 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
         }
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721SeaDrop) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AbstractDynamicTraits, ERC721SeaDropContractOfferer)
+        returns (bool)
+    {
         return interfaceId == type(IERC7498).interfaceId || super.supportsInterface(interfaceId);
     }
 }
