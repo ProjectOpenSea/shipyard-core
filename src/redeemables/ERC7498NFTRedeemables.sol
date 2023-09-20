@@ -12,7 +12,7 @@ import {IERC721RedemptionMintable} from "./interfaces/IERC721RedemptionMintable.
 import {CampaignParams, TraitRedemption} from "./lib/RedeemablesStructs.sol";
 import {RedeemablesErrorsAndEvents} from "./lib/RedeemablesErrorsAndEvents.sol";
 
-contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498, RedeemablesErrorsAndEvents {
+contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndEvents {
     /// @dev Counter for next campaign id.
     uint256 private _nextCampaignId = 1;
 
@@ -286,13 +286,7 @@ contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498
         }
     }
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(AbstractDynamicTraits, ERC721SeaDrop)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721SeaDrop) returns (bool) {
         return interfaceId == type(IERC7498).interfaceId || super.supportsInterface(interfaceId);
     }
 }
