@@ -60,7 +60,9 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
 
         // Revert if max total redemptions would be exceeded.
         if (_totalRedemptions[campaignId] + tokenIds.length > params.maxCampaignRedemptions) {
-            revert MaxCampaignRedemptionsReached(_totalRedemptions[campaignId] + 1, params.maxCampaignRedemptions);
+            revert MaxCampaignRedemptionsReached(
+                _totalRedemptions[campaignId] + tokenIds.length, params.maxCampaignRedemptions
+            );
         }
 
         // Get the campaign consideration.
@@ -210,8 +212,14 @@ contract ERC7498NFTRedeemables is ERC721SeaDrop, IERC7498, RedeemablesErrorsAndE
         // Revert if startTime is past endTime.
         if (params.startTime > params.endTime) revert InvalidTime();
 
-        // Revert if any of the consideration item recipients is the zero address. The 0xdead address should be used instead.
         for (uint256 i = 0; i < params.consideration.length;) {
+            // Revert if any of the consideration items is not this token contract.
+            if (params.consideration[i].token != address(this)) {
+                revert InvalidConsiderationItem(params.consideration[i].token, address(this));
+            }
+
+            // Revert if any of the consideration item recipients is the zero address.
+            // The 0xdead address should be used instead.
             if (params.consideration[i].recipient == address(0)) {
                 revert ConsiderationItemRecipientCannotBeZeroAddress();
             }
