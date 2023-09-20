@@ -186,9 +186,16 @@ contract ERC7498NFTRedeemables is AbstractDynamicTraits, ERC721SeaDrop, IERC7498
         override
         returns (CampaignParams memory params, string memory uri, uint256 totalRedemptions)
     {
+        // Revert if campaign id is invalid.
         if (campaignId >= _nextCampaignId) revert InvalidCampaignId();
+
+        // Get the campaign params.
         params = _campaignParams[campaignId];
+
+        // Get the campaign URI.
         uri = _campaignURIs[campaignId];
+
+        // Get the total redemptions.
         totalRedemptions = _totalRedemptions[campaignId];
     }
 
