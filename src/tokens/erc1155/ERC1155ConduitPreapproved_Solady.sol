@@ -9,9 +9,9 @@ import {
     SOLADY_TRANSFER_SINGLE_EVENT_SIGNATURE,
     SOLADY_TRANSFER_BATCH_EVENT_SIGNATURE
 } from "src/lib/Constants.sol";
-import {IERC0001} from "src/interfaces/IERC0001.sol";
+import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
 
-abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IERC0001 {
+abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IPreapprovalForAll {
     constructor() {
         emit PreapprovalForAll(CONDUIT, true);
     }

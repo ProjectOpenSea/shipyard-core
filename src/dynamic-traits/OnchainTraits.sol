@@ -41,7 +41,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     // ABSTRACT
 
     ///@notice helper to determine if a given address has the AllowedEditor.TokenOwner privilege
-    function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual returns (bool);
+    function _isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual returns (bool);
 
     // CUSTOM EDITORS
 
@@ -94,13 +94,13 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @notice Get the onchain URI for the trait labels, encoded as a JSON data URI
      */
     function getTraitLabelsURI() external view virtual override returns (string memory) {
-        return Metadata.jsonDataURI(getTraitLabelsJson());
+        return Metadata.jsonDataURI(_getTraitLabelsJson());
     }
 
     /**
      * @notice Get the raw JSON for the trait labels
      */
-    function getTraitLabelsJson() internal view returns (string memory) {
+    function _getTraitLabelsJson() internal view returns (string memory) {
         bytes32[] memory keys = _traitKeys.values();
         return TraitLabelStorageLib.toLabelJson(traitLabelStorage, keys);
     }
@@ -185,7 +185,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
         // tokenOwner
         if (EditorsLib.contains(editors, AllowedEditor.TokenOwner)) {
-            if (isOwnerOrApproved(tokenId, msg.sender)) {
+            if (_isOwnerOrApproved(tokenId, msg.sender)) {
                 // short circuit
                 return;
             }

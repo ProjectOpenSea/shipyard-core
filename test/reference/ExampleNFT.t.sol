@@ -8,7 +8,7 @@ contract ExampleNFTTest is Test {
     ExampleNFT testExampleNft;
 
     function setUp() public {
-        testExampleNft = new ExampleNFT();
+        testExampleNft = new ExampleNFT('Example', 'EXNFT');
     }
 
     function testName() public {

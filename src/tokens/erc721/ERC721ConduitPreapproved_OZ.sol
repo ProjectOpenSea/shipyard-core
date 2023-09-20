@@ -3,9 +3,9 @@ pragma solidity ^0.8.17;
 
 import {ERC721} from "openzeppelin-contracts/token/ERC721/ERC721.sol";
 import {CONDUIT} from "src/lib/Constants.sol";
-import {IERC0001} from "src/interfaces/IERC0001.sol";
+import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
 
-abstract contract ERC721ConduitPreapproved_OZ is ERC721, IERC0001 {
+abstract contract ERC721ConduitPreapproved_OZ is ERC721, IPreapprovalForAll {
     constructor() {
         emit PreapprovalForAll(CONDUIT, true);
     }

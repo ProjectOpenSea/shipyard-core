@@ -10,7 +10,7 @@ contract ERC721OnchainTraits is OnchainTraits, ERC721 {
         _traitLabelsURI = "https://example.com";
     }
 
-    function isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
+    function _isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
         return addr == ownerOf(tokenId) || isApprovedForAll(ownerOf(tokenId), addr) || getApproved(tokenId) == addr;
     }
 
