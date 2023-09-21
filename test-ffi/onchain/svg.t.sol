@@ -20,7 +20,7 @@ contract svgTest is Test {
     string VALIDATE_SVG_PATH = "./test-ffi/scripts/validate_svg.js";
 
     function setUp() public {
-        testExampleNft = new ExampleNFT();
+        testExampleNft = new ExampleNFT('Example', 'EXNFT');
     }
 
     function testValidateExampleSvg(uint256 tokenId) public {

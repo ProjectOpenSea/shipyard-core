@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import {ERC721} from "solady/tokens/ERC721.sol";
 import {IERC5192} from "shipyard-core/interfaces/IERC5192.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 contract ERC5192 is ERC721, IERC5192 {
     error TokenLocked(uint256 tokenId);
@@ -17,7 +18,7 @@ contract ERC5192 is ERC721, IERC5192 {
     }
 
     function tokenURI(uint256 tokenId) public pure override returns (string memory) {
-        return string(abi.encodePacked("https://example.com/token/", tokenId));
+        return string(abi.encodePacked("https://example.com/token/", LibString.toString(tokenId)));
     }
 
     function stake(uint256 tokenId) public {

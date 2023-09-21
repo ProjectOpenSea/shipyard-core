@@ -2,7 +2,8 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ExampleNFT, DynamicTraits} from "src/reference/ExampleNFT.sol";
+import {ExampleNFT} from "src/reference/ExampleNFT.sol";
+import {DynamicTraits} from "src/dynamic-traits/ERC721OnchainTraits.sol";
 import {
     TraitLabelStorage,
     TraitLabelStorageLib,
@@ -18,9 +19,9 @@ import {
 } from "src/dynamic-traits/lib/TraitLabelLib.sol";
 import {DisplayType} from "src/onchain/Metadata.sol";
 
-contract Debug is ExampleNFT {
+contract Debug is ExampleNFT("Example", "EXNFT") {
     function getStringURI(uint256 tokenId) public view returns (string memory) {
-        return stringURI(tokenId);
+        return _stringURI(tokenId);
     }
 }
 

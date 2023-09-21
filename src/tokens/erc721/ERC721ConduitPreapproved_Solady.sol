@@ -5,9 +5,9 @@ import {ERC721} from "solady/tokens/ERC721.sol";
 import {
     CONDUIT, _APPROVAL_FOR_ALL_EVENT_SIGNATURE, SOLADY_ERC721_MASTER_SLOT_SEED_MASKED
 } from "src/lib/Constants.sol";
-import {IERC0001} from "src/interfaces/IERC0001.sol";
+import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
 
-abstract contract ERC721ConduitPreapproved_Solady is ERC721, IERC0001 {
+abstract contract ERC721ConduitPreapproved_Solady is ERC721, IPreapprovalForAll {
     constructor() {
         emit PreapprovalForAll(CONDUIT, true);
     }
