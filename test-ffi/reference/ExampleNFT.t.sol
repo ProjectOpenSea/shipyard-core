@@ -18,7 +18,7 @@ contract ExampleNFTTest is Test {
     string PROCESS_JSON_PATH = "./test-ffi/scripts/process_json.js";
 
     function setUp() public {
-        testExampleNft = new ExampleNFT();
+        testExampleNft = new ExampleNFT('Example', 'EXNFT');
     }
 
     function testStringURI(uint256 tokenId) public {
