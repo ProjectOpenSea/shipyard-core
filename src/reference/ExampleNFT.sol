@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {
-    ERC721ConduitPreapproved_Solady, ERC721
-} from "shipyard-core/tokens/erc721/ERC721ConduitPreapproved_Solady.sol";
-import {json} from "shipyard-core/onchain/json.sol";
-import {svg} from "shipyard-core/onchain/svg.sol";
+import {json} from "../onchain/json.sol";
+import {svg} from "../onchain/svg.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {Solarray} from "solarray/Solarray.sol";
-import {Metadata, DisplayType} from "shipyard-core/onchain/Metadata.sol";
+import {Metadata, DisplayType} from "../onchain/Metadata.sol";
 import {AbstractNFT} from "./AbstractNFT.sol";
 
 contract ExampleNFT is AbstractNFT {

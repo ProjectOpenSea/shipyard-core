@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {SIP5, Schema, ISIP5} from "shipyard-core/reference/sips/SIP5.sol";
-import {ISIP7} from "shipyard-core/interfaces/sips/ISIP7.sol";
+import {SIP5, Schema, ISIP5} from "../../reference/sips/SIP5.sol";
+import {ISIP7} from "../../interfaces/sips/ISIP7.sol";
 
 abstract contract SIP7 is SIP5, ISIP7 {
     bytes32 immutable domainSeparator;

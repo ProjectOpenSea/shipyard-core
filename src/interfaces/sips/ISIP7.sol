@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ISIP5} from "shipyard-core/interfaces/sips/ISIP5.sol";
+import {ISIP5} from "../../interfaces/sips/ISIP5.sol";
 
 interface ISIP7 is ISIP5 {
     /**

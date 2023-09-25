@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC721_Solady} from "shipyard-core/reference/tokens/erc721/ERC721Preapproved_Solady.sol";
-import {CONDUIT} from "shipyard-core/lib/Constants.sol";
-import {IPreapprovalForAll} from "shipyard-core/interfaces/IPreapprovalForAll.sol";
+import {ERC721_Solady} from "src/reference/tokens/erc721/ERC721Preapproved_Solady.sol";
+import {CONDUIT} from "src/lib/Constants.sol";
+import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
 
 contract ERC721ConduitPreapproved_SoladyTest is Test, IPreapprovalForAll {
     ERC721_Solady test;

@@ -2,8 +2,8 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {SIP10Encoder} from "shipyard-core/sips/lib/SIP10Encoder.sol";
-import {SIP10Decoder} from "shipyard-core/sips/lib/SIP10Decoder.sol";
+import {SIP10Encoder} from "src/sips/lib/SIP10Encoder.sol";
+import {SIP10Decoder} from "src/sips/lib/SIP10Decoder.sol";
 
 contract SIP10DecoderTest is Test {
     function testDecodeSubstandardVersion(uint8 version, bytes memory data) public {

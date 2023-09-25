@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC5192, IERC5192, ERC721} from "shipyard-core/reference/ERC5192.sol";
+import {ERC5192, IERC5192, ERC721} from "src/reference/ERC5192.sol";
 
 contract ERC5192Helper is ERC5192 {
     function mint(address to, uint256 tokenId) public {

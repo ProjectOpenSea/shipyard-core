@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ISIP10, IERC165} from "shipyard-core/interfaces/sips/ISIP10.sol";
-import {SIP5, Schema} from "shipyard-core/reference/sips/SIP5.sol";
+import {ISIP10, IERC165} from "../../interfaces/sips/ISIP10.sol";
+import {SIP5, Schema} from "../../reference/sips/SIP5.sol";
 import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
 abstract contract SIP10 is ISIP10, SIP5 {

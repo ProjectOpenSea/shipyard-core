@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {SIP7Encoder} from "shipyard-core/sips/lib/SIP7Encoder.sol";
+import {SIP7Encoder} from "src/sips/lib/SIP7Encoder.sol";
 import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
 import {ReceivedItem} from "seaport-types/lib/ConsiderationStructs.sol";
 

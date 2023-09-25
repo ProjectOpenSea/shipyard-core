@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ERC721_OZ} from "shipyard-core/reference/tokens/erc721/ERC721Preapproved_OZ.sol";
-import {CONDUIT} from "shipyard-core/lib/Constants.sol";
-import {IPreapprovalForAll} from "shipyard-core/interfaces/IPreapprovalForAll.sol";
+import {ERC721_OZ} from "src/reference/tokens/erc721/ERC721Preapproved_OZ.sol";
+import {CONDUIT} from "src/lib/Constants.sol";
+import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
 
 contract ERC721ConduitPreapproved_OZTest is Test, IPreapprovalForAll {
     ERC721_OZ test;

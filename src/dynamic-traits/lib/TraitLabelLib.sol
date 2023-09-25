@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {DisplayType, Metadata} from "shipyard-core/onchain/Metadata.sol";
-import {json} from "shipyard-core/onchain/json.sol";
+import {DisplayType, Metadata} from "../../onchain/Metadata.sol";
+import {json} from "../../onchain/json.sol";
 import {Solarray} from "solarray/Solarray.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";

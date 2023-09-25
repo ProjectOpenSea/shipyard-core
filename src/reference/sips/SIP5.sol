@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {Schema} from "shipyard-core/interfaces/sips/ISIP5.sol";
-import {ISIP5} from "shipyard-core/interfaces/sips/ISIP5.sol";
+import {Schema} from "../../interfaces/sips/ISIP5.sol";
+import {ISIP5} from "../../interfaces/sips/ISIP5.sol";
 
 abstract contract SIP5 is ISIP5 {
     constructor() {

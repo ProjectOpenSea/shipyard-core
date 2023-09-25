@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {ISIP6} from "shipyard-core/interfaces/sips/ISIP6.sol";
-import {SIP6Decoder} from "shipyard-core/sips/lib/SIP6Decoder.sol";
-import {SIP6Encoder} from "shipyard-core/sips/lib/SIP6Encoder.sol";
+import {ISIP6} from "src/interfaces/sips/ISIP6.sol";
+import {SIP6Decoder} from "src/sips/lib/SIP6Decoder.sol";
+import {SIP6Encoder} from "src/sips/lib/SIP6Encoder.sol";
 
 contract SIP6DecoderTest is Test {
     function testDecode1() public {
