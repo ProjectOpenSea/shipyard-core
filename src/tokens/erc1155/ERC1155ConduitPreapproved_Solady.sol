@@ -8,8 +8,8 @@ import {
     SOLADY_ERC1155_MASTER_SLOT_SEED,
     SOLADY_TRANSFER_SINGLE_EVENT_SIGNATURE,
     SOLADY_TRANSFER_BATCH_EVENT_SIGNATURE
-} from "src/lib/Constants.sol";
-import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";
+} from "../../lib/Constants.sol";
+import {IPreapprovalForAll} from "../../interfaces/IPreapprovalForAll.sol";
 
 abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IPreapprovalForAll {
     constructor() {
