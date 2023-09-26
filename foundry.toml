@@ -9,7 +9,6 @@ remappings = [
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'seaport-types/=lib/seaport-types/src/',
     'solarray/=lib/solarray/src/',
-    'dynamic-traits/=lib/dynamic-traits/src/',
     'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
 ]
 # bytecode_hash = 'none'
