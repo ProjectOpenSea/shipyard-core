@@ -105,7 +105,7 @@ contract ERC721OnchainTraitsTest is Test {
         assertEq(token.getTraitValue(bytes32("test.key"), 1), bytes32("foo"));
         assertEq(
             token.getStringURI(1),
-            '{"name":"Example NFT #1","description":"This is an example NFT","image":"data:image/svg+xml;<svg xmlns=\\\\\\"http://www.w3.org/2000/svg\\\\\\" width=\\\\\\"500\\\\\\" height=\\\\\\"500\\\\\\" ><rect width=\\\\\\"500\\\\\\" height=\\\\\\"500\\\\\\" fill=\\\\\\"lightgray\\\\\\" /><text x=\\\\\\"50%\\\\\\" y=\\\\\\"50%\\\\\\" dominant-baseline=\\\\\\"middle\\\\\\" text-anchor=\\\\\\"middle\\\\\\" font-size=\\\\\\"48\\\\\\" fill=\\\\\\"black\\\\\\" >1</text></svg>","attributes":[{"trait_type":"Example Attribute","value":"Example Value"},{"trait_type":"Number","value":"1","display_type":"number"},{"trait_type":"Parity","value":"Odd"},{"trait_type":"Trait Key","value":"foo","display_type":"string"}]}'
+            '{"name":"Example NFT #1","description":"This is an example NFT","image":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiA+PHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9ImxpZ2h0Z3JheSIgLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI0OCIgZmlsbD0iYmxhY2siID4xPC90ZXh0Pjwvc3ZnPg==","attributes":[{"trait_type":"Example Attribute","value":"Example Value"},{"trait_type":"Number","value":"1","display_type":"number"},{"trait_type":"Parity","value":"Odd"},{"trait_type":"Trait Key","value":"foo","display_type":"string"}]}'
         );
     }
 

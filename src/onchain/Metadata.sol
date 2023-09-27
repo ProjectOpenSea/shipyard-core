@@ -80,11 +80,25 @@ library Metadata {
         return jsonDataURI(Base64.encode(bytes(content)), "base64");
     }
 
-    function svgDataURI(string memory content, string memory encoding) internal pure returns (string memory) {
-        return dataURI("image/svg+xml", encoding, content).escapeJSON();
+    function svgDataURI(string memory content, string memory encoding, bool escape)
+        internal
+        pure
+        returns (string memory)
+    {
+        string memory uri = dataURI("image/svg+xml", encoding, content);
+
+        if (escape) {
+            return uri.escapeJSON();
+        } else {
+            return uri;
+        }
     }
 
     function svgDataURI(string memory content) internal pure returns (string memory) {
-        return svgDataURI(content, NULL);
+        return svgDataURI(content, "utf8", true);
+    }
+
+    function base64SvgDataURI(string memory content) internal pure returns (string memory) {
+        return svgDataURI(Base64.encode(bytes(content)), "base64", false);
     }
 }

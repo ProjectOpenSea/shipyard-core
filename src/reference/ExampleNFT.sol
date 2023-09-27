@@ -30,7 +30,7 @@ contract ExampleNFT is AbstractNFT {
             Solarray.strings(
                 json.property("name", string.concat("Example NFT #", LibString.toString(tokenId))),
                 json.property("description", "This is an example NFT"),
-                json.property("image", Metadata.svgDataURI(_image(tokenId))),
+                json.property("image", Metadata.base64SvgDataURI(_image(tokenId))),
                 _attributes(tokenId)
             )
         );

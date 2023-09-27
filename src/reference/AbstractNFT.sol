@@ -32,7 +32,7 @@ abstract contract AbstractNFT is OnchainTraits, ERC721ConduitPreapproved_Solady 
      * @param tokenId The token ID to get the tokenURI for
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        return Metadata.base64JsonDataURI(_stringURI(tokenId));
+        return _stringURI(tokenId);
     }
 
     /**
@@ -44,7 +44,7 @@ abstract contract AbstractNFT is OnchainTraits, ERC721ConduitPreapproved_Solady 
             Solarray.strings(
                 json.property("name", string.concat("Example NFT #", LibString.toString(tokenId))),
                 json.property("description", "This is an example NFT"),
-                json.property("image", Metadata.svgDataURI(_image(tokenId))),
+                json.property("image", Metadata.base64SvgDataURI(_image(tokenId))),
                 _attributes(tokenId)
             )
         );
