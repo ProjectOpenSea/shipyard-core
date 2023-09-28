@@ -51,30 +51,16 @@ contract ExampleNFTTest is Test {
                 _generateError(tokenId, i, "displayType inconsistent with expected")
             );
         }
+
+        _cleanUp(TEMP_JSON_PATH);
     }
 
     function _populateTempFileWithJson(uint256 tokenId) internal {
         // Get the raw URI response.
         string memory rawUri = testExampleNft.tokenURI(tokenId);
-        // Remove the data:application/json;base64, prefix.
-        string memory uri = _cleanedUri(rawUri);
-        // Decode the base64 encoded json.
-        bytes memory decoded = Base64.decode(uri);
 
         // Write the decoded json to a file.
-        vm.writeFile(TEMP_JSON_PATH, string(decoded));
-    }
-
-    function _cleanedUri(string memory uri) internal pure returns (string memory) {
-        uint256 stringLength;
-
-        // Get the length of the string from the abi encoded version.
-        assembly {
-            stringLength := mload(uri)
-        }
-
-        // Remove the data:application/json;base64, prefix.
-        return _substring(uri, 29, stringLength);
+        vm.writeFile(TEMP_JSON_PATH, rawUri);
     }
 
     function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
@@ -106,6 +92,20 @@ contract ExampleNFTTest is Test {
         commandLineInputs[3] = "--top-level";
 
         (name, description, image) = abi.decode(vm.ffi(commandLineInputs), (string, string, string));
+
+        image = string(Base64.decode(_cleanedSvg(image)));
+    }
+
+    function _cleanedSvg(string memory uri) internal pure returns (string memory) {
+        uint256 stringLength;
+
+        // Get the length of the string from the abi encoded version.
+        assembly {
+            stringLength := mload(uri)
+        }
+
+        // Remove the "data:image/svg+xml;base64," prefix.
+        return _substring(uri, 26, stringLength);
     }
 
     function _getAttributeAtIndex(uint256 attributeIndex)
@@ -137,11 +137,16 @@ contract ExampleNFTTest is Test {
     function _generateExpectedTokenImage(uint256 tokenId) internal pure returns (string memory) {
         return string(
             abi.encodePacked(
-                'data:image/svg+xml;<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"500\\" height=\\"500\\" ><rect width=\\"500\\" height=\\"500\\" fill=\\"lightgray\\" /><text x=\\"50%\\" y=\\"50%\\" dominant-baseline=\\"middle\\" text-anchor=\\"middle\\" font-size=\\"48\\" fill=\\"black\\" >',
+                "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"500\" height=\"500\" ><rect width=\"500\" height=\"500\" fill=\"lightgray\" /><text x=\"50%\" y=\"50%\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-size=\"48\" fill=\"black\" >",
                 vm.toString(tokenId),
                 "</text></svg>"
             )
         );
+        // abi.encodePacked(
+        //     'data:image/svg+xml;<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"500\\" height=\\"500\\" ><rect width=\\"500\\" height=\\"500\\" fill=\\"lightgray\\" /><text x=\\"50%\\" y=\\"50%\\" dominant-baseline=\\"middle\\" text-anchor=\\"middle\\" font-size=\\"48\\" fill=\\"black\\" >',
+        //     vm.toString(tokenId),
+        //     "</text></svg>"
+        // )
     }
 
     function _generateError(uint256 tokenId, uint256 traitIndex, string memory message)
@@ -154,5 +159,12 @@ contract ExampleNFTTest is Test {
                 "Error: ", message, " for token ", vm.toString(tokenId), " and trait index ", vm.toString(traitIndex)
             )
         );
+    }
+
+    function _cleanUp(string memory file) internal {
+        if (vm.exists(file)) {
+            vm.removeFile(file);
+        }
+        assertFalse(vm.exists(file));
     }
 }

@@ -91,7 +91,7 @@ Both the local profile and the CI profile for the ffi tests use a low number of 
 
 ## Expected local behavior
 
-The `ExampleNFT.t.sol` file will call `ExampleNFT.sol`'s `tokenURI` function, decode the base64 encoded response, write the decoded version to `./test-ffi/tmp/temp.json`, and then call the `process_json.js` file a few times to get string values. If the expected values and the actual values match, the test will pass. A `temp.json` file will be left behind. You can ignore it or delete it; Forge makes a new one on the fly if it's not there. And it's ignored in the `.gitignore` file, so there's no need to worry about pushing cruft or top secret metadata to a shared/public repo. The tests in `svg.t.sol` behave more or less the same way, except that they'll produce many more temporary files.
+The `ExampleNFT.t.sol` file will call `ExampleNFT.sol`'s `tokenURI` function, decode the base64 encoded response, write the decoded version to `./test-ffi/tmp/temp.json`, and then call the `process_json.js` file a few times to get string values. If the expected values and the actual values match, the test will pass and the files will be cleaned up. If they fail, a `temp-*.json` file will be left behind for reference. You can ignore it or delete it after you're done inspecting it. Forge makes a new one on the fly if it's not there. And it's ignored in the `.gitignore` file, so there's no need to worry about pushing cruft or top secret metadata to a shared/public repo. The tests in `svg.t.sol` behave more or less the same way, except that they'll produce many more temporary files.
 
 ## Expected CI behavior
 
