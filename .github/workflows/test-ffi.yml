@@ -54,6 +54,6 @@ jobs:
       - name: Clear Temp Files
         run: |
           cd ./test-ffi/tmp
-          rm temp.json
+          find . -maxdepth 1 -name 'temp*' -exec rm -f {} \;
           cd ../..
         id: clear
