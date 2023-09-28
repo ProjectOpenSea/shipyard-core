@@ -7,8 +7,6 @@ import {svg} from "../../src/onchain/svg.sol";
 import {ExampleNFT} from "src/reference/ExampleNFT.sol";
 import {svg} from "../../src/onchain/svg.sol";
 
-import "forge-std/console.sol";
-
 contract svgTest is Test {
     ExampleNFT testExampleNft;
 
@@ -206,39 +204,27 @@ contract svgTest is Test {
     }
 
     function _validateSvg(string memory fileName) internal {
+        string memory filePath = string(abi.encodePacked(TEMP_SVG_DIR_PATH_AND_PREFIX, fileName, TEMP_SVG_FILE_TYPE));
+
         // Run the validate_svg.js script on the file to validate the svg.
         string[] memory commandLineInputs = new string[](3);
         commandLineInputs[0] = "node";
         commandLineInputs[1] = VALIDATE_SVG_PATH;
-        commandLineInputs[2] = string(abi.encodePacked(TEMP_SVG_DIR_PATH_AND_PREFIX, fileName, TEMP_SVG_FILE_TYPE));
+        commandLineInputs[2] = filePath;
 
         (bool isValid, string memory svg) = abi.decode(vm.ffi(commandLineInputs), (bool, string));
 
         assertEq(isValid, true, string(abi.encodePacked("The svg should be valid. Invalid svg: ", svg)));
+
+        _cleanUp(filePath);
     }
 
     function _populateTempFileWithJson(uint256 tokenId) internal {
         // Get the raw URI response.
         string memory rawUri = testExampleNft.tokenURI(tokenId);
-        // Remove the data:application/json;base64, prefix.
-        string memory uri = _cleanedUri(rawUri);
-        // Decode the base64 encoded json.
-        bytes memory decoded = Base64.decode(uri);
 
         // Write the decoded json to a file.
-        vm.writeFile(TEMP_JSON_PATH, string(decoded));
-    }
-
-    function _cleanedUri(string memory uri) internal pure returns (string memory) {
-        uint256 stringLength;
-
-        // Get the length of the string from the abi encoded version.
-        assembly {
-            stringLength := mload(uri)
-        }
-
-        // Remove the data:application/json;base64, prefix.
-        return _substring(uri, 29, stringLength);
+        vm.writeFile(TEMP_JSON_PATH, rawUri);
     }
 
     function _getImage() internal returns (string memory) {
@@ -258,7 +244,9 @@ contract svgTest is Test {
 
         (,, string memory image) = abi.decode(vm.ffi(commandLineInputs), (string, string, string));
 
-        return _cleanedSvg(image);
+        _cleanUp(TEMP_JSON_PATH);
+
+        return string(Base64.decode(_cleanedSvg(image)));
     }
 
     function _cleanedSvg(string memory uri) internal pure returns (string memory) {
@@ -269,8 +257,8 @@ contract svgTest is Test {
             stringLength := mload(uri)
         }
 
-        // Remove the "data:image/svg+xml;" prefix.
-        return _substring(uri, 19, stringLength);
+        // Remove the "data:image/svg+xml;base64," prefix.
+        return _substring(uri, 26, stringLength);
     }
 
     function _substring(string memory str, uint256 startIndex, uint256 endIndex) public pure returns (string memory) {
@@ -281,5 +269,12 @@ contract svgTest is Test {
             result[i - startIndex] = strBytes[i];
         }
         return string(result);
+    }
+
+    function _cleanUp(string memory file) internal {
+        if (vm.exists(file)) {
+            vm.removeFile(file);
+        }
+        assertFalse(vm.exists(file));
     }
 }
