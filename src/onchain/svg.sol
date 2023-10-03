@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 
 /**
  * @title Core SVG utilitiy library which helps us construct SVG's with a simple, web-like API.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 
 /**
  * @title JSON

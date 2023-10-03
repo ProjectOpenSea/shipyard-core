@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC721} from "solady/tokens/ERC721.sol";
+import {ERC721} from "solady/src/tokens/ERC721.sol";
 import {IERC5192} from "../interfaces/IERC5192.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 
 contract ERC5192 is ERC721, IERC5192 {
     error TokenLocked(uint256 tokenId);

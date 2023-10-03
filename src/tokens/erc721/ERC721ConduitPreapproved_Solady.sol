@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC721} from "solady/tokens/ERC721.sol";
+import {ERC721} from "solady/src/tokens/ERC721.sol";
 import {
     CONDUIT, _APPROVAL_FOR_ALL_EVENT_SIGNATURE, SOLADY_ERC721_MASTER_SLOT_SEED_MASKED
 } from "../../lib/Constants.sol";

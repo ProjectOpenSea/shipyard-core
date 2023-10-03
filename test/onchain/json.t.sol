@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import {Test} from "forge-std/Test.sol";
 import {json} from "src/onchain/json.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 import {StringTestUtility} from "./helpers/StringTestUtility.sol";
 
 contract JsonTest is Test {

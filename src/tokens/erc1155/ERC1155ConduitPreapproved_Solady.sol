@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ERC1155} from "solady/tokens/ERC1155.sol";
+import {ERC1155} from "solady/src/tokens/ERC1155.sol";
 import {
     CONDUIT,
     _APPROVAL_FOR_ALL_EVENT_SIGNATURE,

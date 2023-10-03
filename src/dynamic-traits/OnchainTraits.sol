@@ -3,8 +3,8 @@ pragma solidity ^0.8.17;
 
 import {DynamicTraits} from "./DynamicTraits.sol";
 import {Metadata} from "../onchain/Metadata.sol";
-import {Ownable} from "solady/auth/Ownable.sol";
-import {SSTORE2} from "solady/utils/SSTORE2.sol";
+import {Ownable} from "solady/src/auth/Ownable.sol";
+import {SSTORE2} from "solady/src/utils/SSTORE2.sol";
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import {
     TraitLabelStorage,

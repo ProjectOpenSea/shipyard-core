@@ -4,8 +4,8 @@ pragma solidity ^0.8.17;
 import {DisplayType, Metadata} from "../../onchain/Metadata.sol";
 import {json} from "../../onchain/json.sol";
 import {Solarray} from "solarray/Solarray.sol";
-import {LibString} from "solady/utils/LibString.sol";
-import {SSTORE2} from "solady/utils/SSTORE2.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
+import {SSTORE2} from "solady/src/utils/SSTORE2.sol";
 
 ///@notice Bitmap type for storing allowed editors
 type Editors is uint8;
