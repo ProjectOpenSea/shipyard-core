@@ -2,9 +2,9 @@
 pragma solidity ^0.8.17;
 
 import {json} from "./json.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 import {Solarray} from "solarray/Solarray.sol";
-import {Base64} from "solady/utils/Base64.sol";
+import {Base64} from "solady/src/utils/Base64.sol";
 
 enum DisplayType {
     String,

@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import {json} from "../onchain/json.sol";
 import {svg} from "../onchain/svg.sol";
-import {LibString} from "solady/utils/LibString.sol";
+import {LibString} from "solady/src/utils/LibString.sol";
 import {Solarray} from "solarray/Solarray.sol";
 import {Metadata, DisplayType} from "../onchain/Metadata.sol";
 import {AbstractNFT} from "./AbstractNFT.sol";

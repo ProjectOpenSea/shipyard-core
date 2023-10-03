@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {Base64} from "solady/utils/Base64.sol";
+import {Base64} from "solady/src/utils/Base64.sol";
 import {Test} from "forge-std/Test.sol";
 import {ExampleNFT} from "src/reference/ExampleNFT.sol";
 
