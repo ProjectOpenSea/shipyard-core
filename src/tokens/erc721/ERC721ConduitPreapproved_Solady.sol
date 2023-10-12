@@ -46,7 +46,7 @@ abstract contract ERC721ConduitPreapproved_Solady is ERC721, IPreapprovalForAll 
         }
     }
 
-    function _by(address from) internal view returns (address result) {
+    function _by(address from) internal view virtual returns (address result) {
         if (msg.sender == CONDUIT) {
             if (isApprovedForAll(from, CONDUIT)) {
                 return address(0);
