@@ -82,27 +82,23 @@ contract ERC721OnchainTraitsTest is Test {
     function testGetTraitLabelsURI() public {
         _setLabel();
         assertEq(
-            token.getTraitLabelsURI(),
+            token.getTraitMetadataURI(),
             'data:application/json;[{"traitKey":"test.key","fullTraitKey":"test.key","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
         );
     }
 
     function testSetTrait() public {
         _setLabel();
-        // TODO: should token have to exist?
-        token.setTrait(bytes32("test.key"), 1, bytes32("foo"));
-        assertEq(token.getTraitValue(bytes32("test.key"), 1), bytes32("foo"));
-
-        token.deleteTrait(bytes32("test.key"), 1);
-        vm.expectRevert(abi.encodeWithSelector(DynamicTraits.TraitNotSet.selector, 1, bytes32("test.key")));
-        token.getTraitValue(bytes32("test.key"), 1);
+        token.mint(address(this));
+        token.setTrait(1, bytes32("test.key"), bytes32("foo"));
+        assertEq(token.getTraitValue(1, bytes32("test.key")), bytes32("foo"));
     }
 
     function testStringURI() public {
         _setLabel();
         token.mint(address(this));
-        token.setTrait(bytes32("test.key"), 1, bytes32("foo"));
-        assertEq(token.getTraitValue(bytes32("test.key"), 1), bytes32("foo"));
+        token.setTrait(1, bytes32("test.key"), bytes32("foo"));
+        assertEq(token.getTraitValue(1, bytes32("test.key")), bytes32("foo"));
         assertEq(
             token.getStringURI(1),
             '{"name":"Example NFT #1","description":"This is an example NFT","image":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiA+PHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9ImxpZ2h0Z3JheSIgLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI0OCIgZmlsbD0iYmxhY2siID4xPC90ZXh0Pjwvc3ZnPg==","attributes":[{"trait_type":"Example Attribute","value":"Example Value"},{"trait_type":"Number","value":"1","display_type":"number"},{"trait_type":"Parity","value":"Odd"},{"trait_type":"Trait Key","value":"foo","display_type":"string"}]}'

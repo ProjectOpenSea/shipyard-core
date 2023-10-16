@@ -26,8 +26,6 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     error InsufficientPrivilege();
     ///@notice Thrown when trying to set a trait that does not exist
     error TraitDoesNotExist(bytes32 traitKey);
-    ///@notice Thrown when trying to delete a trait that is required to have a value.
-    error TraitIsRequired();
 
     ///@notice a mapping of traitKey to TraitLabelStorage metadata
     mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) public traitLabelStorage;
@@ -91,16 +89,16 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     // LABELS URI
 
     /**
-     * @notice Get the onchain URI for the trait labels, encoded as a JSON data URI
+     * @notice Get the onchain URI for the trait metadata, encoded as a JSON data URI
      */
-    function getTraitLabelsURI() external view virtual override returns (string memory) {
-        return Metadata.jsonDataURI(_getTraitLabelsJson());
+    function getTraitMetadataURI() external view virtual override returns (string memory) {
+        return Metadata.jsonDataURI(_getTraitMetadataJson());
     }
 
     /**
-     * @notice Get the raw JSON for the trait labels
+     * @notice Get the raw JSON for the trait metadata
      */
-    function _getTraitLabelsJson() internal view returns (string memory) {
+    function _getTraitMetadataJson() internal view returns (string memory) {
         bytes32[] memory keys = _traitKeys.values();
         return TraitLabelStorageLib.toLabelJson(traitLabelStorage, keys);
     }
@@ -109,11 +107,11 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @notice Set a trait for a given traitKey and tokenId. Checks that the caller has permission to set the trait,
      *         and, if the TraitLabel specifies that the trait value must be validated, checks that the trait value
      *         is valid.
-     * @param traitKey The trait key to get the value of
      * @param tokenId The token ID to get the trait value for
-     * @param trait The trait value
+     * @param traitKey The trait key to get the value of
+     * @param newValue The new trait value
      */
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 trait) external virtual override {
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) external virtual override {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
         if (!StoredTraitLabelLib.exists(storedTraitLabel)) {
@@ -122,28 +120,9 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         _verifySetterPrivilege(labelStorage.allowedEditors, tokenId);
 
         if (labelStorage.valuesRequireValidation) {
-            TraitLabelLib.validateAcceptableValue(StoredTraitLabelLib.load(storedTraitLabel), traitKey, trait);
+            TraitLabelLib.validateAcceptableValue(StoredTraitLabelLib.load(storedTraitLabel), traitKey, newValue);
         }
-        _setTrait(traitKey, tokenId, trait);
-    }
-
-    /**
-     * @notice Delete a trait for a given traitKey and tokenId. Checks that the caller has permission to delete the trait,
-     *         and that the trait is not required to have a value.
-     * @param traitKey The trait key to delete the value of
-     * @param tokenId The token ID to delete the trait value for
-     */
-    function deleteTrait(bytes32 traitKey, uint256 tokenId) external virtual override {
-        TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
-        StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
-        if (!StoredTraitLabelLib.exists(storedTraitLabel)) {
-            revert TraitDoesNotExist(traitKey);
-        }
-        _verifySetterPrivilege(labelStorage.allowedEditors, tokenId);
-        if (labelStorage.required) {
-            revert TraitIsRequired();
-        }
-        _deleteTrait(traitKey, tokenId);
+        _setTrait(tokenId, traitKey, newValue);
     }
 
     /**
@@ -227,9 +206,6 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
             bytes32 trait = _traits[tokenId][key];
             // check that the trait is set, otherwise, skip it
             if (trait != bytes32(0)) {
-                if (trait == ZERO_VALUE) {
-                    trait = bytes32(0);
-                }
                 attributes[num] = TraitLabelStorageLib.toAttributeJson(traitLabelStorage, key, trait);
                 unchecked {
                     ++num;
