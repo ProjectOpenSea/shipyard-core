@@ -7,19 +7,44 @@ import {DynamicTraits} from "./DynamicTraits.sol";
 
 contract ERC721DynamicTraits is DynamicTraits, Ownable, ERC721 {
     constructor() Ownable(msg.sender) ERC721("ERC721DynamicTraits", "ERC721DT") {
-        _traitLabelsURI = "https://example.com";
+        _traitMetadataURI = "https://example.com";
     }
 
-    function setTrait(bytes32 traitKey, uint256 tokenId, bytes32 value) external virtual override onlyOwner {
-        _setTrait(traitKey, tokenId, value);
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) external virtual override onlyOwner {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        _setTrait(tokenId, traitKey, value);
     }
 
-    function deleteTrait(bytes32 traitKey, uint256 tokenId) external virtual override onlyOwner {
-        _deleteTrait(traitKey, tokenId);
+    function getTraitValue(uint256 tokenId, bytes32 traitKey)
+        public
+        view
+        virtual
+        override
+        returns (bytes32 traitValue)
+    {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        return DynamicTraits.getTraitValue(tokenId, traitKey);
     }
 
-    function setTraitLabelsURI(string calldata uri) external onlyOwner {
-        _setTraitLabelsURI(uri);
+    function getTraitValues(uint256 tokenId, bytes32[] calldata traitKeys)
+        public
+        view
+        virtual
+        override
+        returns (bytes32[] memory traitValues)
+    {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        return DynamicTraits.getTraitValues(tokenId, traitKeys);
+    }
+
+    function setTraitMetadataURI(string calldata uri) external onlyOwner {
+        _setTraitMetadataURI(uri);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, DynamicTraits) returns (bool) {

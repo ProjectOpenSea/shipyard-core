@@ -7,7 +7,40 @@ import {DynamicTraits} from "./DynamicTraits.sol";
 
 contract ERC721OnchainTraits is OnchainTraits, ERC721 {
     constructor() ERC721("ERC721DynamicTraits", "ERC721DT") {
-        _traitLabelsURI = "https://example.com";
+        _traitMetadataURI = "https://example.com";
+    }
+
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) external virtual override onlyOwner {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        _setTrait(tokenId, traitKey, value);
+    }
+
+    function getTraitValue(uint256 tokenId, bytes32 traitKey)
+        public
+        view
+        virtual
+        override
+        returns (bytes32 traitValue)
+    {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        return DynamicTraits.getTraitValue(tokenId, traitKey);
+    }
+
+    function getTraitValues(uint256 tokenId, bytes32[] calldata traitKeys)
+        public
+        view
+        virtual
+        override
+        returns (bytes32[] memory traitValues)
+    {
+        // Revert if the token doesn't exist.
+        _requireOwned(tokenId);
+
+        return DynamicTraits.getTraitValues(tokenId, traitKeys);
     }
 
     function _isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {
