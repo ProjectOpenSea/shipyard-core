@@ -4,7 +4,7 @@ pragma solidity ^0.8.19;
 import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
 import {IERC7496} from "./interfaces/IERC7496.sol";
 
-abstract contract DynamicTraits is IERC7496 {
+contract DynamicTraits is IERC7496 {
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     /// @notice Thrown when a new trait value is not different from the existing value
@@ -58,13 +58,14 @@ abstract contract DynamicTraits is IERC7496 {
     }
 
     /**
-     * @notice Set the value of a trait for a given token ID. If newTrait is bytes32(0), sets the zero value hash.
-     *         Reverts if the trait value is the zero value hash.
+     * @notice Set the value of a trait for a given token ID.
+     *         Reverts if the trait value is unchanged.
+     * @dev    IMPORTANT: Override this method with access role restriction.
      * @param tokenId The token ID to set the trait value for
      * @param traitKey The trait key to set the value of
      * @param newValue The new trait value to set
      */
-    function _setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) internal {
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) public virtual {
         bytes32 existingValue = _traits[tokenId][traitKey];
 
         if (existingValue == newValue) {

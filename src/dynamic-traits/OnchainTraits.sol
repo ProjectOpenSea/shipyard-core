@@ -111,7 +111,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @param traitKey The trait key to get the value of
      * @param newValue The new trait value
      */
-    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) external virtual override {
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) public virtual override {
         TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
         if (!StoredTraitLabelLib.exists(storedTraitLabel)) {
@@ -122,7 +122,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         if (labelStorage.valuesRequireValidation) {
             TraitLabelLib.validateAcceptableValue(StoredTraitLabelLib.load(storedTraitLabel), traitKey, newValue);
         }
-        _setTrait(tokenId, traitKey, newValue);
+        DynamicTraits.setTrait(tokenId, traitKey, newValue);
     }
 
     /**

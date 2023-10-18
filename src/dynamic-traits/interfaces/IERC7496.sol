@@ -5,9 +5,9 @@ import {IERC165} from "forge-std/interfaces/IERC165.sol";
 
 interface IERC7496 is IERC165 {
     /* Events */
-    event TraitUpdated(bytes32 indexed traitKey, uint256 indexed tokenId, bytes32 trait);
-    event TraitUpdatedBulkRange(bytes32 indexed traitKeyPattern, uint256 fromTokenId, uint256 toTokenId);
-    event TraitUpdatedBulkList(bytes32 indexed traitKeyPattern, uint256[] tokenIds);
+    event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 trait);
+    event TraitUpdatedBulkRange(bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId, bytes32 traitValue);
+    event TraitUpdatedBulkList(bytes32 indexed traitKey, uint256[] tokenIds, bytes32 traitValue);
     event TraitMetadataURIUpdated();
 
     /* Getters */
