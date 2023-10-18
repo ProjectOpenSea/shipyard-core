@@ -65,7 +65,7 @@ contract DynamicTraits is IERC7496 {
      * @param traitKey The trait key to set the value of
      * @param newValue The new trait value to set
      */
-    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) virtual public {
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) public virtual {
         bytes32 existingValue = _traits[tokenId][traitKey];
 
         if (existingValue == newValue) {
