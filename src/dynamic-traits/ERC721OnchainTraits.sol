@@ -10,11 +10,11 @@ contract ERC721OnchainTraits is OnchainTraits, ERC721 {
         _traitMetadataURI = "https://example.com";
     }
 
-    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) external virtual override onlyOwner {
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) public virtual override onlyOwner {
         // Revert if the token doesn't exist.
         _requireOwned(tokenId);
 
-        _setTrait(tokenId, traitKey, value);
+        DynamicTraits.setTrait(tokenId, traitKey, value);
     }
 
     function getTraitValue(uint256 tokenId, bytes32 traitKey)
