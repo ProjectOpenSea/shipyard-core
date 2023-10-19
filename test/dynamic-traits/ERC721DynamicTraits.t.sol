@@ -21,11 +21,13 @@ contract ERC721DynamicTraitsTest is Test {
     ERC721DynamicTraitsMintable token;
 
     /* Events */
-    event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 traitValue);
-    event TraitUpdatedBulkConsecutive(
-        bytes32 indexed traitKeyPattern, uint256 fromTokenId, uint256 toTokenId, bytes32 traitValue
+    event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 trait);
+    event TraitUpdatedRange(bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId);
+    event TraitUpdatedRangeUniformValue(
+        bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId, bytes32 traitValue
     );
-    event TraitUpdatedBulkList(bytes32 indexed traitKeyPattern, uint256[] tokenIds, bytes32 traitValue);
+    event TraitUpdatedList(bytes32 indexed traitKey, uint256[] tokenIds);
+    event TraitUpdatedListUniformValue(bytes32 indexed traitKey, uint256[] tokenIds, bytes32 traitValue);
     event TraitMetadataURIUpdated();
 
     function setUp() public {
