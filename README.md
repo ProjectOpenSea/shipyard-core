@@ -1,3 +1,5 @@
+![Shipyard](img/shipyard-banner.jpg)
+
 # Quick Start Guide
 
 To deploy an NFT contract to the Goerli testnet, fund an address with 0.25 Goerli ETH, swap in the appropriate values for `<your_key>` and `<your_pk>` in this command, open a terminal window, and run the following:
