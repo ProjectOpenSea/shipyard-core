@@ -64,7 +64,9 @@ See https://book.getfoundry.sh/reference/forge/forge-create for more information
 
 ## Deploying to mainnet
 
-To deploy to mainnet, just replace the value supplied to `--rpc-url` with a mainnet RPC URL. For example:
+> Warning: these contracts have not yet been formally audited. Exercise caution when deploying to mainnet and consider additional review and independent audits.
+
+To deploy to mainnet, replace the value supplied to `--rpc-url` with a mainnet RPC URL. For example:
 
 ```
 export MAINNET_RPC='https://eth.llamarpc.com' &&
