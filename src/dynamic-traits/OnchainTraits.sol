@@ -18,19 +18,35 @@ import {
     StoredTraitLabelLib
 } from "./lib/TraitLabelLib.sol";
 
+library OnchainTraitsStorage {
+    struct Layout {
+        /// @notice An enumerable set of all trait keys that have been set.
+        EnumerableSet.Bytes32Set _traitKeys;
+        /// @notice A mapping of traitKey to OnchainTraitsStorage.layout()._traitLabelStorage metadata.
+        mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) _traitLabelStorage;
+        /// @notice An enumerable set of all accounts allowed to edit traits with a "Custom" editor privilege.
+        EnumerableSet.AddressSet _customEditors;
+    }
+
+    bytes32 internal constant STORAGE_SLOT = keccak256("contracts.storage.erc7496-dynamictraits.onchaintraits");
+
+    function layout() internal pure returns (Layout storage l) {
+        bytes32 slot = STORAGE_SLOT;
+        assembly {
+            l.slot := slot
+        }
+    }
+}
+
 abstract contract OnchainTraits is Ownable, DynamicTraits {
+    using OnchainTraitsStorage for OnchainTraitsStorage.Layout;
     using EnumerableSet for EnumerableSet.Bytes32Set;
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    ///@notice Thrown when the caller does not have the privilege to set a trait
+    /// @notice Thrown when the caller does not have the privilege to set a trait
     error InsufficientPrivilege();
-    ///@notice Thrown when trying to set a trait that does not exist
+    /// @notice Thrown when trying to set a trait that does not exist
     error TraitDoesNotExist(bytes32 traitKey);
-
-    ///@notice a mapping of traitKey to TraitLabelStorage metadata
-    mapping(bytes32 traitKey => TraitLabelStorage traitLabelStorage) public traitLabelStorage;
-    ///@notice an enumerable set of all accounts allowed to edit traits with a "Custom" editor privilege
-    EnumerableSet.AddressSet internal _customEditors;
 
     constructor() {
         _initializeOwner(msg.sender);
@@ -38,7 +54,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     // ABSTRACT
 
-    ///@notice helper to determine if a given address has the AllowedEditor.TokenOwner privilege
+    /// @notice Helper to determine if a given address has the AllowedEditor.TokenOwner privilege.
     function _isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual returns (bool);
 
     // CUSTOM EDITORS
@@ -48,7 +64,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @param editor The address to check
      */
     function isCustomEditor(address editor) external view returns (bool) {
-        return _customEditors.contains(editor);
+        return OnchainTraitsStorage.layout()._customEditors.contains(editor);
     }
 
     /**
@@ -58,9 +74,9 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      */
     function updateCustomEditor(address editor, bool insert) external onlyOwner {
         if (insert) {
-            _customEditors.add(editor);
+            OnchainTraitsStorage.layout()._customEditors.add(editor);
         } else {
-            _customEditors.remove(editor);
+            OnchainTraitsStorage.layout()._customEditors.remove(editor);
         }
     }
 
@@ -68,14 +84,14 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @notice Get the list of custom editors. This may revert if there are too many editors.
      */
     function getCustomEditors() external view returns (address[] memory) {
-        return _customEditors.values();
+        return OnchainTraitsStorage.layout()._customEditors.values();
     }
 
     /**
      * @notice Get the number of custom editors
      */
     function getCustomEditorsLength() external view returns (uint256) {
-        return _customEditors.length();
+        return OnchainTraitsStorage.layout()._customEditors.length();
     }
 
     /**
@@ -83,7 +99,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @param index The index of the custom editor to get
      */
     function getCustomEditorAt(uint256 index) external view returns (address) {
-        return _customEditors.at(index);
+        return OnchainTraitsStorage.layout()._customEditors.at(index);
     }
 
     // LABELS URI
@@ -99,8 +115,15 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @notice Get the raw JSON for the trait metadata
      */
     function _getTraitMetadataJson() internal view returns (string memory) {
-        bytes32[] memory keys = _traitKeys.values();
-        return TraitLabelStorageLib.toLabelJson(traitLabelStorage, keys);
+        bytes32[] memory keys = OnchainTraitsStorage.layout()._traitKeys.values();
+        return TraitLabelStorageLib.toLabelJson(OnchainTraitsStorage.layout()._traitLabelStorage, keys);
+    }
+
+    /**
+     * @notice Return trait label storage information at a given key.
+     */
+    function traitLabelStorage(bytes32 traitKey) external view returns (TraitLabelStorage memory) {
+        return OnchainTraitsStorage.layout()._traitLabelStorage[traitKey];
     }
 
     /**
@@ -112,7 +135,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @param newValue The new trait value
      */
     function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) public virtual override {
-        TraitLabelStorage memory labelStorage = traitLabelStorage[traitKey];
+        TraitLabelStorage memory labelStorage = OnchainTraitsStorage.layout()._traitLabelStorage[traitKey];
         StoredTraitLabel storedTraitLabel = labelStorage.storedLabel;
         if (!StoredTraitLabelLib.exists(storedTraitLabel)) {
             revert TraitDoesNotExist(traitKey);
@@ -136,12 +159,12 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
     }
 
     /**
-     * @notice Set the TraitLabelStorage for a traitKey. Packs SSTORE2 value along with allowedEditors, required?, and
+     * @notice Set the OnchainTraitsStorage.layout()._traitLabelStorage for a traitKey. Packs SSTORE2 value along with allowedEditors, required?, and
      *         valuesRequireValidation? into a single storage slot for more efficient validation when setting trait values.
      */
     function _setTraitLabel(bytes32 traitKey, TraitLabel memory _traitLabel) internal virtual {
-        _traitKeys.add(traitKey);
-        traitLabelStorage[traitKey] = TraitLabelStorage({
+        OnchainTraitsStorage.layout()._traitKeys.add(traitKey);
+        OnchainTraitsStorage.layout()._traitLabelStorage[traitKey] = TraitLabelStorage({
             allowedEditors: _traitLabel.editors,
             required: _traitLabel.required,
             valuesRequireValidation: _traitLabel.acceptableValues.length > 0,
@@ -171,7 +194,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         }
         // customEditor
         if (EditorsLib.contains(editors, AllowedEditor.Custom)) {
-            if (_customEditors.contains(msg.sender)) {
+            if (OnchainTraitsStorage.layout()._customEditors.contains(msg.sender)) {
                 // short circuit
                 return;
             }
@@ -195,7 +218,7 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
      * @return An array of JSON objects, each representing a dynamic trait set on the token
      */
     function _dynamicAttributes(uint256 tokenId) internal view virtual returns (string[] memory) {
-        bytes32[] memory keys = _traitKeys.values();
+        bytes32[] memory keys = OnchainTraitsStorage.layout()._traitKeys.values();
         uint256 keysLength = keys.length;
 
         string[] memory attributes = new string[](keysLength);
@@ -203,10 +226,11 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         uint256 num;
         for (uint256 i = 0; i < keysLength;) {
             bytes32 key = keys[i];
-            bytes32 trait = _traits[tokenId][key];
+            bytes32 trait = getTraitValue(tokenId, key);
             // check that the trait is set, otherwise, skip it
             if (trait != bytes32(0)) {
-                attributes[num] = TraitLabelStorageLib.toAttributeJson(traitLabelStorage, key, trait);
+                attributes[num] =
+                    TraitLabelStorageLib.toAttributeJson(OnchainTraitsStorage.layout()._traitLabelStorage, key, trait);
                 unchecked {
                     ++num;
                 }
