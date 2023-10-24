@@ -1,9 +1,7 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.19;
 
-import {IERC165} from "openzeppelin-contracts/contracts/interfaces/IERC165.sol";
-
-interface IERC7496 is IERC165 {
+interface IERC7496 {
     /* Events */
     event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 trait);
     event TraitUpdatedRange(bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId);
@@ -24,4 +22,7 @@ interface IERC7496 is IERC165 {
 
     /* Setters */
     function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) external;
+
+    /* Errors */
+    error TraitValueUnchanged();
 }

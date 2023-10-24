@@ -70,12 +70,11 @@ contract ERC721OnchainTraitsTest is Test {
 
     function testGetTraitLabel() public {
         TraitLabel memory label = _setLabel();
-        (Editors editors, bool required, bool shouldValidate, StoredTraitLabel storedlabel) =
-            token.traitLabelStorage(bytes32("test.key"));
-        assertEq(Editors.unwrap(editors), Editors.unwrap(label.editors));
-        assertEq(required, label.required);
-        assertEq(shouldValidate, false);
-        TraitLabel memory retrieved = StoredTraitLabelLib.load(storedlabel);
+        TraitLabelStorage memory storage_ = token.traitLabelStorage(bytes32("testKey"));
+        assertEq(Editors.unwrap(storage_.allowedEditors), Editors.unwrap(label.editors));
+        assertEq(storage_.required, label.required);
+        assertEq(storage_.valuesRequireValidation, false);
+        TraitLabel memory retrieved = StoredTraitLabelLib.load(storage_.storedLabel);
         assertEq(label, retrieved);
     }
 
@@ -83,22 +82,22 @@ contract ERC721OnchainTraitsTest is Test {
         _setLabel();
         assertEq(
             token.getTraitMetadataURI(),
-            'data:application/json;[{"traitKey":"test.key","fullTraitKey":"test.key","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
+            'data:application/json;[{"traitKey":"testKey","fullTraitKey":"testKey","traitLabel":"Trait Key","acceptableValues":[],"fullTraitValues":[],"displayType":"string","editors":[0]}]'
         );
     }
 
     function testSetTrait() public {
         _setLabel();
         token.mint(address(this));
-        token.setTrait(1, bytes32("test.key"), bytes32("foo"));
-        assertEq(token.getTraitValue(1, bytes32("test.key")), bytes32("foo"));
+        token.setTrait(1, bytes32("testKey"), bytes32("foo"));
+        assertEq(token.getTraitValue(1, bytes32("testKey")), bytes32("foo"));
     }
 
     function testStringURI() public {
         _setLabel();
         token.mint(address(this));
-        token.setTrait(1, bytes32("test.key"), bytes32("foo"));
-        assertEq(token.getTraitValue(1, bytes32("test.key")), bytes32("foo"));
+        token.setTrait(1, bytes32("testKey"), bytes32("foo"));
+        assertEq(token.getTraitValue(1, bytes32("testKey")), bytes32("foo"));
         assertEq(
             token.getStringURI(1),
             '{"name":"Example NFT #1","description":"This is an example NFT","image":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiA+PHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9ImxpZ2h0Z3JheSIgLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI0OCIgZmlsbD0iYmxhY2siID4xPC90ZXh0Pjwvc3ZnPg==","attributes":[{"trait_type":"Example Attribute","value":"Example Value"},{"trait_type":"Number","value":"1","display_type":"number"},{"trait_type":"Parity","value":"Odd"},{"trait_type":"Trait Key","value":"foo","display_type":"string"}]}'
@@ -115,7 +114,7 @@ contract ERC721OnchainTraitsTest is Test {
             editors: Editors.wrap(EditorsLib.toBitMap(AllowedEditor.Anyone)),
             required: false
         });
-        token.setTraitLabel(bytes32("test.key"), label);
+        token.setTraitLabel(bytes32("testKey"), label);
         return label;
     }
 
