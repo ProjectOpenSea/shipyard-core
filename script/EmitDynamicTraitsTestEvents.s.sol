@@ -13,8 +13,8 @@ contract EmitDynamicTraitTestEvents is Script {
         bytes32 value = bytes32("foo");
 
         // Emit TraitUpdated
-        token.mint(address(this), 1);
-        token.setTrait(1, key, value);
+        token.mint(address(this), 0);
+        token.setTrait(0, key, value);
 
         // Emit TraitUpdatedRange
         uint256 fromTokenId = 1;
@@ -32,7 +32,7 @@ contract EmitDynamicTraitTestEvents is Script {
         token.setTraitsRange(fromTokenId, toTokenId, key, value);
 
         // Emit TraitUpdatedList
-        uint256[] memory tokenIds = Solarray.uint256s(1, 10, 20, 50);
+        uint256[] memory tokenIds = Solarray.uint256s(100, 75, 20, 50);
         values = new bytes32[](tokenIds.length);
         for (uint256 i = 0; i < values.length; i++) {
             values[i] = bytes32(i * 1000);
