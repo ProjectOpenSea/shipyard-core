@@ -57,6 +57,8 @@ contract EmitDynamicTraitTestEvents is Script {
     bytes32[] birthdayValues = Solarray.bytes32s(birthdayValue1, birthdayValue2, birthdayValue3, birthdayValue4);
 
     function run() public {
+        vm.startBroadcast();
+        
         token = new ERC721DynamicTraitsMultiUpdate();
 
         // Emit TraitUpdated
