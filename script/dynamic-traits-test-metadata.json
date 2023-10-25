@@ -64,6 +64,16 @@
           "0x0": null
         }
       }
+    },
+    "redeemed": {
+      "displayName": "Redeemed",
+      "dataType": {
+        "type": "boolean",
+        "valueMappings": {
+          "0x0": "No",
+          "0x0000000000000000000000000000000000000000000000000000000000000001": "Yes"
+        }
+      }
     }
   }
 }

@@ -56,9 +56,14 @@ contract EmitDynamicTraitTestEvents is Script {
     bytes32 birthdayValue4 = bytes32(uint256(765417860));
     bytes32[] birthdayValues = Solarray.bytes32s(birthdayValue1, birthdayValue2, birthdayValue3, birthdayValue4);
 
+    bytes32 redeemedKey = keccak256("redeemed");
+    bytes32 redeemedValue1 = bytes32(0);
+    bytes32 redeemedValue2 = bytes32(uint256(1));
+    bytes32[] redeemedValues = Solarray.bytes32s(redeemedValue1, redeemedValue2);
+
     function run() public {
         vm.startBroadcast();
-        
+
         token = new ERC721DynamicTraitsMultiUpdate();
 
         // Emit TraitUpdated
@@ -87,6 +92,7 @@ contract EmitDynamicTraitTestEvents is Script {
 
         // Emit TraitUpdatedListUniformValue
         token.setTraitsList(tokenIds, pointsKey, pointsValue1);
+        token.setTraitsList(tokenIds, redeemedKey, redeemedValue1);
 
         // Emit TraitMetadataURIUpdated
         // file: dynamic-traits-test-metadata.json
