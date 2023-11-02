@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
+import {ItemType} from "seaport-types/src/lib/ConsiderationEnums.sol";
 import {BaseSIPDecoder} from "./BaseSIPDecoder.sol";
 
 library SIP7Decoder {

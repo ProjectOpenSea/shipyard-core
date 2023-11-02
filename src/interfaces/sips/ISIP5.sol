@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {IERC165} from "forge-std/interfaces/IERC165.sol";
-import {Schema} from "seaport-types/lib/ConsiderationStructs.sol";
+import {Schema} from "seaport-types/src/lib/ConsiderationStructs.sol";
 /**
  * @title SIP-5: Contract Metadata Interface for Seaport Contracts
  */
