@@ -6,7 +6,7 @@ remappings = [
     'forge-std/=lib/forge-std/src',
     'solady/=lib/solady/',
     'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
-    'seaport-types/=lib/seaport-types/src/',
+    'seaport-types/=lib/seaport-types/',
     'solarray/=lib/solarray/src/',
     'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
 ]
