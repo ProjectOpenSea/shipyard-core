@@ -3,8 +3,8 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {SIP7Encoder} from "src/sips/lib/SIP7Encoder.sol";
-import {ItemType} from "seaport-types/lib/ConsiderationEnums.sol";
-import {ReceivedItem} from "seaport-types/lib/ConsiderationStructs.sol";
+import {ItemType} from "seaport-types/src/lib/ConsiderationEnums.sol";
+import {ReceivedItem} from "seaport-types/src/lib/ConsiderationStructs.sol";
 
 contract SIP7EncoderTest is Test {
     function testEncodeSubstandard1() public {
