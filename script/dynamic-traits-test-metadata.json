@@ -1,0 +1,79 @@
+{
+  "traits": {
+    "character": {
+      "displayName": "Character",
+      "dataType": {
+        "type": "string",
+        "acceptableValues": ["Ninja", "Samurai", "Sorcerer", "Wizard"],
+        "validateOnSale": "requireEq"
+      }
+    },
+    "points": {
+      "displayName": "Total Score",
+      "dataType": {
+        "type": "decimal",
+        "signed": false,
+        "bits": 16,
+        "decimals": 0
+      },
+      "validateOnSale": "requireUintGte"
+    },
+    "health": {
+      "displayName": "Health",
+      "dataType": {
+        "type": "decimal",
+        "signed": false,
+        "bits": 10,
+        "decimals": 1
+      },
+      "validateOnSale": "requireUintGte"
+    },
+    "backgroundColor": {
+      "displayName": "Background Color",
+      "dataType": {
+        "type": "string",
+        "valueMappings": {
+          "0x0000000000000000000000000000000000000000000000000000000000000000": "Green",
+          "0x0000000000000000000000000000000000000000000000000000000000000001": "Red",
+          "0x0000000000000000000000000000000000000000000000000000000000000002": "Blue",
+          "0x0000000000000000000000000000000000000000000000000000000000000003": "Black",
+          "0x0000000000000000000000000000000000000000000000000000000000000004": "Orange"
+        }
+      }
+    },
+    "name": {
+      "displayName": "Name",
+      "dataType": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 32,
+        "valueMappings": {
+          "0x0": "Unnamed",
+          "0x92e75d5e42b80de937d204558acf69c8ea586a244fe88bc0181323fe3b9e3ebf": "🙂",
+          "0x4772656700000000000000000000000000000000000000000000000000000000": "Greg",
+          "0x0000000000000000000000000000000000000000000000000000000000000077": "Johnny"
+        }
+      },
+      "tokenOwnerCanUpdateValue": true
+    },
+    "0x56671827fe2ad757874a68a372e21cdf22dfb12c64ee4dcef1aa9dfbfd2b8f12": {
+      "displayName": "Birthday 🚢 📅",
+      "dataType": {
+        "type": "epochSeconds",
+        "valueMappings": {
+          "0x0": null
+        }
+      }
+    },
+    "redeemed": {
+      "displayName": "Redeemed",
+      "dataType": {
+        "type": "boolean",
+        "valueMappings": {
+          "0x0": "No",
+          "0x0000000000000000000000000000000000000000000000000000000000000001": "Yes"
+        }
+      }
+    }
+  }
+}

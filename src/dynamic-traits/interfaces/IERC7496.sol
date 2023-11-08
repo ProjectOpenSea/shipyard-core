@@ -3,7 +3,7 @@ pragma solidity ^0.8.19;
 
 interface IERC7496 {
     /* Events */
-    event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 trait);
+    event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 traitValue);
     event TraitUpdatedRange(bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId);
     event TraitUpdatedRangeUniformValue(
         bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId, bytes32 traitValue
@@ -21,7 +21,7 @@ interface IERC7496 {
     function getTraitMetadataURI() external view returns (string memory uri);
 
     /* Setters */
-    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) external;
+    function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 traitValue) external;
 
     /* Errors */
     error TraitValueUnchanged();
