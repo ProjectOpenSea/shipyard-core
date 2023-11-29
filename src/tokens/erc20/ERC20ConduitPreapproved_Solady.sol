@@ -61,16 +61,18 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             mstore(0x0c, or(from_, SOLADY_ERC20_ALLOWANCE_SLOT_SEED))
             let allowanceSlot := keccak256(0x0c, 0x34)
             let allowance_ := sload(allowanceSlot)
-            // If the caller is the conduit and allowance is 0, set to type(uint256).max. If the allowance is type(uint256).max, set to 0.
-            let isConduit := eq(caller(), CONDUIT)
-            if isConduit {
-                let conduitAllowance_ := allowance_
-                if eq(allowance_, 0) { conduitAllowance_ := not(0) }
-                if eq(allowance_, not(0)) { conduitAllowance_ := 0 }
-                if iszero(eq(allowance_, conduitAllowance_)) { allowance_ := conduitAllowance_ }
-            }
-            // If the allowance is not the maximum uint256 value.
-            if add(allowance_, 1) {
+
+            // "flip" allowance if caller is CONDUIT and if allowance_ is 0 or type(uint256).max.
+            allowance_ := xor(
+                allowance_,
+                mul(
+                    and(eq(caller(), CONDUIT), iszero(and(allowance_, not(allowance_)))),
+                    not(0)
+                )
+            )
+
+            // If the allowance is not the maximum uint256 value:
+            if not(allowance_) {
                 // Revert if the amount to be transferred exceeds the allowance.
                 if gt(amount, allowance_) {
                     mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
@@ -79,6 +81,7 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
                 // Subtract and store the updated allowance.
                 sstore(allowanceSlot, sub(allowance_, amount))
             }
+
             // Compute the balance slot and load its value.
             mstore(0x0c, or(from_, SOLADY_ERC20_BALANCE_SLOT_SEED))
             let fromBalanceSlot := keccak256(0x0c, 0x20)
