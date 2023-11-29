@@ -12,7 +12,13 @@ uint256 constant SOLADY_ERC1155_MASTER_SLOT_SEED = 0x9a31110384e0b0c9;
 /// @dev `keccak256(bytes("TransferSingle(address,address,address,uint256,uint256)"))`.
 uint256 constant SOLADY_TRANSFER_SINGLE_EVENT_SIGNATURE =
     0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62;
-
 /// @dev `keccak256(bytes("TransferBatch(address,address,address,uint256[],uint256[])"))`.
 uint256 constant SOLADY_TRANSFER_BATCH_EVENT_SIGNATURE =
     0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb;
+/// @dev Solady ERC20 allowance slot seed.
+uint256 constant SOLADY_ERC20_ALLOWANCE_SLOT_SEED = 0x7f5e9f20;
+/// @dev Solady ERC20 balance slot seed.
+uint256 constant SOLADY_ERC20_BALANCE_SLOT_SEED = 0x87a211a2;
+/// @dev `keccak256(bytes("Transfer(address,address,uint256)"))`.
+uint256 constant SOLADY_ERC20_TRANSFER_EVENT_SIGNATURE =
+    0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef;
