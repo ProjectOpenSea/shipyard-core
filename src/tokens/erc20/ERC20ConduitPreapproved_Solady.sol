@@ -63,13 +63,8 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             let allowance_ := sload(allowanceSlot)
 
             // "flip" allowance if caller is CONDUIT and if allowance_ is 0 or type(uint256).max.
-            allowance_ := xor(
-                allowance_,
-                mul(
-                    and(eq(caller(), CONDUIT), iszero(and(allowance_, not(allowance_)))),
-                    not(0)
-                )
-            )
+            allowance_ :=
+                xor(allowance_, mul(and(eq(caller(), CONDUIT), iszero(and(allowance_, not(allowance_)))), not(0)))
 
             // If the allowance is not the maximum uint256 value:
             if not(allowance_) {
