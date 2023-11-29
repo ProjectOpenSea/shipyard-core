@@ -22,15 +22,15 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
      *      Setting an allowance of 0 for the conduit with `approve` will revoke the pre-approval.
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
-        uint256 allowance = super.allowance(owner, spender);
+        uint256 allowance_ = super.allowance(owner, spender);
         if (spender == CONDUIT) {
-            if (allowance == 0) {
+            if (allowance_ == 0) {
                 return type(uint256).max;
-            } else if (allowance == type(uint256).max) {
+            } else if (allowance_ == type(uint256).max) {
                 return 0;
             }
         }
-        return allowance;
+        return allowance_;
     }
 
     /**
@@ -64,10 +64,10 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             // If the caller is the conduit and allowance is 0, set to type(uint256).max. If the allowance is type(uint256).max, set to 0.
             let isConduit := eq(caller(), CONDUIT)
             if isConduit {
-                let newAllowance_ := allowance_
-                if eq(allowance_, 0) { newAllowance_ := not(0) }
-                if eq(allowance_, not(0)) { newAllowance_ := 0 }
-                allowance_ := newAllowance_
+                let conduitAllowance_ := allowance_
+                if eq(allowance_, 0) { conduitAllowance_ := not(0) }
+                if eq(allowance_, not(0)) { conduitAllowance_ := 0 }
+                if iszero(eq(allowance_, conduitAllowance_)) { allowance_ := conduitAllowance_ }
             }
             // If the allowance is not the maximum uint256 value.
             if add(allowance_, 1) {
@@ -107,11 +107,11 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
 
     function _spendAllowance(address owner, address spender, uint256 amount) internal virtual override {
         if (spender == CONDUIT) {
-            uint256 allowance = super.allowance(owner, spender);
-            if (allowance == type(uint256).max) {
+            uint256 allowance_ = super.allowance(owner, spender);
+            if (allowance_ == type(uint256).max) {
                 // Max allowance, no need to spend.
                 return;
-            } else if (allowance == 0) {
+            } else if (allowance_ == 0) {
                 revert InsufficientAllowance();
             }
         }
