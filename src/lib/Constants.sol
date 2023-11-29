@@ -26,11 +26,8 @@ uint256 constant SOLADY_ERC20_APPROVAL_EVENT_SIGNATURE = 0;
 /// @dev Solady ERC20 nonces slot seed with signature prefix.
 uint256 constant SOLADY_ERC20_NONCES_SLOT_SEED_WITH_SIGNATURE_PREFIX = 0x383775081901;
 /// @dev `keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)")`.
-bytes32 constant SOLADY_ERC20_DOMAIN_TYPEHASH =
-0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
+bytes32 constant SOLADY_ERC20_DOMAIN_TYPEHASH = 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
 /// @dev Solady ERC20 version hash: `keccak256("1")`.
-bytes32 constant SOLADY_ERC20_VERSION_HASH =
-0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6;
+bytes32 constant SOLADY_ERC20_VERSION_HASH = 0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6;
 /// @dev `keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)")`.
-bytes32 constant SOLADY_ERC20_PERMIT_TYPEHASH =
-0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
+bytes32 constant SOLADY_ERC20_PERMIT_TYPEHASH = 0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;

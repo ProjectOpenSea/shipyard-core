@@ -10,7 +10,7 @@ import {
     SOLADY_ERC20_NONCES_SLOT_SEED_WITH_SIGNATURE_PREFIX,
     SOLADY_ERC20_DOMAIN_TYPEHASH,
     SOLADY_ERC20_PERMIT_TYPEHASH,
-    SOLADY_ERC20_VERSION_TYPEHASH,
+    SOLADY_ERC20_VERSION_HASH,
     SOLADY_ERC20_APPROVAL_EVENT_SIGNATURE
 } from "../../lib/Constants.sol";
 import {IPreapprovalForAll} from "../../interfaces/IPreapprovalForAll.sol";
@@ -108,15 +108,11 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
         return true;
     }
 
-     function permit(
-        address owner,
-        address spender,
-        uint256 value,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public virtual {
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        public
+        virtual
+        override
+    {
         bytes32 nameHash = _constantNameHash();
         //  We simply calculate it on-the-fly to allow for cases where the `name` may change.
         if (nameHash == bytes32(0)) nameHash = keccak256(bytes(name()));
@@ -173,8 +169,7 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             mstore(0x40, or(shl(160, SOLADY_ERC20_ALLOWANCE_SLOT_SEED), spender))
 
             // "flip" allowance value if caller is CONDUIT and if value is 0 or type(uint256).max.
-            value :=
-                xor(value, mul(and(eq(caller(), CONDUIT), iszero(and(value, not(value)))), not(0)))
+            value := xor(value, mul(and(eq(caller(), CONDUIT), iszero(and(value, not(value)))), not(0)))
 
             sstore(keccak256(0x2c, 0x34), value)
             // Emit the {Approval} event.
