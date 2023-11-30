@@ -67,7 +67,7 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
                 xor(allowance_, mul(and(eq(caller(), CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
 
             // If the allowance is not the maximum uint256 value.
-            if add(allowance_, 1) {
+            if not(allowance_) {
                 // Revert if the amount to be transferred exceeds the allowance.
                 if gt(amount, allowance_) {
                     mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
@@ -195,7 +195,7 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
                 xor(allowance_, mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
 
             // If the allowance is not the maximum uint256 value.
-            if add(allowance_, 1) {
+            if not(allowance_) {
                 // Revert if the amount to be transferred exceeds the allowance.
                 if gt(amount, allowance_) {
                     mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
