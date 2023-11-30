@@ -28,12 +28,10 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
      */
     function allowance(address owner, address spender) public view virtual override returns (uint256) {
         uint256 allowance_ = super.allowance(owner, spender);
-        if (spender == CONDUIT) {
-            if (allowance_ == 0) {
-                return type(uint256).max;
-            } else if (allowance_ == type(uint256).max) {
-                return 0;
-            }
+        assembly {
+            // "flip" allowance if spender is CONDUIT and if allowance is 0 or type(uint256).max.
+            allowance_ :=
+                xor(allowance_, mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
         }
         return allowance_;
     }
@@ -45,12 +43,9 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
      *       E.g. if 0 is passed, it is stored as `type(uint256).max`, and if `type(uint256).max` is passed, it is stored as 0.
      */
     function approve(address spender, uint256 amount) public virtual override returns (bool) {
-        if (spender == CONDUIT) {
-            if (amount == 0) {
-                amount = type(uint256).max;
-            } else if (amount == type(uint256).max) {
-                amount = 0;
-            }
+        assembly {
+            // "flip" amount if spender is CONDUIT and if amount is 0 or type(uint256).max.
+            amount := xor(amount, mul(and(eq(spender, CONDUIT), or(iszero(amount), iszero(not(amount)))), not(0)))
         }
         super._approve(msg.sender, spender, amount);
         return true;
@@ -69,7 +64,7 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
 
             // "flip" allowance if caller is CONDUIT and if allowance_ is 0 or type(uint256).max.
             allowance_ :=
-                xor(allowance_, mul(and(eq(caller(), CONDUIT), iszero(and(allowance_, not(allowance_)))), not(0)))
+                xor(allowance_, mul(and(eq(caller(), CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
 
             // If the allowance is not the maximum uint256 value:
             if not(allowance_) {
@@ -79,7 +74,13 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
                     revert(0x1c, 0x04)
                 }
                 // Subtract and store the updated allowance.
-                sstore(allowanceSlot, sub(allowance_, amount))
+                sstore(
+                    allowanceSlot,
+                    xor(
+                        sub(allowance_, amount),
+                        mul(and(eq(caller(), CONDUIT), iszero(sub(allowance_, amount))), not(0))
+                    )
+                )
             }
 
             // Compute the balance slot and load its value.
@@ -168,8 +169,8 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             // The `owner` is already at slot 0x20.
             mstore(0x40, or(shl(160, SOLADY_ERC20_ALLOWANCE_SLOT_SEED), spender))
 
-            // "flip" allowance value if caller is CONDUIT and if value is 0 or type(uint256).max.
-            value := xor(value, mul(and(eq(caller(), CONDUIT), iszero(and(value, not(value)))), not(0)))
+            // "flip" allowance value if spender is CONDUIT and if value is 0 or type(uint256).max.
+            value := xor(value, mul(and(eq(spender, CONDUIT), or(iszero(value), iszero(not(value)))), not(0)))
 
             sstore(keccak256(0x2c, 0x34), value)
             // Emit the {Approval} event.
