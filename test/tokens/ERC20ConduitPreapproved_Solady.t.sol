@@ -162,6 +162,64 @@ contract ERC20ConduitPreapproved_SoladyTest is Test, TestPlus, IPreapprovalForAl
         _checkAllowanceAndNonce(t);
     }
 
+    function testInternalSpendAllowance(address acct, address operator) public {
+        if (acct == address(0)) {
+            acct = address(1);
+        }
+        if (operator == address(0)) {
+            operator = address(1);
+        }
+        test.mint(acct, 1 ether);
+        vm.prank(acct);
+        test.approve(operator, 1 ether);
+        vm.prank(operator);
+        test.spendAllowance(acct, operator, 1 ether);
+        assertEq(test.allowance(acct, operator), 0);
+        vm.expectRevert(ERC20.InsufficientAllowance.selector);
+        test.spendAllowance(acct, operator, 1 ether);
+
+        // Allowance of type(uint256).max should not be reduced
+        vm.prank(acct);
+        test.approve(operator, type(uint256).max);
+        test.spendAllowance(acct, operator, 1 ether);
+        assertEq(test.allowance(acct, operator), type(uint256).max);
+
+        // Allowance of conduit with default type(uint256).max should not be reduced
+        test.spendAllowance(acct, CONDUIT, 1 ether);
+        assertEq(test.allowance(acct, CONDUIT), type(uint256).max);
+
+        // Allowance of conduit with lower allowance should be reduced
+        vm.prank(acct);
+        test.approve(CONDUIT, 1 ether);
+        test.spendAllowance(acct, CONDUIT, 1 ether);
+        assertEq(test.allowance(acct, CONDUIT), 0);
+    }
+
+    function testInternalApprove(address acct, address operator) public {
+        if (acct == address(0)) {
+            acct = address(1);
+        }
+        if (operator == address(0)) {
+            operator = address(1);
+        }
+        test.mint(acct, 1 ether);
+        test.approve(acct, operator, 1 ether);
+        assertEq(test.allowance(acct, operator), 1 ether);
+
+        test.approve(acct, operator, type(uint256).max);
+        assertEq(test.allowance(acct, operator), type(uint256).max);
+
+        assertEq(test.allowance(acct, CONDUIT), type(uint256).max);
+        test.approve(acct, CONDUIT, 1 ether);
+        assertEq(test.allowance(acct, CONDUIT), 1 ether);
+
+        test.approve(acct, CONDUIT, 0);
+        assertEq(test.allowance(acct, CONDUIT), 0);
+
+        test.approve(acct, CONDUIT, type(uint256).max);
+        assertEq(test.allowance(acct, CONDUIT), type(uint256).max);
+    }
+
     function _signPermit(_TestTemps memory t) internal view {
         bytes32 innerHash =
             keccak256(abi.encode(SOLADY_ERC20_PERMIT_TYPEHASH, t.owner, t.to, t.amount, t.nonce, t.deadline));

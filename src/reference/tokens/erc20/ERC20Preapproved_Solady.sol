@@ -8,6 +8,16 @@ contract ERC20_Solady is ERC20ConduitPreapproved_Solady {
         _mint(to, amount);
     }
 
+    /// @dev Exposed to test internal function
+    function spendAllowance(address owner, address spender, uint256 amount) public {
+        _spendAllowance(owner, spender, amount);
+    }
+
+    /// @dev Exposed to test internal function
+    function approve(address owner, address spender, uint256 amount) public {
+        _approve(owner, spender, amount);
+    }
+
     function name() public pure override returns (string memory) {
         return "Test";
     }

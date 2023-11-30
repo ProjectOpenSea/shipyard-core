@@ -66,8 +66,8 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             allowance_ :=
                 xor(allowance_, mul(and(eq(caller(), CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
 
-            // If the allowance is not the maximum uint256 value:
-            if not(allowance_) {
+            // If the allowance is not the maximum uint256 value.
+            if add(allowance_, 1) {
                 // Revert if the amount to be transferred exceeds the allowance.
                 if gt(amount, allowance_) {
                     mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
@@ -181,15 +181,52 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
     }
 
     function _spendAllowance(address owner, address spender, uint256 amount) internal virtual override {
-        if (spender == CONDUIT) {
-            uint256 allowance_ = super.allowance(owner, spender);
-            if (allowance_ == type(uint256).max) {
-                // Max allowance, no need to spend.
-                return;
-            } else if (allowance_ == 0) {
-                revert InsufficientAllowance();
+        /// @solidity memory-safe-assembly
+        assembly {
+            // Compute the allowance slot and load its value.
+            mstore(0x20, spender)
+            mstore(0x0c, SOLADY_ERC20_ALLOWANCE_SLOT_SEED)
+            mstore(0x00, owner)
+            let allowanceSlot := keccak256(0x0c, 0x34)
+            let allowance_ := sload(allowanceSlot)
+
+            // "flip" allowance if spender is CONDUIT and if allowance_ is 0 or type(uint256).max.
+            allowance_ :=
+                xor(allowance_, mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
+
+            // If the allowance is not the maximum uint256 value.
+            if add(allowance_, 1) {
+                // Revert if the amount to be transferred exceeds the allowance.
+                if gt(amount, allowance_) {
+                    mstore(0x00, 0x13be252b) // `InsufficientAllowance()`.
+                    revert(0x1c, 0x04)
+                }
+                // Subtract and store the updated allowance.
+                sstore(
+                    allowanceSlot,
+                    xor(
+                        sub(allowance_, amount), mul(and(eq(spender, CONDUIT), iszero(sub(allowance_, amount))), not(0))
+                    )
+                )
             }
         }
-        super._spendAllowance(owner, spender, amount);
+    }
+
+    function _approve(address owner, address spender, uint256 amount) internal virtual override {
+        /// @solidity memory-safe-assembly
+        assembly {
+            let owner_ := shl(96, owner)
+            // Compute the allowance slot and store the amount.
+            mstore(0x20, spender)
+            mstore(0x0c, or(owner_, SOLADY_ERC20_ALLOWANCE_SLOT_SEED))
+
+            // "flip" amount if spender is CONDUIT and if amount is 0 or type(uint256).max.
+            amount := xor(amount, mul(and(eq(spender, CONDUIT), or(iszero(amount), iszero(not(amount)))), not(0)))
+
+            sstore(keccak256(0x0c, 0x34), amount)
+            // Emit the {Approval} event.
+            mstore(0x00, amount)
+            log3(0x00, 0x20, SOLADY_ERC20_APPROVAL_EVENT_SIGNATURE, shr(96, owner_), shr(96, mload(0x2c)))
+        }
     }
 }
