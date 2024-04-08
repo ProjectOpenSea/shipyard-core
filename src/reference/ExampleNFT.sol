@@ -71,10 +71,10 @@ contract ExampleNFT is AbstractNFT {
                         svg.prop("text-anchor", "middle"),
                         svg.prop("font-size", "48"),
                         svg.prop("fill", "black")
-                        ),
+                    ),
                     children: LibString.toString(tokenId)
                 })
-                )
+            )
         });
     }
 
