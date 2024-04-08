@@ -4,11 +4,13 @@ pragma solidity ^0.8.17;
 import {Ownable} from "solady/src/auth/Ownable.sol";
 import {ERC1155} from "solady/src/tokens/ERC1155.sol";
 import {ERC1155ConduitPreapproved_Solady} from "../tokens/erc1155/ERC1155ConduitPreapproved_Solady.sol";
-import {TokenTransferValidator} from "./lib/TokenTransferValidator.sol";
+import {TokenTransferValidator, TokenTransferValidatorStorage} from "./lib/TokenTransferValidator.sol";
 import {ICreatorToken} from "../interfaces/transfer-validated/ICreatorToken.sol";
 import {ITransferValidator1155} from "../interfaces/transfer-validated/ITransferValidator.sol";
 
 contract ERC1155ShipyardTransferValidated is ERC1155ConduitPreapproved_Solady, TokenTransferValidator, Ownable {
+    using TokenTransferValidatorStorage for TokenTransferValidatorStorage.Layout;
+
     constructor(address initialTransferValidator) ERC1155ConduitPreapproved_Solady() {
         // Set the initial contract owner.
         _initializeOwner(msg.sender);
@@ -46,7 +48,7 @@ contract ERC1155ShipyardTransferValidated is ERC1155ConduitPreapproved_Solady, T
     ) internal virtual override {
         if (from != address(0) && to != address(0)) {
             // Call the transfer validator if one is set.
-            address transferValidator = _transferValidator;
+            address transferValidator = TokenTransferValidatorStorage.layout()._transferValidator;
             if (transferValidator != address(0)) {
                 for (uint256 i = 0; i < ids.length; i++) {
                     ITransferValidator1155(transferValidator).validateTransfer(msg.sender, from, to, ids[i], amounts[i]);

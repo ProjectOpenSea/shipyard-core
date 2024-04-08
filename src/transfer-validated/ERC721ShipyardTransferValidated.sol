@@ -4,11 +4,13 @@ pragma solidity ^0.8.17;
 import {Ownable} from "solady/src/auth/Ownable.sol";
 import {ERC721} from "solady/src/tokens/ERC721.sol";
 import {ERC721ConduitPreapproved_Solady} from "../tokens/erc721/ERC721ConduitPreapproved_Solady.sol";
-import {TokenTransferValidator} from "./lib/TokenTransferValidator.sol";
+import {TokenTransferValidator, TokenTransferValidatorStorage} from "./lib/TokenTransferValidator.sol";
 import {ICreatorToken} from "../interfaces/transfer-validated/ICreatorToken.sol";
 import {ITransferValidator721} from "../interfaces/transfer-validated/ITransferValidator.sol";
 
 contract ERC721ShipyardTransferValidated is ERC721ConduitPreapproved_Solady, TokenTransferValidator, Ownable {
+    using TokenTransferValidatorStorage for TokenTransferValidatorStorage.Layout;
+
     constructor(address initialTransferValidator) ERC721ConduitPreapproved_Solady() {
         // Set the initial contract owner.
         _initializeOwner(msg.sender);
@@ -35,7 +37,7 @@ contract ERC721ShipyardTransferValidated is ERC721ConduitPreapproved_Solady, Tok
     function _beforeTokenTransfer(address from, address to, uint256 id) internal virtual override {
         if (from != address(0) && to != address(0)) {
             // Call the transfer validator if one is set.
-            address transferValidator = _transferValidator;
+            address transferValidator = TokenTransferValidatorStorage.layout()._transferValidator;
             if (transferValidator != address(0)) {
                 ITransferValidator721(transferValidator).validateTransfer(msg.sender, from, to, id);
             }
