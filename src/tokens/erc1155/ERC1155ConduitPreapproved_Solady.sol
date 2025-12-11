@@ -85,13 +85,12 @@ abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IPreapprovalForAl
                 mstore(0x00, caller())
                 let isApproved := sload(keccak256(0x0c, 0x34))
                 // if isConduit, flip isApproved, otherwise leave as is
-                isApproved :=
-                    or(
-                        // isConduit && !isApproved
-                        and(isConduit, iszero(isApproved)),
-                        // !isConduit && isApproved
-                        and(iszero(isConduit), isApproved)
-                    )
+                isApproved := or(
+                    // isConduit && !isApproved
+                    and(isConduit, iszero(isApproved)),
+                    // !isConduit && isApproved
+                    and(iszero(isConduit), isApproved)
+                )
                 if iszero(isApproved) {
                     mstore(0x00, 0x4b6e7f18) // `NotOwnerNorApproved()`.
                     revert(0x1c, 0x04)
@@ -204,13 +203,12 @@ abstract contract ERC1155ConduitPreapproved_Solady is ERC1155, IPreapprovalForAl
                 mstore(0x00, caller())
                 let isApproved := sload(keccak256(0x0c, 0x34))
                 // if isConduit, flip isApproved, otherwise leave as is
-                isApproved :=
-                    or(
-                        // isConduit && !isApproved
-                        and(isConduit, iszero(isApproved)),
-                        // !isConduit && isApproved
-                        and(iszero(isConduit), isApproved)
-                    )
+                isApproved := or(
+                    // isConduit && !isApproved
+                    and(isConduit, iszero(isApproved)),
+                    // !isConduit && isApproved
+                    and(iszero(isConduit), isApproved)
+                )
                 if iszero(isApproved) {
                     mstore(0x00, 0x4b6e7f18) // `NotOwnerNorApproved()`.
                     revert(0x1c, 0x04)

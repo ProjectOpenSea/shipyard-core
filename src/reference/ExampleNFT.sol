@@ -44,9 +44,7 @@ contract ExampleNFT is AbstractNFT {
         return Solarray.strings(
             Metadata.attribute({traitType: "Example Attribute", value: "Example Value"}),
             Metadata.attribute({
-                traitType: "Number",
-                value: LibString.toString(tokenId),
-                displayType: DisplayType.Number
+                traitType: "Number", value: LibString.toString(tokenId), displayType: DisplayType.Number
             }),
             Metadata.attribute({traitType: "Parity", value: tokenId % 2 == 0 ? "Even" : "Odd"})
         );
@@ -61,7 +59,9 @@ contract ExampleNFT is AbstractNFT {
             props: string.concat(svg.prop("width", "500"), svg.prop("height", "500")),
             children: string.concat(
                 svg.rect({
-                    props: string.concat(svg.prop("width", "500"), svg.prop("height", "500"), svg.prop("fill", "lightgray"))
+                    props: string.concat(
+                        svg.prop("width", "500"), svg.prop("height", "500"), svg.prop("fill", "lightgray")
+                    )
                 }),
                 svg.text({
                     props: string.concat(

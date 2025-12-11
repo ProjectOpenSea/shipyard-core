@@ -10,52 +10,23 @@ on:
 env:
   FOUNDRY_PROFILE: ci
 
-permissions:
-  contents: write
-
 jobs:
   check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+    name: Build, Format & Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+      - name: Build
+        run: forge build --sizes
 
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+      - name: Format check
+        run: forge fmt --check
 
-      - name: Lint
-        run: |
-          forge fmt
-          pwd
-          if [[ `git diff --exit-code` ]]; then        
-            git config --local user.name 'GitHub Actions Bot'
-            git config --local user.email '<>'
-            git add .
-            git commit -m "Github Actions automatically updated formatting with forge fmt"
-            COMMIT_HASH=$(git rev-parse HEAD)
-            echo "# Github Actions automatically updated formatting with forge fmt\n$COMMIT_HASH" >> .git-blame-ignore-revs
-            git add .git-blame-ignore-revs
-            git commit -m "Updated .git-blame-ignore-revs with commit $COMMIT_HASH"
-            BRANCH_NAME=$(git symbolic-ref --short HEAD)
-            git push origin $BRANCH_NAME
-          fi
-        id: update
+      - name: Test
+        run: forge test -vvv

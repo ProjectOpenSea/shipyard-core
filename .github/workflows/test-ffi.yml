@@ -10,50 +10,35 @@ on:
 env:
   FOUNDRY_PROFILE: ci-ffi
 
-permissions:
-  contents: write
-
 jobs:
   check:
-    strategy:
-      fail-fast: true
-
-    name: Foundry project
+    name: Build, Format & Test (FFI)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: nightly
 
-      - name: Run Forge build
-        run: |
-          forge --version
-          forge build --sizes
-        id: build
+      - name: Build
+        run: forge build --sizes
 
-      - name: Set Up ffi
+      - name: Format check
+        run: forge fmt --check
+
+      - name: Set up FFI
         run: |
           cd ./test-ffi/scripts
           yarn install
           cd ../tmp
           touch temp.json
-          cd ../..
-        id: yarn-install
 
-      - name: Run Forge tests
-        run: |
-          forge test -vvv
-        id: test
+      - name: Test
+        run: forge test -vvv
 
-      - name: Clear Temp Files
+      - name: Clear temp files
         run: |
           cd ./test-ffi/tmp
           find . -maxdepth 1 -name 'temp*' -exec rm -f {} \;
-          cd ../..
-        id: clear

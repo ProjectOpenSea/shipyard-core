@@ -73,7 +73,15 @@ contract ERC1155ShipyardTransferValidated is ERC1155ConduitPreapproved_Solady, T
     }
 
     /// @dev Replace me with the token URI.
-    function uri(uint256 /* id */ ) public view virtual override returns (string memory) {
+    function uri(
+        uint256 /* id */
+    )
+        public
+        view
+        virtual
+        override
+        returns (string memory)
+    {
         return "";
     }
 }

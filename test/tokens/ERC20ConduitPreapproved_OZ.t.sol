@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
-import {IERC20Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
+import {IERC20Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
 import {ERC20_OZ} from "src/reference/tokens/erc20/ERC20Preapproved_OZ.sol";
 import {CONDUIT} from "src/lib/Constants.sol";
 import {IPreapprovalForAll} from "src/interfaces/IPreapprovalForAll.sol";

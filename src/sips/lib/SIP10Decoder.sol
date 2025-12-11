@@ -76,11 +76,7 @@ library SIP10Decoder {
         return BaseSIPDecoder.decodePackedBytes(extraData, sip10DataStartRelativeOffset);
     }
 
-    function decodeSubstandard8(bytes calldata extraData)
-        internal
-        pure
-        returns (uint256 tokenId, bytes calldata data)
-    {
+    function decodeSubstandard8(bytes calldata extraData) internal pure returns (uint256 tokenId, bytes calldata data) {
         return BaseSIPDecoder.decodeUintAndBytes(extraData);
     }
 

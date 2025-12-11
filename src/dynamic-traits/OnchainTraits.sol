@@ -5,7 +5,7 @@ import {DynamicTraits} from "./DynamicTraits.sol";
 import {Metadata} from "../onchain/Metadata.sol";
 import {Ownable} from "solady/src/auth/Ownable.sol";
 import {SSTORE2} from "solady/src/utils/SSTORE2.sol";
-import {EnumerableSet} from "openzeppelin-contracts/contracts/utils/structs/EnumerableSet.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import {
     TraitLabelStorage,
     TraitLabelStorageLib,
