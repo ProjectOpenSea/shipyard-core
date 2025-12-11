@@ -105,9 +105,7 @@ library TraitLabelStorageLib {
         }
         // render the attribute as JSON
         return Metadata.attribute({
-            traitType: traitLabel.traitLabel,
-            value: actualTraitValue,
-            displayType: traitLabel.displayType
+            traitType: traitLabel.traitLabel, value: actualTraitValue, displayType: traitLabel.displayType
         });
     }
 

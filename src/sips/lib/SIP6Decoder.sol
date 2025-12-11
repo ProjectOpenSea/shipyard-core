@@ -209,8 +209,8 @@ library SIP6Decoder {
         pure
         returns (bytes[] calldata decodedData)
     {
-        function(uint256,uint256) internal pure returns (bytes calldata) decodeBytesArray = _decodeBytesArray;
-        function(uint256,uint256) internal pure returns (bytes[] calldata) decodeBytesArrays;
+        function(uint256, uint256) internal pure returns (bytes calldata) decodeBytesArray = _decodeBytesArray;
+        function(uint256, uint256) internal pure returns (bytes[] calldata) decodeBytesArrays;
 
         assembly {
             decodeBytesArrays := decodeBytesArray
@@ -342,9 +342,8 @@ library SIP6Decoder {
             uint256 subArrayOffset;
             uint256 subArrayLength;
             assembly {
-                let subArrayOffsetPointer
-                // add decoded.offset absolute offset to the relative offset of the array
-                :=
+                let subArrayOffsetPointer :=
+                    // add decoded.offset absolute offset to the relative offset of the array
                     add(
                         // mask offset to avoid bad data
                         and(
@@ -361,14 +360,13 @@ library SIP6Decoder {
                         ),
                         decoded.offset
                     )
-                subArrayLength
+                subArrayLength := 
                 // mask to avoid bad data
-                :=
-                    and(
-                        // load length from absolute offset of array
-                        calldataload(subArrayOffsetPointer),
-                        _32_BIT_MASK
-                    )
+                and(
+                    // load length from absolute offset of array
+                    calldataload(subArrayOffsetPointer),
+                    _32_BIT_MASK
+                )
                 // add 20 to get the start of data offset
                 subArrayOffset := add(subArrayOffsetPointer, 0x20)
             }

@@ -18,7 +18,10 @@ contract MockTransferValidator is ITransferValidator721, ITransferValidator1155 
         address,
         /* to */
         uint256 /* tokenId */
-    ) external view {
+    )
+        external
+        view
+    {
         if (_revertOnValidate) {
             revert("MockTransferValidator: always reverts");
         }
@@ -30,7 +33,10 @@ contract MockTransferValidator is ITransferValidator721, ITransferValidator1155 
         address, /* to */
         uint256, /* tokenId */
         uint256 /* amount */
-    ) external view {
+    )
+        external
+        view
+    {
         if (_revertOnValidate) {
             revert("MockTransferValidator: always reverts");
         }

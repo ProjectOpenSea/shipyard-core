@@ -95,7 +95,11 @@ contract TestERC1155ShipyardTransferValidated is Test, TestPlus {
         uint256, /* id */
         uint256, /* value */
         bytes calldata /* data */
-    ) external pure returns (bytes4) {
+    )
+        external
+        pure
+        returns (bytes4)
+    {
         return this.onERC1155Received.selector;
     }
 }

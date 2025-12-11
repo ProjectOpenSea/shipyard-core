@@ -30,8 +30,10 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
         uint256 allowance_ = super.allowance(owner, spender);
         assembly {
             // "flip" allowance if spender is CONDUIT and if allowance is 0 or type(uint256).max.
-            allowance_ :=
-                xor(allowance_, mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
+            allowance_ := xor(
+                allowance_,
+                mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0))
+            )
         }
         return allowance_;
     }
@@ -63,8 +65,10 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             let allowance_ := sload(allowanceSlot)
 
             // "flip" allowance if caller is CONDUIT and if allowance_ is 0 or type(uint256).max.
-            allowance_ :=
-                xor(allowance_, mul(and(eq(caller(), CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
+            allowance_ := xor(
+                allowance_,
+                mul(and(eq(caller(), CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0))
+            )
 
             // If the allowance is not the maximum uint256 value.
             if not(allowance_) {
@@ -191,8 +195,10 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
             let allowance_ := sload(allowanceSlot)
 
             // "flip" allowance if spender is CONDUIT and if allowance_ is 0 or type(uint256).max.
-            allowance_ :=
-                xor(allowance_, mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0)))
+            allowance_ := xor(
+                allowance_,
+                mul(and(eq(spender, CONDUIT), or(iszero(allowance_), iszero(not(allowance_)))), not(0))
+            )
 
             // If the allowance is not the maximum uint256 value.
             if not(allowance_) {
@@ -205,7 +211,8 @@ abstract contract ERC20ConduitPreapproved_Solady is ERC20, IPreapprovalForAll {
                 sstore(
                     allowanceSlot,
                     xor(
-                        sub(allowance_, amount), mul(and(eq(spender, CONDUIT), iszero(sub(allowance_, amount))), not(0))
+                        sub(allowance_, amount),
+                        mul(and(eq(spender, CONDUIT), iszero(sub(allowance_, amount))), not(0))
                     )
                 )
             }

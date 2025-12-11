@@ -96,11 +96,7 @@ library BaseSIPDecoder {
         return decodePackedBytes(extraData, 1);
     }
 
-    function decodeUintAndBytes(bytes calldata extraData)
-        internal
-        pure
-        returns (uint256 tokenId, bytes calldata data)
-    {
+    function decodeUintAndBytes(bytes calldata extraData) internal pure returns (uint256 tokenId, bytes calldata data) {
         return decodeUintAndBytes(extraData, 1);
     }
 
