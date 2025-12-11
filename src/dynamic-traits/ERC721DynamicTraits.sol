@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: CC0-1.0
 pragma solidity ^0.8.19;
 
-import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import {Ownable} from "openzeppelin-contracts/access/Ownable.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {DynamicTraits} from "src/dynamic-traits/DynamicTraits.sol";
 
 contract ERC721DynamicTraits is DynamicTraits, Ownable, ERC721 {

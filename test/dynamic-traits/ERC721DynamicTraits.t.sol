@@ -2,9 +2,9 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import {IERC721Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
-import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
-import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {IERC721Errors} from "@openzeppelin/contracts/interfaces/draft-IERC6093.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC7496} from "src/dynamic-traits/interfaces/IERC7496.sol";
 import {ERC721DynamicTraits} from "src/dynamic-traits/ERC721DynamicTraits.sol";
 import {Solarray} from "solarray/Solarray.sol";

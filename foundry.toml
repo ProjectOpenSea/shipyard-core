@@ -3,12 +3,7 @@ src = "src"
 out = "out"
 libs = ["lib"]
 remappings = [
-    'forge-std/=lib/forge-std/src',
-    'solady/=lib/solady/',
-    'openzeppelin-contracts/=lib/openzeppelin-contracts/contracts/',
     'seaport-types/=lib/seaport-types/',
-    'solarray/=lib/solarray/src/',
-    'openzeppelin-contracts/contracts/=lib/openzeppelin-contracts/contracts/',
 ]
 # bytecode_hash = 'none'
 ignored_error_codes = ['license', 'code-size', 'init-code-size', 2519]
