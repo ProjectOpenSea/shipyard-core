@@ -26,6 +26,9 @@ contract ERC721DynamicTraitsMultiUpdateTest is Test {
         uint256 fromTokenId = 1;
         uint256 toTokenId = 100;
 
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
+
         for (uint256 tokenId = fromTokenId; tokenId <= toTokenId; tokenId++) {
             token.mint(address(this), tokenId);
         }
@@ -49,6 +52,9 @@ contract ERC721DynamicTraitsMultiUpdateTest is Test {
             values[i] = bytes32(i);
         }
 
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
+
         for (uint256 tokenId = fromTokenId; tokenId <= toTokenId; tokenId++) {
             token.mint(address(this), tokenId);
         }
@@ -67,6 +73,9 @@ contract ERC721DynamicTraitsMultiUpdateTest is Test {
         bytes32 key = bytes32("testKey");
         bytes32 value = bytes32("foo");
         uint256[] memory tokenIds = Solarray.uint256s(1, 10, 20, 50);
+
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             token.mint(address(this), tokenIds[i]);
@@ -89,6 +98,9 @@ contract ERC721DynamicTraitsMultiUpdateTest is Test {
         for (uint256 i = 0; i < values.length; i++) {
             values[i] = bytes32(i * 1000);
         }
+
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             token.mint(address(this), tokenIds[i]);

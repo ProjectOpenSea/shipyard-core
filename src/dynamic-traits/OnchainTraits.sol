@@ -45,8 +45,6 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
 
     /// @notice Thrown when the caller does not have the privilege to set a trait
     error InsufficientPrivilege();
-    /// @notice Thrown when trying to set a trait that does not exist
-    error TraitDoesNotExist(bytes32 traitKey);
 
     constructor() {
         _initializeOwner(msg.sender);
@@ -170,6 +168,8 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
             valuesRequireValidation: _traitLabel.acceptableValues.length > 0,
             storedLabel: TraitLabelLib.store(_traitLabel)
         });
+        // Register the trait key in the base DynamicTraits contract.
+        _registerTraitKey(traitKey);
     }
 
     /**

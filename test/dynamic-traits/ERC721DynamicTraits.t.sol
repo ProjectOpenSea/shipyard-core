@@ -36,6 +36,9 @@ contract ERC721DynamicTraitsTest is Test {
         bytes32 key = bytes32("testKey");
         bytes32 value = bytes32("foo");
         uint256 tokenId = 12345;
+
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
         token.mint(address(this), tokenId);
 
         vm.expectEmit(true, true, true, true);
@@ -47,16 +50,23 @@ contract ERC721DynamicTraitsTest is Test {
     }
 
     function testOnlyOwnerCanSetValues() public {
+        bytes32 key = bytes32("test");
+        // Register the trait key before testing access control.
+        token.registerTraitKey(key);
+
         address alice = makeAddr("alice");
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, alice));
-        token.setTrait(0, bytes32("test"), bytes32("test"));
+        token.setTrait(0, key, bytes32("test"));
     }
 
     function testSetTrait_Unchanged() public {
         bytes32 key = bytes32("testKey");
         bytes32 value = bytes32("foo");
         uint256 tokenId = 1;
+
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
         token.mint(address(this), tokenId);
 
         token.setTrait(tokenId, key, value);
@@ -70,6 +80,10 @@ contract ERC721DynamicTraitsTest is Test {
         bytes32 value1 = bytes32("foo");
         bytes32 value2 = bytes32("bar");
         uint256 tokenId = 1;
+
+        // Register the trait keys before using them.
+        token.registerTraitKey(key1);
+        token.registerTraitKey(key2);
         token.mint(address(this), tokenId);
 
         token.setTrait(tokenId, key1, value1);
@@ -99,6 +113,9 @@ contract ERC721DynamicTraitsTest is Test {
         bytes32 value = bytes32(uint256(1));
         uint256 tokenId = 1;
 
+        // Register the trait key so we can test token non-existence.
+        token.registerTraitKey(key);
+
         vm.expectRevert(abi.encodeWithSelector(IERC721Errors.ERC721NonexistentToken.selector, tokenId));
         token.setTrait(tokenId, key, value);
 
@@ -112,6 +129,9 @@ contract ERC721DynamicTraitsTest is Test {
     function testGetTraitValue_DefaultZeroValue() public {
         bytes32 key = bytes32("testKey");
         uint256 tokenId = 1;
+
+        // Register the trait key before using it.
+        token.registerTraitKey(key);
         token.mint(address(this), tokenId);
 
         bytes32 value = token.getTraitValue(tokenId, key);
@@ -119,5 +139,27 @@ contract ERC721DynamicTraitsTest is Test {
 
         bytes32[] memory values = token.getTraitValues(tokenId, Solarray.bytes32s(key));
         assertEq(values[0], bytes32(0), "should return bytes32(0)");
+    }
+
+    function testGetTraitValue_UnregisteredTraitKey() public {
+        bytes32 key = bytes32("unregisteredKey");
+        uint256 tokenId = 1;
+        token.mint(address(this), tokenId);
+
+        vm.expectRevert(abi.encodeWithSelector(IERC7496.TraitDoesNotExist.selector, key));
+        token.getTraitValue(tokenId, key);
+
+        vm.expectRevert(abi.encodeWithSelector(IERC7496.TraitDoesNotExist.selector, key));
+        token.getTraitValues(tokenId, Solarray.bytes32s(key));
+    }
+
+    function testSetTrait_UnregisteredTraitKey() public {
+        bytes32 key = bytes32("unregisteredKey");
+        bytes32 value = bytes32("foo");
+        uint256 tokenId = 1;
+        token.mint(address(this), tokenId);
+
+        vm.expectRevert(abi.encodeWithSelector(IERC7496.TraitDoesNotExist.selector, key));
+        token.setTrait(tokenId, key, value);
     }
 }

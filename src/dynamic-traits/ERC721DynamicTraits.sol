@@ -51,6 +51,11 @@ contract ERC721DynamicTraits is DynamicTraits, Ownable, ERC721 {
         _setTraitMetadataURI(uri);
     }
 
+    function registerTraitKey(bytes32 traitKey) external onlyOwner {
+        // Register the trait key as valid.
+        _registerTraitKey(traitKey);
+    }
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, DynamicTraits) returns (bool) {
         return ERC721.supportsInterface(interfaceId) || DynamicTraits.supportsInterface(interfaceId);
     }

@@ -2,6 +2,13 @@
 pragma solidity ^0.8.19;
 
 interface IERC7496 {
+    /* Errors */
+    /// @notice Thrown when trying to set a trait that does not exist.
+    error TraitDoesNotExist(bytes32 traitKey);
+    // Note: TokenDoesNotExist(uint256 tokenId) is specified in ERC-7496 but omitted here
+    // to avoid conflicts with token contracts that define their own error (e.g., Solady ERC721).
+    // Implementations MAY use their underlying token's error for non-existent tokens.
+
     /* Events */
     event TraitUpdated(bytes32 indexed traitKey, uint256 tokenId, bytes32 traitValue);
     event TraitUpdatedRange(bytes32 indexed traitKey, uint256 fromTokenId, uint256 toTokenId);
