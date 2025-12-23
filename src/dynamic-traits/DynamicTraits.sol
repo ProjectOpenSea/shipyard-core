@@ -87,7 +87,7 @@ contract DynamicTraits is IERC7496 {
 
     /**
      * @notice Set the value of a trait for a given token ID.
-     *         Reverts if the trait value is unchanged.
+     *         Reverts if the trait key is not registered or the value is unchanged.
      * @dev    IMPORTANT: Override this method with access role restriction.
      * @param tokenId The token ID to set the trait value for
      * @param traitKey The trait key to set the value of
@@ -96,7 +96,7 @@ contract DynamicTraits is IERC7496 {
     function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 newValue) public virtual {
         DynamicTraitsStorage.Layout storage layout = DynamicTraitsStorage.layout();
 
-        // Revert if the trait key does not exist.
+        // Revert if the trait key is not registered.
         if (!layout._validTraitKeys[traitKey]) {
             revert TraitDoesNotExist(traitKey);
         }
@@ -132,6 +132,30 @@ contract DynamicTraits is IERC7496 {
     function _setTraitMetadataURI(string memory uri) internal virtual {
         // Set the new trait metadata URI.
         DynamicTraitsStorage.layout()._traitMetadataURI = uri;
+
+        // Emit the event noting the update.
+        emit TraitMetadataURIUpdated();
+    }
+
+    /**
+     * @notice Set the URI for the trait metadata and register trait keys.
+     * @param uri The new URI to set.
+     * @param traitKeys The trait keys to register.
+     */
+    function _setTraitMetadataURI(string memory uri, bytes32[] memory traitKeys) internal virtual {
+        DynamicTraitsStorage.Layout storage layout = DynamicTraitsStorage.layout();
+
+        // Register all trait keys.
+        uint256 length = traitKeys.length;
+        for (uint256 i = 0; i < length;) {
+            layout._validTraitKeys[traitKeys[i]] = true;
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Set the new trait metadata URI.
+        layout._traitMetadataURI = uri;
 
         // Emit the event noting the update.
         emit TraitMetadataURIUpdated();
