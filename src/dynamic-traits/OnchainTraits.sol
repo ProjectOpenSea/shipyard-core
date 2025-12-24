@@ -224,19 +224,14 @@ abstract contract OnchainTraits is Ownable, DynamicTraits {
         string[] memory attributes = new string[](keysLength);
         // keep track of how many traits are actually set
         uint256 num;
-        for (uint256 i = 0; i < keysLength;) {
+        for (uint256 i = 0; i < keysLength; ++i) {
             bytes32 key = keys[i];
             bytes32 trait = getTraitValue(tokenId, key);
             // check that the trait is set, otherwise, skip it
             if (trait != bytes32(0)) {
                 attributes[num] =
                     TraitLabelStorageLib.toAttributeJson(OnchainTraitsStorage.layout()._traitLabelStorage, key, trait);
-                unchecked {
-                    ++num;
-                }
-            }
-            unchecked {
-                ++i;
+                ++num;
             }
         }
         ///@solidity memory-safe-assembly

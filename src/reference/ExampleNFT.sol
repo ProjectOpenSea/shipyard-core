@@ -79,9 +79,7 @@ contract ExampleNFT is AbstractNFT {
     }
 
     function mint(address to) public {
-        unchecked {
-            _mint(to, ++currentId);
-        }
+        _mint(to, ++currentId);
     }
 
     function _isOwnerOrApproved(uint256 tokenId, address addr) internal view virtual override returns (bool) {

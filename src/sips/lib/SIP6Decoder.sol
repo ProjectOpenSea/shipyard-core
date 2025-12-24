@@ -297,12 +297,9 @@ library SIP6Decoder {
     function _validateFixedArrays(bytes[] memory fixedArrays, bytes32 expectedFixedDataHash) internal pure {
         bytes32[] memory hashes = new bytes32[](fixedArrays.length);
         uint256 fixedArraysLength = fixedArrays.length;
-        for (uint256 i = 0; i < fixedArraysLength;) {
+        for (uint256 i = 0; i < fixedArraysLength; ++i) {
             bytes memory fixedArray = fixedArrays[i];
             hashes[i] = keccak256(fixedArray);
-            unchecked {
-                ++i;
-            }
         }
         bytes32 compositeHash;
         ///@solidity memory-safe-assembly
@@ -338,7 +335,7 @@ library SIP6Decoder {
             arrayLengthInBytes: decoded.length << 5,
             substandard: substandard
         });
-        for (uint256 i = 0; i < decoded.length;) {
+        for (uint256 i = 0; i < decoded.length; ++i) {
             uint256 subArrayOffset;
             uint256 subArrayLength;
             assembly {
@@ -378,9 +375,6 @@ library SIP6Decoder {
                 arrayLengthInBytes: subArrayLength,
                 substandard: substandard
             });
-            unchecked {
-                ++i;
-            }
         }
     }
 

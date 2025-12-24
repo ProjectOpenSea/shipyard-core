@@ -68,12 +68,9 @@ contract DynamicTraits is IERC7496 {
         traitValues = new bytes32[](length);
 
         // Assign each trait value to the corresopnding key.
-        for (uint256 i = 0; i < length;) {
+        for (uint256 i = 0; i < length; ++i) {
             bytes32 traitKey = traitKeys[i];
             traitValues[i] = getTraitValue(tokenId, traitKey);
-            unchecked {
-                ++i;
-            }
         }
     }
 
@@ -147,11 +144,8 @@ contract DynamicTraits is IERC7496 {
 
         // Register all trait keys.
         uint256 length = traitKeys.length;
-        for (uint256 i = 0; i < length;) {
+        for (uint256 i = 0; i < length; ++i) {
             layout._validTraitKeys[traitKeys[i]] = true;
-            unchecked {
-                ++i;
-            }
         }
 
         // Set the new trait metadata URI.

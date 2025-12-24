@@ -11,16 +11,12 @@ contract ERC721DynamicTraitsMultiUpdate is ERC721DynamicTraits {
         virtual
         onlyOwner
     {
-        for (uint256 tokenId = fromTokenId; tokenId <= toTokenId;) {
+        for (uint256 tokenId = fromTokenId; tokenId <= toTokenId; ++tokenId) {
             // Revert if the token doesn't exist.
             _requireOwned(tokenId);
 
             // Call the internal function to set the trait.
             _setTrait(tokenId, traitKey, value);
-
-            unchecked {
-                ++tokenId;
-            }
         }
 
         // Emit the event noting the update.
@@ -33,16 +29,12 @@ contract ERC721DynamicTraitsMultiUpdate is ERC721DynamicTraits {
         bytes32 traitKey,
         bytes32[] calldata values
     ) public virtual onlyOwner {
-        for (uint256 tokenId = fromTokenId; tokenId <= toTokenId;) {
+        for (uint256 tokenId = fromTokenId; tokenId <= toTokenId; ++tokenId) {
             // Revert if the token doesn't exist.
             _requireOwned(tokenId);
 
             // Call the internal function to set the trait.
             _setTrait(tokenId, traitKey, values[tokenId - 1]);
-
-            unchecked {
-                ++tokenId;
-            }
         }
 
         // Emit the event noting the update.
@@ -50,16 +42,12 @@ contract ERC721DynamicTraitsMultiUpdate is ERC721DynamicTraits {
     }
 
     function setTraitsList(uint256[] calldata tokenIds, bytes32 traitKey, bytes32 value) public virtual onlyOwner {
-        for (uint256 i = 0; i < tokenIds.length;) {
+        for (uint256 i = 0; i < tokenIds.length; ++i) {
             // Revert if the token doesn't exist.
             _requireOwned(tokenIds[i]);
 
             // Call the internal function to set the trait.
             _setTrait(tokenIds[i], traitKey, value);
-
-            unchecked {
-                ++i;
-            }
         }
 
         // Emit the event noting the update.
@@ -71,16 +59,12 @@ contract ERC721DynamicTraitsMultiUpdate is ERC721DynamicTraits {
         virtual
         onlyOwner
     {
-        for (uint256 i = 0; i < tokenIds.length;) {
+        for (uint256 i = 0; i < tokenIds.length; ++i) {
             // Revert if the token doesn't exist.
             _requireOwned(tokenIds[i]);
 
             // Call the internal function to set the trait.
             _setTrait(tokenIds[i], traitKey, values[i]);
-
-            unchecked {
-                ++i;
-            }
         }
 
         // Emit the event noting the update.

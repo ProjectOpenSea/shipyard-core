@@ -88,14 +88,11 @@ library TraitLabelStorageLib {
         if (traitLabel.fullTraitValues.length != 0) {
             // try to find matching FullTraitValue
             uint256 length = traitLabel.fullTraitValues.length;
-            for (uint256 i = 0; i < length;) {
+            for (uint256 i = 0; i < length; ++i) {
                 FullTraitValue memory fullTraitValue = traitLabel.fullTraitValues[i];
                 if (fullTraitValue.traitValue == traitValue) {
                     actualTraitValue = fullTraitValue.fullTraitValue;
                     break;
-                }
-                unchecked {
-                    ++i;
                 }
             }
         }
@@ -121,13 +118,10 @@ library TraitLabelStorageLib {
     {
         string[] memory result = new string[](keys.length);
         uint256 i;
-        for (i; i < keys.length;) {
+        for (i; i < keys.length; ++i) {
             bytes32 key = keys[i];
             TraitLabel memory traitLabel = TraitLabelStorageLib.toTraitLabel(traitLabelStorage[key]); //.toTraitLabel();
             result[i] = TraitLabelLib.toLabelJson(traitLabel, key);
-            unchecked {
-                ++i;
-            }
         }
         return json.arrayOf(result);
     }
@@ -152,11 +146,8 @@ library FullTraitValueLib {
      */
     function toJson(FullTraitValue[] memory fullTraitValues) internal pure returns (string memory) {
         string[] memory result = new string[](fullTraitValues.length);
-        for (uint256 i = 0; i < fullTraitValues.length;) {
+        for (uint256 i = 0; i < fullTraitValues.length; ++i) {
             result[i] = toJson(fullTraitValues[i]);
-            unchecked {
-                ++i;
-            }
         }
         return json.arrayOf(result);
     }
@@ -185,12 +176,9 @@ library TraitLabelLib {
         if (length != 0) {
             string memory stringValue = TraitLib.toString(traitValue, displayType);
             bytes32 hashedValue = keccak256(abi.encodePacked(stringValue));
-            for (uint256 i = 0; i < length;) {
+            for (uint256 i = 0; i < length; ++i) {
                 if (hashedValue == keccak256(abi.encodePacked(acceptableValues[i]))) {
                     return;
-                }
-                unchecked {
-                    ++i;
                 }
             }
             revert InvalidTraitValue(traitKey, traitValue);
@@ -263,12 +251,9 @@ library TraitLib {
      */
     function _bytes32StringLength(bytes32 str) internal pure returns (uint256) {
         // only meant to be called in a view context, so this optimizes for bytecode size over performance
-        for (uint256 i; i < 32;) {
+        for (uint256 i; i < 32; ++i) {
             if (str[i] == 0) {
                 return i;
-            }
-            unchecked {
-                ++i;
             }
         }
         return 32;
@@ -289,11 +274,8 @@ library EditorsLib {
     function aggregate(AllowedEditor[] memory editors) internal pure returns (Editors) {
         uint256 editorsLength = editors.length;
         uint256 result;
-        for (uint256 i = 0; i < editorsLength;) {
+        for (uint256 i = 0; i < editorsLength; ++i) {
             result |= 1 << uint8(editors[i]);
-            unchecked {
-                ++i;
-            }
         }
         return Editors.wrap(uint8(result));
     }
@@ -311,16 +293,11 @@ library EditorsLib {
         // optimistically allocate 4 slots
         AllowedEditor[] memory result = new AllowedEditor[](4);
         uint256 num;
-        for (uint256 i = 1; i < 5;) {
+        for (uint256 i = 1; i < 5; ++i) {
             bool set = _editors & (1 << i) != 0;
             if (set) {
                 result[num] = AllowedEditor(i);
-                unchecked {
-                    ++num;
-                }
-            }
-            unchecked {
-                ++i;
+                ++num;
             }
         }
         ///@solidity memory-safe-assembly
@@ -356,11 +333,8 @@ library EditorsLib {
      */
     function toJson(AllowedEditor[] memory editors) internal pure returns (string memory) {
         string[] memory result = new string[](editors.length);
-        for (uint256 i = 0; i < editors.length;) {
+        for (uint256 i = 0; i < editors.length; ++i) {
             result[i] = LibString.toString(uint8(editors[i]));
-            unchecked {
-                ++i;
-            }
         }
         return json.arrayOf(result);
     }

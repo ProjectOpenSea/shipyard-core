@@ -106,11 +106,8 @@ library json {
      */
     function quote(string[] memory strs) internal pure returns (string[] memory) {
         string[] memory result = new string[](strs.length);
-        for (uint256 i = 0; i < strs.length;) {
+        for (uint256 i = 0; i < strs.length; ++i) {
             result[i] = quote(strs[i]);
-            unchecked {
-                ++i;
-            }
         }
         return result;
     }
