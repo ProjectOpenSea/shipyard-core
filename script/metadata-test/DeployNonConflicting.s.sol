@@ -28,10 +28,10 @@ import {Solarray} from "solarray/Solarray.sol";
  * Expected merged result: All 6 traits should appear in final metadata
  */
 contract DeployNonConflicting is Script {
-    // Dynamic trait keys
-    bytes32 constant LEVEL_KEY = "Level";
-    bytes32 constant EXPERIENCE_KEY = "Experience";
-    bytes32 constant GUILD_KEY = "Guild";
+    // Dynamic trait keys (keccak256 hashes for consistent indexing)
+    bytes32 constant LEVEL_KEY = keccak256("Level");
+    bytes32 constant EXPERIENCE_KEY = keccak256("Experience");
+    bytes32 constant GUILD_KEY = keccak256("Guild");
 
     function run() public {
         vm.startBroadcast();
@@ -42,8 +42,8 @@ contract DeployNonConflicting is Script {
 
         // Mint 5 tokens to the deployer
         address deployer = msg.sender;
-        for (uint256 i = 1; i <= 5; i++) {
-            nft.mintTo(deployer, i);
+        for (uint256 i = 0; i < 5; i++) {
+            nft.mint(deployer);
         }
         console2.log("Minted tokens 1-5 to:", deployer);
 
@@ -118,7 +118,8 @@ contract DeployNonConflicting is Script {
                             json.rawProperty("decimals", "0")
                         )
                     )
-                )
+                ),
+                json.property("validateOnSale", "requireUintGte")
             )
         );
 
@@ -136,7 +137,8 @@ contract DeployNonConflicting is Script {
                             json.rawProperty("decimals", "0")
                         )
                     )
-                )
+                ),
+                json.property("validateOnSale", "requireUintGte")
             )
         );
 

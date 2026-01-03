@@ -32,10 +32,10 @@ import {Solarray} from "solarray/Solarray.sol";
  *   - "Background" and "Guild" should both appear (no conflict)
  */
 contract DeployConflicting is Script {
-    // Dynamic trait keys (some conflict with tokenURI)
-    bytes32 constant LEVEL_KEY = "Level"; // CONFLICTS with tokenURI
-    bytes32 constant CLASS_KEY = "Class"; // CONFLICTS with tokenURI
-    bytes32 constant GUILD_KEY = "Guild"; // Does NOT conflict
+    // Dynamic trait keys (keccak256 hashes for consistent indexing)
+    bytes32 constant LEVEL_KEY = keccak256("Level"); // CONFLICTS with tokenURI
+    bytes32 constant CLASS_KEY = keccak256("Class"); // CONFLICTS with tokenURI
+    bytes32 constant GUILD_KEY = keccak256("Guild"); // Does NOT conflict
 
     function run() public {
         vm.startBroadcast();
@@ -46,8 +46,8 @@ contract DeployConflicting is Script {
 
         // Mint 5 tokens to the deployer
         address deployer = msg.sender;
-        for (uint256 i = 1; i <= 5; i++) {
-            nft.mintTo(deployer, i);
+        for (uint256 i = 0; i < 5; i++) {
+            nft.mint(deployer);
         }
         console2.log("Minted tokens 1-5 to:", deployer);
 
@@ -133,7 +133,8 @@ contract DeployConflicting is Script {
                             json.rawProperty("decimals", "0")
                         )
                     )
-                )
+                ),
+                json.property("validateOnSale", "requireUintGte")
             )
         );
 

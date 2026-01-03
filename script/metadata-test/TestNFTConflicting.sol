@@ -117,13 +117,6 @@ contract TestNFTConflicting is DynamicTraits, Ownable, ERC721 {
         return tokenId;
     }
 
-    function mintTo(address to, uint256 tokenId) public {
-        _mint(to, tokenId);
-        if (tokenId > currentId) {
-            currentId = tokenId;
-        }
-    }
-
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, DynamicTraits) returns (bool) {
         return ERC721.supportsInterface(interfaceId) || DynamicTraits.supportsInterface(interfaceId);
     }

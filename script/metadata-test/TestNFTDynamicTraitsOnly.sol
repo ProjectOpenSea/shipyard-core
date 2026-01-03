@@ -4,10 +4,11 @@ pragma solidity ^0.8.19;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "solady/src/auth/Ownable.sol";
 import {DynamicTraits} from "src/dynamic-traits/DynamicTraits.sol";
+import {Metadata} from "src/onchain/Metadata.sol";
 
 /**
  * @title TestNFTDynamicTraitsOnly
- * @notice Test contract with only dynamic traits (ERC-7496), no tokenURI metadata.
+ * @notice Test contract with only dynamic traits (ERC-7496), tokenURI returns empty object {}.
  *         Used to test backend pipeline handles pure dynamic trait sources.
  */
 contract TestNFTDynamicTraitsOnly is DynamicTraits, Ownable, ERC721 {
@@ -15,6 +16,11 @@ contract TestNFTDynamicTraitsOnly is DynamicTraits, Ownable, ERC721 {
 
     constructor() ERC721("TestNFT DynamicTraits Only", "TDTO") {
         _initializeOwner(msg.sender);
+    }
+
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        _requireOwned(tokenId);
+        return Metadata.base64JsonDataURI("{}");
     }
 
     function setTrait(uint256 tokenId, bytes32 traitKey, bytes32 value) public virtual override onlyOwner {
@@ -56,13 +62,6 @@ contract TestNFTDynamicTraitsOnly is DynamicTraits, Ownable, ERC721 {
         uint256 tokenId = ++currentId;
         _mint(to, tokenId);
         return tokenId;
-    }
-
-    function mintTo(address to, uint256 tokenId) public {
-        _mint(to, tokenId);
-        if (tokenId > currentId) {
-            currentId = tokenId;
-        }
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, DynamicTraits) returns (bool) {
