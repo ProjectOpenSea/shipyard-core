@@ -9,12 +9,12 @@ import {TestNFTNumericTraits} from "./TestNFTNumericTraits.sol";
  * @notice Deploys TestNFTNumericTraits and bulk mints tokens for testing OpenSea Numeric Trait Offers.
  *
  * Usage:
- *   # Deploy and mint 1000 tokens to default address (0x1234567890...)
- *   forge script script/metadata-test/DeployNumericTraits.s.sol --rpc-url <RPC> --broadcast
+ *   # Deploy and mint 10 tokens to deployer
+ *   forge script script/metadata-test/DeployNumericTraits.s.sol --rpc-url <RPC> --broadcast --private-key <PK>
  *
- *   # Deploy and mint to custom address with custom amount
+ *   # Deploy and mint custom amount to custom address
  *   forge script script/metadata-test/DeployNumericTraits.s.sol \
- *     --rpc-url <RPC> --broadcast \
+ *     --rpc-url <RPC> --broadcast --private-key <PK> \
  *     --sig "deploy(address,uint256)" <RECIPIENT> <AMOUNT>
  *
  * Trait Ranges:
@@ -24,12 +24,10 @@ import {TestNFTNumericTraits} from "./TestNFTNumericTraits.sol";
  *   - Experience: 10000-999999 (5-6 digits)
  */
 contract DeployNumericTraits is Script {
-    // Default recipient (placeholder address)
-    address constant DEFAULT_RECIPIENT = 0x1234567890123456789012345678901234567890;
-    uint256 constant DEFAULT_AMOUNT = 1000;
+    uint256 constant DEFAULT_AMOUNT = 10;
 
     function run() public {
-        deploy(DEFAULT_RECIPIENT, DEFAULT_AMOUNT);
+        deploy(msg.sender, DEFAULT_AMOUNT);
     }
 
     function deploy(address recipient, uint256 amount) public {

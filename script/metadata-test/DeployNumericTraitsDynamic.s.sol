@@ -12,12 +12,12 @@ import {Solarray} from "solarray/Solarray.sol";
  * @notice Deploys TestNFTNumericTraitsDynamic with both static and dynamic numeric traits.
  *
  * Usage:
- *   # Deploy and mint 1000 tokens to default address (0x1234567890...)
- *   forge script script/metadata-test/DeployNumericTraitsDynamic.s.sol --rpc-url <RPC> --broadcast
+ *   # Deploy and mint 10 tokens to deployer
+ *   forge script script/metadata-test/DeployNumericTraitsDynamic.s.sol --rpc-url <RPC> --broadcast --private-key <PK>
  *
- *   # Deploy with custom recipient and amount
+ *   # Deploy and mint custom amount to custom address
  *   forge script script/metadata-test/DeployNumericTraitsDynamic.s.sol \
- *     --rpc-url <RPC> --broadcast \
+ *     --rpc-url <RPC> --broadcast --private-key <PK> \
  *     --sig "deploy(address,uint256)" <RECIPIENT> <AMOUNT>
  *
  * Static Traits (tokenURI):
@@ -30,9 +30,7 @@ import {Solarray} from "solarray/Solarray.sol";
  *   - Reputation: 10000-999999 (5-6 digits)
  */
 contract DeployNumericTraitsDynamic is Script {
-    // Default recipient (placeholder address)
-    address constant DEFAULT_RECIPIENT = 0x1234567890123456789012345678901234567890;
-    uint256 constant DEFAULT_AMOUNT = 1000;
+    uint256 constant DEFAULT_AMOUNT = 10;
 
     // Dynamic trait keys
     bytes32 constant BOOST_KEY = keccak256("Boost");
@@ -40,7 +38,7 @@ contract DeployNumericTraitsDynamic is Script {
     bytes32 constant REPUTATION_KEY = keccak256("Reputation");
 
     function run() public {
-        deploy(DEFAULT_RECIPIENT, DEFAULT_AMOUNT);
+        deploy(msg.sender, DEFAULT_AMOUNT);
     }
 
     function deploy(address recipient, uint256 amount) public {
