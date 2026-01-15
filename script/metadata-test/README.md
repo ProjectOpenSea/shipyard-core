@@ -80,6 +80,11 @@ forge script script/metadata-test/dynamic-traits/MintDynamicTraitsOnly.s.sol \
 forge script script/metadata-test/dynamic-traits/RefreshMetadataDynamicTraitsOnly.s.sol \
   --rpc-url $RPC --broadcast --private-key $PK \
   --sig "run(address)" <CONTRACT_ADDRESS>
+
+# Emit various dynamic trait event types (TraitUpdated, TraitUpdatedRange, TraitUpdatedList, etc.)
+# Useful for testing backend event indexing
+forge script script/metadata-test/dynamic-traits/EmitDynamicTraitsTestEvents.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
 ```
 
 ## Notes
