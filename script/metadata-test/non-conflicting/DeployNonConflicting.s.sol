@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {TestNFTNonConflicting} from "./TestNFTNonConflicting.sol";
+import {TestNFTNonConflicting} from "script/metadata-test/non-conflicting/TestNFTNonConflicting.sol";
 import {json} from "src/onchain/json.sol";
 import {Metadata} from "src/onchain/Metadata.sol";
 import {Solarray} from "solarray/Solarray.sol";

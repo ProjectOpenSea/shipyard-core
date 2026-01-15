@@ -1,0 +1,20 @@
+{
+  "lib/forge-std": {
+    "rev": "ae570fec082bfe1c1f45b0acca4a2b4f84d345ce"
+  },
+  "lib/hot-chain-svg": {
+    "rev": "8d9457255dd30b64f21951eb21fe4f7dddea65c2"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "e5c63635e3508a8d9d0afed091578cc4bb59a9c7"
+  },
+  "lib/seaport-types": {
+    "rev": "25bae8ddfa8709e5c51ab429fe06024e46a18f15"
+  },
+  "lib/solady": {
+    "rev": "8326baa430cf23abae68a6d48cc127bb4998db6e"
+  },
+  "lib/solarray": {
+    "rev": "a547630f9bf7837af9e6919d217672afe7abf7f1"
+  }
+}

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {TestNFTNumericTraitsDynamic} from "./TestNFTNumericTraitsDynamic.sol";
+import {TestNFTNumericTraitsDynamic} from "script/metadata-test/numeric-traits/TestNFTNumericTraitsDynamic.sol";
 import {json} from "src/onchain/json.sol";
 import {Metadata} from "src/onchain/Metadata.sol";
 import {Solarray} from "solarray/Solarray.sol";

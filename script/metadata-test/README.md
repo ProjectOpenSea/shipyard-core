@@ -1,84 +1,90 @@
 # Metadata Pipeline Test Scripts
 
-Test contracts and deployment scripts for verifying backend metadata pipeline handling of ERC-7496 dynamic traits.
+Test contracts and deployment scripts for verifying backend metadata pipeline handling of ERC-7496 dynamic traits and OpenSea trait offers.
+
+## Directory Structure
+
+```
+metadata-test/
+├── dynamic-traits/          # Pure ERC-7496 dynamic traits (no tokenURI traits)
+├── numeric-traits/          # Numeric traits for OpenSea trait offer testing
+├── conflicting/             # Dynamic traits that conflict with tokenURI traits
+├── non-conflicting/         # Dynamic + tokenURI traits with no overlap
+└── README.md
+```
 
 ## Test Scenarios
 
-| Scenario | Contract | Dynamic Traits | tokenURI Traits | Purpose |
-|----------|----------|----------------|-----------------|---------|
-| **Dynamic Only** | `TestNFTDynamicTraitsOnly` | Level, Experience, Guild, IsActive | None | Pure dynamic trait source |
-| **Non-Conflicting** | `TestNFTNonConflicting` | Level, Experience, Guild | Background, Rarity, Generation | Merging from both sources |
-| **Conflicting** | `TestNFTConflicting` | Level, Class, Guild | Level, Class, Background | Conflict resolution (dynamic wins) |
+| Folder | Contract | Dynamic Traits | tokenURI Traits | Purpose |
+|--------|----------|----------------|-----------------|---------|
+| `dynamic-traits/` | `TestNFTDynamicTraitsOnly` | Level, Experience, Guild, IsActive | None | Pure dynamic trait source |
+| `numeric-traits/` | `TestNFTNumericTraits` | None | Power, Speed, Energy, Experience | OpenSea numeric trait offers (static only) |
+| `numeric-traits/` | `TestNFTNumericTraitsDynamic` | Boost, Score, Reputation | Power, Speed | OpenSea numeric trait offers (static + dynamic) |
+| `non-conflicting/` | `TestNFTNonConflicting` | Level, Experience, Guild | Background, Rarity, Generation | Merging from both sources |
+| `conflicting/` | `TestNFTConflicting` | Level, Class, Guild | Level, Class, Background | Conflict resolution (dynamic wins) |
 
 ## Quick Start
 
 ```bash
-# Deploy (simulation first, then broadcast)
-forge script script/metadata-test/DeployDynamicTraitsOnly.s.sol --rpc-url $RPC
+# Dynamic traits only
+forge script script/metadata-test/dynamic-traits/DeployDynamicTraitsOnly.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
 
-# Deploy for real
-forge script script/metadata-test/DeployDynamicTraitsOnly.s.sol --rpc-url $RPC --broadcast
+# Numeric traits (static only) - for OpenSea trait offers
+forge script script/metadata-test/numeric-traits/DeployNumericTraits.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
 
-# With verification
-forge script script/metadata-test/DeployDynamicTraitsOnly.s.sol \
-  --rpc-url $RPC --broadcast --verify --etherscan-api-key $API_KEY
+# Numeric traits (static + dynamic) - for OpenSea trait offers
+forge script script/metadata-test/numeric-traits/DeployNumericTraitsDynamic.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
+
+# Non-conflicting traits
+forge script script/metadata-test/non-conflicting/DeployNonConflicting.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
+
+# Conflicting traits
+forge script script/metadata-test/conflicting/DeployConflicting.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK
 ```
 
-## Scripts
+## Numeric Traits (for OpenSea Trait Offers)
 
-### Deployment Scripts
+Designed to test trait offer operators: `>` `>=` `<` `<=` `=`
 
-Each deploys a test contract, mints 5 tokens (IDs 1-5), and sets dynamic traits:
+### Static Only (`TestNFTNumericTraits`)
+| Trait | Range | Digits |
+|-------|-------|--------|
+| Power | 1-9 | Single |
+| Speed | 10-99 | Double |
+| Energy | 100-999 | Triple |
+| Experience | 10,000-999,999 | 5-6 |
 
-- `DeployDynamicTraitsOnly.s.sol`
-- `DeployNonConflicting.s.sol`
-- `DeployConflicting.s.sol`
+### Static + Dynamic (`TestNFTNumericTraitsDynamic`)
+| Source | Trait | Range | Digits |
+|--------|-------|-------|--------|
+| Static (tokenURI) | Power | 1-9 | Single |
+| Static (tokenURI) | Speed | 10-99 | Double |
+| Dynamic (ERC-7496) | Boost | 1-9 | Single |
+| Dynamic (ERC-7496) | Score | 100-999 | Triple |
+| Dynamic (ERC-7496) | Reputation | 10,000-999,999 | 5-6 |
 
-### Utility Scripts
+## Utility Scripts
 
 ```bash
-# Mint 5 more tokens with traits on existing contract
-forge script MintDynamicTraitsOnly \
-  --rpc-url $RPC --broadcast \
+# Mint more tokens with traits on existing DynamicTraitsOnly contract
+forge script script/metadata-test/dynamic-traits/MintDynamicTraitsOnly.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK \
   --sig "run(address)" <CONTRACT_ADDRESS>
 
 # Emit TraitMetadataURIUpdated to trigger backend refresh
-forge script RefreshMetadataDynamicTraitsOnly \
-  --rpc-url $RPC --broadcast \
+forge script script/metadata-test/dynamic-traits/RefreshMetadataDynamicTraitsOnly.s.sol \
+  --rpc-url $RPC --broadcast --private-key $PK \
   --sig "run(address)" <CONTRACT_ADDRESS>
 ```
-
-## Token Distribution
-
-Each deployment mints 5 tokens with progressive trait values:
-
-| Token | Level | Experience | Guild |
-|-------|-------|------------|-------|
-| 1 | 1 | 0 | None |
-| 2 | 5 | 100 | Warriors |
-| 3 | 10 | 500 | Mages |
-| 4 | 25 | 2500 | Rogues |
-| 5 | 50 | 10000 | Legends |
-
-## Verification
-
-### Dynamic Traits Only
-- `getTraitValue(tokenId, "Level")` returns correct bytes32 value
-- `getTraitMetadataURI()` returns base64-encoded JSON data URI
-- `tokenURI(tokenId)` returns standard ERC721 metadata (no dynamic attributes)
-
-### Non-Conflicting
-- `tokenURI` includes Background, Rarity, Generation
-- `getTraitValue` returns Level, Experience, Guild
-- Backend merged metadata shows all 6 traits
-
-### Conflicting
-- `tokenURI` shows stale Level=1, Class="Peasant"
-- `getTraitValue` shows correct dynamic Level (1-50) and Class
-- Backend merged metadata uses dynamic values, not tokenURI values
 
 ## Notes
 
 - Trait metadata is stored on-chain as base64 JSON data URIs
 - Dynamic trait values are bytes32 encoded
 - Uses Solady's `Ownable` and OpenZeppelin's ERC721
+- Default deployment mints 10 tokens to deployer address

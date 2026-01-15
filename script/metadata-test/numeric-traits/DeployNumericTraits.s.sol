@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {TestNFTNumericTraits} from "./TestNFTNumericTraits.sol";
+import {TestNFTNumericTraits} from "script/metadata-test/numeric-traits/TestNFTNumericTraits.sol";
 
 /**
  * @title DeployNumericTraits

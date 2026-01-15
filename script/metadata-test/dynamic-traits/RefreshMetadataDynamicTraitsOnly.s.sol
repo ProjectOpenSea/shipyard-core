@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {TestNFTDynamicTraitsOnly} from "./TestNFTDynamicTraitsOnly.sol";
+import {TestNFTDynamicTraitsOnly} from "script/metadata-test/dynamic-traits/TestNFTDynamicTraitsOnly.sol";
 
 /**
  * @title RefreshMetadataDynamicTraitsOnly

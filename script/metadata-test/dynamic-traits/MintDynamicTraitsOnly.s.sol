@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import {Script, console2} from "forge-std/Script.sol";
-import {TestNFTDynamicTraitsOnly} from "./TestNFTDynamicTraitsOnly.sol";
+import {TestNFTDynamicTraitsOnly} from "script/metadata-test/dynamic-traits/TestNFTDynamicTraitsOnly.sol";
 
 /**
  * @title MintDynamicTraitsOnly
@@ -17,11 +17,11 @@ import {TestNFTDynamicTraitsOnly} from "./TestNFTDynamicTraitsOnly.sol";
  *     0x74842eaf0a5b3fe3b0e30f9ba79e9e3ec281796e
  */
 contract MintDynamicTraitsOnly is Script {
-    // Trait keys (same as deploy script)
-    bytes32 constant LEVEL_KEY = "Level";
-    bytes32 constant EXPERIENCE_KEY = "Experience";
-    bytes32 constant GUILD_KEY = "Guild";
-    bytes32 constant IS_ACTIVE_KEY = "IsActive";
+    // Trait keys (keccak256 hashes for consistent indexing)
+    bytes32 constant LEVEL_KEY = keccak256("Level");
+    bytes32 constant EXPERIENCE_KEY = keccak256("Experience");
+    bytes32 constant GUILD_KEY = keccak256("Guild");
+    bytes32 constant IS_ACTIVE_KEY = keccak256("IsActive");
 
     function run(address contractAddress) public {
         TestNFTDynamicTraitsOnly nft = TestNFTDynamicTraitsOnly(contractAddress);
